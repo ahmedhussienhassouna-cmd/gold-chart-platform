@@ -1,0 +1,94 @@
+//@version=5
+indicator("Golden Trade IB Pro V3 MOMENTUM", overlay=true, max_lines_count=500)
+
+//======================
+// SETTINGS
+//======================
+barsIB = 12
+extendBars = 200
+
+moveMin = 7.0   // 7$
+moveMax = 10.0  // 10$
+
+//======================
+// STATE
+//======================
+var float ibHigh = na
+var float ibLow  = na
+var int barCount = 0
+
+var bool ibDone = false
+
+var bool brokeHigh = false
+var bool brokeLow  = false
+
+var float buyBreakPrice = na
+var float sellBreakPrice = na
+
+var line highLine = na
+var line lowLine  = na
+
+//======================
+// NEW DAY RESET
+//======================
+newDay = ta.change(time("D"))
+
+if newDay
+    ibHigh := na
+    ibLow := na
+    barCount := 0
+    ibDone := false
+    brokeHigh := false
+    brokeLow := false
+    buyBreakPrice := na
+    sellBreakPrice := na
+
+//======================
+// BUILD IB
+//======================
+if barCount < barsIB
+    ibHigh := na(ibHigh) ? high : math.max(ibHigh, high)
+    ibLow  := na(ibLow)  ? low  : math.min(ibLow, low)
+    barCount += 1
+
+//======================
+// DRAW IB
+//======================
+if barCount >= barsIB and not ibDone and not na(ibHigh) and not na(ibLow)
+
+    highLine := line.new(bar_index, ibHigh, bar_index + extendBars, ibHigh,
+         color=color.lime, width=2)
+
+    lowLine := line.new(bar_index, ibLow, bar_index + extendBars, ibLow,
+         color=color.red, width=2)
+
+    ibDone := true
+
+//======================
+// BREAKOUT DETECTION
+//======================
+if not brokeHigh and close > ibHigh
+    brokeHigh := true
+    buyBreakPrice := close
+
+if not brokeLow and close < ibLow
+    brokeLow := true
+    sellBreakPrice := close
+
+//======================
+// MOMENTUM CALC
+//======================
+buyMove  = na(buyBreakPrice) ? na : (close - buyBreakPrice)
+sellMove = na(sellBreakPrice) ? na : (sellBreakPrice - close)
+
+//======================
+// CONFIRMATION SIGNAL
+//======================
+buySignal  = not na(buyMove)  and buyMove >= moveMin and buyMove <= moveMax
+sellSignal = not na(sellMove) and sellMove >= moveMin and sellMove <= moveMax
+
+plotshape(buySignal, title="BUY CONFIRMED", location=location.abovebar,
+     color=color.green, style=shape.labelup, text="BUY V3")
+
+plotshape(sellSignal, title="SELL CONFIRMED", location=location.belowbar,
+     color=color.red, style=shape.labeldown, text="SELL V3")
