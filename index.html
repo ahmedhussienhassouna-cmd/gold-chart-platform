@@ -14,6 +14,7 @@
       overflow: hidden;
     }
 
+    /* HEADER */
     #header {
       height: 55px;
       background: #111;
@@ -31,6 +32,7 @@
       color: gold;
     }
 
+    /* SIDEBAR */
     #sidebar {
       position: absolute;
       top: 55px;
@@ -58,6 +60,7 @@
       background: #2a2a2a;
     }
 
+    /* CHART */
     #chart {
       position: absolute;
       top: 55px;
@@ -66,6 +69,7 @@
       bottom: 0;
     }
 
+    /* WATERMARK */
     #watermark {
       position: fixed;
       top: 50%;
@@ -77,36 +81,6 @@
       pointer-events: none;
       z-index: 0;
       font-weight: bold;
-    }
-
-    /* 🔥 IB STYLE */
-    .ib-line {
-      position: absolute;
-      left: 160px;
-      right: 0;
-      height: 2px;
-      background: gold;
-      z-index: 9999;
-    }
-
-    .ib-zone {
-      position: absolute;
-      left: 160px;
-      right: 0;
-      background: rgba(255, 215, 0, 0.08);
-      z-index: 9998;
-    }
-
-    #ib-label {
-      position: fixed;
-      top: 60px;
-      right: 20px;
-      background: rgba(0,0,0,0.6);
-      border: 1px solid gold;
-      color: gold;
-      padding: 8px;
-      font-size: 12px;
-      z-index: 99999;
     }
   </style>
 </head>
@@ -128,64 +102,9 @@
 
 <div id="watermark">GOLDEN TRADE</div>
 
-<div id="ib-label">IB Zone Active</div>
-
 <script>
 let widget;
 
-// 🔥 IB values (مؤقتة – هنخليها حقيقية لاحقًا)
-let ibHigh = null;
-let ibLow = null;
-let ibActive = false;
-
-// تحديد أول ساعة (UTC)
-function isIBTime() {
-  const now = new Date();
-  return now.getUTCHours() === 0; // أول ساعة من اليوم
-}
-
-// حساب IB
-function calculateIB() {
-  if (!isIBTime()) return;
-
-  if (!ibActive) {
-    // محاكاة مبدئية (لاحقًا نربطها بسعر حقيقي)
-    ibHigh = 2350 + Math.random() * 15;
-    ibLow = ibHigh - (10 + Math.random() * 10);
-
-    ibActive = true;
-    drawIB();
-  }
-}
-
-// رسم IB على الشاشة
-function drawIB() {
-  document.querySelectorAll(".ib-line, .ib-zone").forEach(e => e.remove());
-
-  let chartHeight = window.innerHeight - 55;
-
-  let highPos = chartHeight * 0.35;
-  let lowPos = chartHeight * 0.55;
-
-  let zone = document.createElement("div");
-  zone.className = "ib-zone";
-  zone.style.top = highPos + "px";
-  zone.style.height = (lowPos - highPos) + "px";
-
-  let highLine = document.createElement("div");
-  highLine.className = "ib-line";
-  highLine.style.top = highPos + "px";
-
-  let lowLine = document.createElement("div");
-  lowLine.className = "ib-line";
-  lowLine.style.top = lowPos + "px";
-
-  document.body.appendChild(zone);
-  document.body.appendChild(highLine);
-  document.body.appendChild(lowLine);
-}
-
-// TradingView
 function loadSymbol(symbol) {
   document.getElementById("chart").innerHTML = "";
 
@@ -198,7 +117,8 @@ function loadSymbol(symbol) {
     timezone: "Etc/UTC",
     theme: "dark",
     style: "1",
-    locale: "en",enable_publishing: false,
+    locale: "en",
+    enable_publishing: false,
     allow_symbol_change: true,
     studies: [
       "RSI@tv-basicstudies",
@@ -209,10 +129,6 @@ function loadSymbol(symbol) {
 
 window.onload = function () {
   loadSymbol("XAUUSD");
-
-  setInterval(() => {
-    calculateIB();
-  }, 10000); // تحديث كل 10 ثواني
 };
 </script>
 
