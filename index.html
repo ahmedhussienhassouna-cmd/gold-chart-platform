@@ -1,82 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Golden Trade Platform</title>
+  <script src="https://s3.tradingview.com/tv.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #0a0a0a;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    #header {
+      height: 55px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      color: white;
+      border-bottom: 1px solid #222;
+    }
+
+    #brand {
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: gold;
+    }
+
+    #sidebar {
+      position: absolute;
+      top: 55px;
+      left: 0;
+      width: 160px;
+      bottom: 0;
+      background: #0f0f0f;
+      border-right: 1px solid #222;
+      padding: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: white;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .btn:hover {
+      background: #2a2a2a;
+    }
+
+    #chart {
+      position: absolute;
+      top: 55px;
+      left: 160px;
+      right: 0;
+      bottom: 0;
+    }
+
+    #watermark {
+      position: fixed;
+      top: 50%;
+      left: 55%;
+      transform: translate(-50%, -50%);
+      font-size: 60px;
+      color: white;
+      opacity: 0.05;
+      pointer-events: none;
+      z-index: 0;
+      font-weight: bold;
+    }
+
+    /* 🔥 Signal Box */
+    #signalBox {
+      position: absolute;
+      top: 70px;
+      right: 20px;
+      z-index: 9999;
+      background: rgba(0,0,0,0.75);
+      border: 1px solid #333;
+      padding: 12px 18px;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      min-width: 220px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="header">
+  <div id="brand">GOLDEN TRADE</div>
+  <div>Live Gold Platform</div>
+</div>
+
+<div id="sidebar">
+  <button class="btn" onclick="loadSymbol('XAUUSD')">Gold</button>
+  <button class="btn" onclick="loadSymbol('EURUSD')">EURUSD</button>
+  <button class="btn" onclick="loadSymbol('BTCUSD')">BTCUSD</button>
+</div>
+
+<div id="chart"></div>
+
+<div id="watermark">GOLDEN TRADE</div>
+
+<div id="signalBox">Waiting for signal...</div>
+
 <script>
 let widget;
 
-// IB levels
+// IB Levels
 let ibHigh = 2350;
 let ibLow = 2335;
 
-// state
+// State
 let brokeHigh = false;
 let brokeLow = false;
+let breakoutPrice = null;
 
-// fake price simulation (لاحقًا نربطه بالسوق الحقيقي)
+// ⚠️ Simulation (لأن TV.js لا يتيح السعر الحقيقي)
 function getPrice() {
   return 2330 + Math.random() * 40;
 }
 
-// تحويل النقاط (تقريب الذهب)
+// تحويل نقاط الذهب
 function pointsMove(entry, current) {
   return Math.abs(current - entry) * 10;
 }
 
-let breakoutPrice = null;
+// عرض الإشارة
+function showSignal(text) {
+  let box = document.getElementById("signalBox");
+  if (!box) return;
 
-// منطق الاستراتيجية
-function checkStrategy() {
-  let price = getPrice();
+  box.innerHTML = text;
 
-  // 🔵 breakout up
-  if (!brokeHigh && price > ibHigh) {
-    brokeHigh = true;
-    breakoutPrice = price;
-    console.log("Break High");
-  }
-
-  // 🔴 breakout down
-  if (!brokeLow && price < ibLow) {
-    brokeLow = true;
-    breakoutPrice = price;
-    console.log("Break Low");
-  }
-
-  // 🔵 BUY setup (retouch)
-  if (brokeHigh) {
-    let move = pointsMove(breakoutPrice, price);
-
-    if (move >= 70 && move <= 100 && price <= ibHigh + 2) {
-      showSignal("BUY 🔵 (Retest IB High)");
-      reset();
-    }
-  }
-
-  // 🔴 SELL setup
-  if (brokeLow) {
-    let move = pointsMove(breakoutPrice, price);
-
-    if (move >= 70 && move <= 100 && price >= ibLow - 2) {
-      showSignal("SELL 🔴 (Retest IB Low)");
-      reset();
-    }
+  if (text.includes("BUY")) {
+    box.style.color = "#00ff7f";
+    box.style.borderColor = "#00ff7f";
+  } else {
+    box.style.color = "#ff4d4d";
+    box.style.borderColor = "#ff4d4d";
   }
 }
 
+// إعادة ضبط
 function reset() {
   brokeHigh = false;
   brokeLow = false;
   breakoutPrice = null;
 }
 
-// عرض الإشارة
-function showSignal(text) {
-  let box = document.getElementById("signal");
-  if (box) {
-    box.innerHTML = text;
-    box.style.color = text.includes("BUY") ? "#00ff7f" : "#ff4d4d";
+// استراتيجية IB Breakout + Retest
+function checkStrategy() {
+  let price = getPrice();
+
+  // Break High
+  if (!brokeHigh && price > ibHigh) {
+    brokeHigh = true;
+    breakoutPrice = price;
+  }
+
+  // Break Low
+  if (!brokeLow && price < ibLow) {
+    brokeLow = true;
+    breakoutPrice = price;
+  }
+
+  // BUY Retest
+  if (brokeHigh) {
+    let move = pointsMove(breakoutPrice, price);
+
+    if (move >= 70 && move <= 100 && price <= ibHigh + 2) {
+      showSignal("BUY 🔵 Break & Retest IB High");
+      reset();
+    }
+  }
+
+  // SELL Retest
+  if (brokeLow) {
+    let move = pointsMove(breakoutPrice, price);
+
+    if (move >= 70 && move <= 100 && price >= ibLow - 2) {
+      showSignal("SELL 🔴 Break & Retest IB Low");
+      reset();
+    }
   }
 }
 
 // تشغيل الاستراتيجية
+setInterval(checkStrategy, 3000);
+
+// TradingView chart
+function loadSymbol(symbol) {
+  document.getElementById("chart").innerHTML = "";
+
+  widget = new TradingView.widget({
+    container_id: "chart",
+    width: "100%",
+    height: "100%",
+    symbol: symbol,interval: "15",
+    timezone: "Etc/UTC",
+    theme: "dark",
+    style: "1",
+    locale: "en",
+    enable_publishing: false,
+    allow_symbol_change: true
+  });
+}
+
 window.onload = function () {
-  setInterval(checkStrategy, 3000);
+  loadSymbol("XAUUSD");
 };
 </script>
+
+</body>
+</html>
