@@ -14,7 +14,6 @@
       overflow: hidden;
     }
 
-    /* HEADER */
     #header {
       height: 55px;
       background: #111;
@@ -32,7 +31,6 @@
       color: gold;
     }
 
-    /* SIDEBAR */
     #sidebar {
       position: absolute;
       top: 55px;
@@ -60,7 +58,6 @@
       background: #2a2a2a;
     }
 
-    /* CHART */
     #chart {
       position: absolute;
       top: 55px;
@@ -69,7 +66,6 @@
       bottom: 0;
     }
 
-    /* WATERMARK */
     #watermark {
       position: fixed;
       top: 50%;
@@ -81,6 +77,36 @@
       pointer-events: none;
       z-index: 0;
       font-weight: bold;
+    }
+
+    /* 🔥 IB STYLE */
+    .ib-line {
+      position: absolute;
+      left: 160px;
+      right: 0;
+      height: 2px;
+      background: gold;
+      z-index: 9999;
+    }
+
+    .ib-zone {
+      position: absolute;
+      left: 160px;
+      right: 0;
+      background: rgba(255, 215, 0, 0.08);
+      z-index: 9998;
+    }
+
+    #ib-label {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid gold;
+      color: gold;
+      padding: 8px;
+      font-size: 12px;
+      z-index: 99999;
     }
   </style>
 </head>
@@ -102,9 +128,57 @@
 
 <div id="watermark">GOLDEN TRADE</div>
 
+<div id="ib-label">IB Zone Active</div>
+
 <script>
 let widget;
 
+// 🔥 IB data (محاكاة حالياً – نطوره لبيانات حقيقية بعدين)
+let ibHigh = 0;
+let ibLow = 0;
+
+// تشغيل IB يوميًا
+function generateIB() {
+  // محاكاة نطاق (هنا هنربطه بالسوق الحقيقي بعدين)
+  let base = 2300;
+  ibHigh = base + Math.random() * 20;
+  ibLow = base - Math.random() * 20;
+
+  drawIB();
+}
+
+// رسم IB على الشاشة
+function drawIB() {
+  // إزالة القديم
+  document.querySelectorAll(".ib-line, .ib-zone").forEach(e => e.remove());
+
+  let chartHeight = window.innerHeight - 55;
+
+  let highPos = chartHeight * 0.3;
+  let lowPos = chartHeight * 0.5;
+
+  // High line
+  let highLine = document.createElement("div");
+  highLine.className = "ib-line";
+  highLine.style.top = highPos + "px";
+
+  // Low line
+  let lowLine = document.createElement("div");
+  lowLine.className = "ib-line";
+  lowLine.style.top = lowPos + "px";
+
+  // Zone
+  let zone = document.createElement("div");
+  zone.className = "ib-zone";
+  zone.style.top = highPos + "px";
+  zone.style.height = (lowPos - highPos) + "px";
+
+  document.body.appendChild(highLine);
+  document.body.appendChild(lowLine);
+  document.body.appendChild(zone);
+}
+
+// TradingView
 function loadSymbol(symbol) {
   document.getElementById("chart").innerHTML = "";
 
@@ -129,6 +203,10 @@ function loadSymbol(symbol) {
 
 window.onload = function () {
   loadSymbol("XAUUSD");
+  generateIB();
+
+  // تحديث يومي (كل 24 ساعة)
+  setInterval(generateIB, 24 * 60 * 60 * 1000);
 };
 </script>
 
