@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Chart Test</title>
+
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
+<style>
+body{
+    margin:0;
+    background:#0b0b0b;
+}
+
+#chart{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+}
+</style>
+
+</head>
+
+<body>
+
+<div id="chart"></div>
+
+<script>
+
+window.addEventListener("load", () => {
+
+    const container = document.getElementById("chart");
+
+    console.log("container:", container);
+    console.log("LW:", LightweightCharts);
+
+    const chart = LightweightCharts.createChart(container, {
+        layout: {
+            background: { color: "#0b0b0b" },
+            textColor: "#ffffff",
+        },
+        width: window.innerWidth,
+        height: window.innerHeight
+    });
+
+    const series = chart.addCandlestickSeries();
+
+    const data = [
+        { time: 1, open: 100, high: 110, low: 90, close: 105 },
+        { time: 2, open: 105, high: 120, low: 100, close: 115 },
+        { time: 3, open: 115, high: 130, low: 110, close: 125 },
+        { time: 4, open: 125, high: 140, low: 120, close: 135 }
+    ];
+
+    series.setData(data);
+
+});
+
+</script>
+
+</body>
+</html>
