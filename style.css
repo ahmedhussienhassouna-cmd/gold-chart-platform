@@ -1,22 +1,16 @@
-/* =======================
-   RESET
-======================= */
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family:Arial;
 }
 
 body{
     background:#0b0b0b;
-    color:#ffffff;
+    color:white;
     overflow:hidden;
 }
 
-/* =======================
-   SIDEBAR
-======================= */
 .sidebar{
     position:fixed;
     left:0;
@@ -24,113 +18,47 @@ body{
     width:230px;
     height:100vh;
     background:#131313;
-    border-right:1px solid #2a2a2a;
     padding:20px;
-    overflow-y:auto;
 }
 
 .sidebar h2{
-    color:#FFD700;
-    margin-bottom:25px;
-    text-align:center;
+    color:#ffd700;
+    margin-bottom:20px;
 }
 
 .sidebar button{
     width:100%;
-    padding:12px;
-    margin:8px 0;
-    background:#1f1f1f;
-    border:none;
-    color:white;
-    cursor:pointer;
-    border-radius:6px;
-    transition:0.2s;
+    padding:10px;
+    margin:5px 0;
 }
 
-.sidebar button:hover{
-    background:#FFD700;
-    color:black;
-}
-
-/* =======================
-   TOPBAR
-======================= */
 .topbar{
     position:fixed;
     left:230px;
     right:0;
-    top:0;
     height:60px;
     background:#141414;
-    border-bottom:1px solid #2a2a2a;
-
     display:flex;
-    align-items:center;
     justify-content:space-between;
-
+    align-items:center;
     padding:0 20px;
-    z-index:10;
 }
 
-/* =======================
-   CHART CONTAINER (IMPORTANT)
-======================= */
 #chart{
     position:fixed;
     left:230px;
     right:320px;
     top:60px;
     bottom:0;
-
     background:#0b0b0b;
-
-    width:calc(100% - 550px);
-    height:calc(100% - 60px);
 }
 
-/* =======================
-   SIGNAL BOX
-======================= */
 .signalBox{
     position:fixed;
     right:0;
     top:60px;
     width:320px;
     bottom:0;
-
     background:#131313;
-    border-left:1px solid #2a2a2a;
     padding:20px;
-    overflow-y:auto;
-}
-
-.signalBox h3{
-    color:#FFD700;
-    margin-bottom:15px;
-}
-
-.signalBox p{
-    font-size:14px;
-}
-
-/* =======================
-   SIGNAL CARDS
-======================= */
-.signalCard{
-    background:#1d1d1d;
-    padding:15px;
-    border-radius:8px;
-    margin-bottom:10px;
-}
-
-.buy{
-    color:#00ff88;
-    font-weight:bold;
-    font-size:18px;
-}
-
-.sell{
-    color:#ff4d4d;
-    font-weight:bold;
-    font-size:18px;
 }
