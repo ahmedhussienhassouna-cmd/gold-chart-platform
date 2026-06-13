@@ -7,6 +7,9 @@
 <title>Golden Trade Platform</title>
 
 <link rel="stylesheet" href="style.css">
+
+<!-- 🔥 TradingView Lightweight Charts -->
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 
 <body>
@@ -16,14 +19,12 @@
 
     <h2>🟡 Golden Trade</h2>
 
-    <!-- 3 ASSETS -->
     <div class="section-title">Assets</div>
 
     <button onclick="changeAsset('GOLD')">🥇 Gold</button>
     <button onclick="changeAsset('EURUSD')">💶 EUR/USD</button>
     <button onclick="changeAsset('BTCUSD')">₿ Bitcoin</button>
 
-    <!-- SERVICES -->
     <div class="section-title">Services</div>
 
     <button onclick="service('daily')">📊 التحليل اليومي</button>
@@ -39,8 +40,8 @@
     <div id="priceBox">Loading...</div>
 </div>
 
-<!-- ================= CHART ================= -->
-<canvas id="chart"></canvas>
+<!-- ================= CHART (IMPORTANT CHANGE) ================= -->
+<div id="chart"></div>
 
 <!-- ================= RIGHT PANEL ================= -->
 <div class="signalBox">
