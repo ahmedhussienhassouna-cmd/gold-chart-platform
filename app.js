@@ -2,7 +2,7 @@ const canvas = document.getElementById("chartCanvas");
 const ctx = canvas.getContext("2d");
 
 // =======================
-// CANVAS FIX (IMPORTANT)
+// CANVAS FIX
 // =======================
 function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
@@ -14,22 +14,49 @@ window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
 // =======================
-// MARKET DATA
+// LIVE DATA (GOLD)
 // =======================
+const API_KEY = "PUT_YOUR_API_KEY_HERE";
+const SYMBOL = "XAU/USD";
+const INTERVAL = "1min";
+
 let candles = [];
-let price = 2400;
 
-// توليد بيانات تجريبية
-for (let i = 0; i < 120; i++) {
+// جلب بيانات الذهب الحقيقية
+async function fetchGoldData() {
 
-    let open = price;
-    let close = price + (Math.random() - 0.5) * 5;
-    let high = Math.max(open, close) + Math.random() * 2;
-    let low = Math.min(open, close) - Math.random() * 2;
+    try {
 
-    candles.push({ open, high, low, close });
-    price = close;
+        const url = https://api.twelvedata.com/time_series?symbol=${SYMBOL}&interval=${INTERVAL}&outputsize=120&apikey=${API_KEY};
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.values) {
+            console.log("API ERROR:", data);
+            return;
+        }
+
+        candles = data.values.reverse().map(c => ({
+            open: parseFloat(c.open),
+            high: parseFloat(c.high),
+            low: parseFloat(c.low),
+            close: parseFloat(c.close)
+        }));
+
+        document.getElementById("priceBox").innerHTML =
+            "🟡 GOLD LIVE (XAUUSD)";
+
+    } catch (err) {
+        console.log("FETCH ERROR:", err);
+    }
 }
+
+// أول تحميل
+fetchGoldData();
+
+// تحديث كل دقيقة
+setInterval(fetchGoldData, 60000);
 
 // =======================
 // IB ENGINE
@@ -56,22 +83,22 @@ function calculateIB() {
 // =======================
 function drawChart() {
 
-    if (!candles.length) return;
+    if (!candles || candles.length === 0) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     let x = 40;
     let candleWidth = 6;
 
-    let all = candles.flatMap(c => [c.high, c.low]);
-    let max = Math.max(...all);
-    let min = Math.min(...all);
+    let allPrices = candles.flatMap(c => [c.high, c.low]);
+    let max = Math.max(...allPrices);
+    let min = Math.min(...allPrices);
 
     function toY(p) {
         return canvas.height - ((p - min) / (max - min)) * canvas.height;
     }
 
-    candles.forEach((c) => {
+    candles.forEach(c => {
 
         let o = toY(c.open);
         let h = toY(c.high);
@@ -118,7 +145,7 @@ function drawChart() {
 }
 
 // =======================
-// LOOP
+// RENDER LOOP
 // =======================
 function render() {
     drawChart();
@@ -135,7 +162,6 @@ window.loadSymbol = function (symbol) {
 };
 
 window.signals = function () {
-    document.getElementById("signal") = document.getElementById("signal");
     document.getElementById("signal").innerHTML = `
         <div class="signalCard">
             <div class="buy">SYSTEM ACTIVE</div>
