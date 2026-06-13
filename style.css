@@ -1,0 +1,104 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#0b0b0b;
+    color:white;
+    overflow:hidden;
+}
+
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    width:230px;
+    height:100vh;
+    background:#131313;
+    border-right:1px solid #2d2d2d;
+    padding:20px;
+}
+
+.sidebar h2{
+    color:#FFD700;
+    margin-bottom:30px;
+    text-align:center;
+}
+
+.sidebar button{
+    width:100%;
+    padding:14px;
+    margin-bottom:10px;
+    background:#1f1f1f;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.3s;
+    font-size:15px;
+}
+
+.sidebar button:hover{
+    background:#FFD700;
+    color:black;
+}
+
+.topbar{
+    position:fixed;
+    left:230px;
+    right:0;
+    height:60px;
+    background:#141414;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 20px;
+    border-bottom:1px solid #2a2a2a;
+    z-index:10;
+}
+
+#tvchart{
+    position:fixed;
+    left:230px;
+    right:320px;
+    top:60px;
+    bottom:0;
+}
+
+.signalBox{
+    position:fixed;
+    top:60px;
+    right:0;
+    width:320px;
+    bottom:0;
+    background:#131313;
+    border-left:1px solid #2d2d2d;
+    padding:20px;
+}
+
+.signalBox h3{
+    color:#FFD700;
+    margin-bottom:20px;
+}
+
+.signalCard{
+    background:#1d1d1d;
+    border-radius:10px;
+    padding:15px;
+    margin-bottom:15px;
+}
+
+.buy{
+    color:#00ff88;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.sell{
+    color:#ff4d4d;
+    font-size:22px;
+    font-weight:bold;
+}
