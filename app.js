@@ -1,13 +1,13 @@
 let widget = null;
 
+// =======================
+// TradingView Chart
+// =======================
 function createChart(symbol){
 
     const container = document.getElementById("chart");
-
-    // مهم جدًا: تنظيف القديم
     container.innerHTML = "";
 
-    // إنشاء جديد
     widget = new TradingView.widget({
         container_id: "chart",
 
@@ -24,23 +24,22 @@ function createChart(symbol){
         locale: "en",
 
         allow_symbol_change: true,
-
         hide_top_toolbar: false,
         hide_side_toolbar: false,
-
         enable_publishing: false,
         withdateranges: true
     });
 }
 
-// =======================
-// أول تشغيل (بعد تحميل الصفحة)
+// أول تشغيل
 window.addEventListener("load", () => {
     createChart("OANDA:XAUUSD");
+    initOverlay();
 });
 
 // =======================
 // تغيير الأصول
+// =======================
 window.changeAsset = function(a){
 
     document.getElementById("activeAsset").innerHTML = a;
@@ -58,9 +57,10 @@ window.changeAsset = function(a){
 
 // =======================
 // Services
+// =======================
 window.service = function(type){
 
-    let msg = {
+    const msg = {
         daily:"📊 Daily Analysis",
         strategy:"💰 Strategy",
         support:"📍 Support",
@@ -68,22 +68,41 @@ window.service = function(type){
     };
 
     document.getElementById("signal").innerHTML = msg[type];
-const overlay = document.getElementById("overlayCanvas");
-const octx = overlay.getContext("2d");
+};
+
+// =======================
+// OVERLAY SYSTEM (FIXED)
+// =======================
+let overlay, octx;
+
+function initOverlay(){
+
+    overlay = document.getElementById("overlayCanvas");
+    if(!overlay) return;
+
+    octx = overlay.getContext("2d");
+
+    resizeOverlay();
+    loopOverlay();
+}
 
 function resizeOverlay(){
+
     const chart = document.getElementById("chart");
+    if(!chart || !overlay) return;
+
     overlay.width = chart.clientWidth;
     overlay.height = chart.clientHeight;
 }
 
 window.addEventListener("resize", resizeOverlay);
-setTimeout(resizeOverlay, 1000);
 
 // =======================
-// FAKE STRUCTURE LEVELS (هنبدلها ببيانات حقيقية بعدين)
+// DRAW LEVELS
 // =======================
 function drawLevels(){
+
+    if(!octx) return;
 
     octx.clearRect(0,0,overlay.width,overlay.height);
 
@@ -96,7 +115,7 @@ function drawLevels(){
 
     levels.forEach(lvl => {
 
-        octx.strokeStyle = "rgba(0,255,100,0.6)";
+        octx.strokeStyle = "rgba(0,255,100,0.5)";
         octx.beginPath();
         octx.moveTo(0, lvl.y);
         octx.lineTo(overlay.width, lvl.y);
@@ -107,11 +126,10 @@ function drawLevels(){
     });
 }
 
-// تحديث مستمر
+// =======================
+// LOOP (خفيف عشان الأداء)
+// =======================
 function loopOverlay(){
     drawLevels();
-    requestAnimationFrame(loopOverlay);
+    setTimeout(loopOverlay, 500);
 }
-loopOverlay();
-    
-};
