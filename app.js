@@ -5,12 +5,12 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 // =======================
-// MARKET DATA (temporary engine)
+// MARKET DATA
 // =======================
 let candles = [];
 let price = 2400;
 
-// توليد بيانات شبه حقيقية (هنبدلها API بعدين)
+// توليد بيانات تجريبية
 for (let i = 0; i < 120; i++) {
 
     let open = price;
@@ -23,11 +23,33 @@ for (let i = 0; i < 120; i++) {
 }
 
 // =======================
+// IB ENGINE
+// =======================
+let ibHigh = null;
+let ibLow = null;
+let IB_SIZE = 20;
+
+function calculateIB() {
+
+    ibHigh = null;
+    ibLow = null;
+
+    for (let i = 0; i < IB_SIZE; i++) {
+        if (!candles[i]) continue;
+
+        ibHigh = ibHigh === null ? candles[i].high : Math.max(ibHigh, candles[i].high);
+        ibLow  = ibLow === null ? candles[i].low  : Math.min(ibLow, candles[i].low);
+    }
+}
+
+// =======================
 // CHART ENGINE
 // =======================
-function drawChart(){
+function drawChart() {
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!candles.length) return;
 
     let x = 60;
     let candleWidth = 6;
@@ -36,11 +58,11 @@ function drawChart(){
     let max = Math.max(...all);
     let min = Math.min(...all);
 
-    function toY(p){
+    function toY(p) {
         return canvas.height - ((p - min) / (max - min)) * canvas.height;
     }
 
-    candles.forEach(c => {
+    candles.forEach((c, index) => {
 
         let o = toY(c.open);
         let h = toY(c.high);
@@ -56,67 +78,68 @@ function drawChart(){
 
         // body
         ctx.fillStyle = c.close > c.open ? "#00ff88" : "#ff4d4d";
-        ctx.fillRect(x-2, Math.min(o,cl), candleWidth, Math.abs(o-cl));
+        ctx.fillRect(x - 2, Math.min(o, cl), candleWidth, Math.abs(o - cl));
 
         x += 10;
     });
-}
 
-// =======================
-// IB ENGINE (REAL STRUCTURE)
-// =======================
-let ibHigh = null;
-let ibLow = null;
-let ibCount = 0;
+    // =======================
+    // رسم IB
+    // =======================
+    calculateIB();
 
-function calculateIB(){
+    if (ibHigh && ibLow) {
+        let yHigh = toY(ibHigh);
+        let yLow = toY(ibLow);
 
-    let IB_SIZE = 20; // أول 20 شمعة
+        ctx.strokeStyle = "lime";
+        ctx.lineWidth = 2;
 
-    for(let i=0;i<IB_SIZE;i++){
-        ibHigh = ibHigh === null ? candles[i].high : Math.max(ibHigh, candles[i].high);
-        ibLow  = ibLow === null ? candles[i].low  : Math.min(ibLow, candles[i].low);
+        ctx.beginPath();
+        ctx.moveTo(0, yHigh);
+        ctx.lineTo(canvas.width, yHigh);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, yLow);
+        ctx.lineTo(canvas.width, yLow);
+        ctx.stroke();
     }
-
-    ctx.strokeStyle = "lime";
-    ctx.beginPath();
-    ctx.moveTo(0, 100);
-    ctx.lineTo(canvas.width, 100);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(0, 200);
-    ctx.lineTo(canvas.width, 200);
-    ctx.stroke();
 }
 
 // =======================
-// RENDER LOOP
+// LOOP
 // =======================
-function render(){
+function render() {
     drawChart();
     requestAnimationFrame(render);
 }
 render();
 
 // =======================
-// UI CONNECTORS (بدون TradingView)
+// UI CONNECTORS
 // =======================
-window.loadSymbol = function(symbol){
+window.loadSymbol = function (symbol) {
     document.getElementById("priceBox").innerHTML =
         "📊 " + symbol + " Loaded";
 };
 
-window.signals = function(){
-    document.getElementById("signal").innerHTML =
-    <div class="signalCard"><div class="buy">SYSTEM ACTIVE</div></div>;
+window.signals = function () {
+    document.getElementById("signal").innerHTML = `
+        <div class="signalCard">
+            <div class="buy">SYSTEM ACTIVE</div>
+        </div>
+    `;
 };
 
-window.liquidity = function(){
-    document.getElementById("signal").innerHTML =
-    <div class="signalCard"><div class="buy">LIQUIDITY MODE (READY)</div></div>;
+window.liquidity = function () {
+    document.getElementById("signal").innerHTML = `
+        <div class="signalCard">
+            <div class="buy">LIQUIDITY MODE READY</div>
+        </div>
+    `;
 };
 
-window.priceAction = function(){};
-window.poc = function(){};
-window.settings = function(){};
+window.priceAction = function () {};
+window.poc = function () {};
+window.settings = function () {};
