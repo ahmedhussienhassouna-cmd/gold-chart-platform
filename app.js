@@ -2,13 +2,13 @@ let chart = null;
 let candleSeries = null;
 
 // =======================
-// INIT CHART
+// INIT CHART (TradingView style)
 // =======================
 function initChart() {
 
-    const chartContainer = document.getElementById("chart");
+    const container = document.getElementById("chart");
 
-    chart = LightweightCharts.createChart(chartContainer, {
+    chart = LightweightCharts.createChart(container, {
         layout: {
             background: { color: '#0b0b0b' },
             textColor: '#ffffff',
@@ -17,8 +17,8 @@ function initChart() {
             vertLines: { color: '#1f1f1f' },
             horzLines: { color: '#1f1f1f' },
         },
-        width: chartContainer.clientWidth,
-        height: chartContainer.clientHeight,
+        width: container.clientWidth,
+        height: container.clientHeight,
     });
 
     candleSeries = chart.addCandlestickSeries();
@@ -27,35 +27,40 @@ function initChart() {
 initChart();
 
 // =======================
-// LIVE DATA (TEMP DEMO → GOLD)
+// GOLD LIVE DATA (XAUUSD)
 // =======================
 async function loadData() {
 
     try {
 
-        // ⚠️ Demo API (بديل مؤقت - نبدله لاحقًا بذهب حقيقي قوي)
-        const url = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=200";
+        const url =
+            "https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1min&outputsize=200&apikey=PUT_YOUR_API_KEY_HERE";
 
         const res = await fetch(url);
         const data = await res.json();
 
-        const candles = data.map(d => ({
-            time: d[0] / 1000,
-            open: parseFloat(d[1]),
-            high: parseFloat(d[2]),
-            low: parseFloat(d[3]),
-            close: parseFloat(d[4]),
+        if (!data.values) {
+            console.log("API ERROR:", data);
+            return;
+        }
+
+        const candles = data.values.reverse().map(c => ({
+            time: new Date(c.datetime).getTime() / 1000,
+            open: parseFloat(c.open),
+            high: parseFloat(c.high),
+            low: parseFloat(c.low),
+            close: parseFloat(c.close),
         }));
 
         candleSeries.setData(candles);
 
-        document.getElementById("priceBox").innerHTML = "🟢 LIVE CHART ACTIVE";
+        document.getElementById("priceBox").innerHTML =
+            "🟡 GOLD LIVE (XAUUSD)";
 
-        // IB demo
         drawIB(candles);
 
     } catch (err) {
-        console.log(err);
+        console.log("FETCH ERROR:", err);
     }
 }
 
@@ -66,9 +71,10 @@ loadData();
 setInterval(loadData, 60000);
 
 // =======================
-// RESIZE SUPPORT
+// RESIZE FIX
 // =======================
 window.addEventListener("resize", () => {
+
     const container = document.getElementById("chart");
 
     chart.applyOptions({
@@ -78,7 +84,7 @@ window.addEventListener("resize", () => {
 });
 
 // =======================
-// IB LOGIC (FIRST RANGE)
+// IB ENGINE (First 20 candles)
 // =======================
 function drawIB(candles) {
 
@@ -89,6 +95,7 @@ function drawIB(candles) {
     let ibHigh = Math.max(...firstRange.map(c => c.high));
     let ibLow = Math.min(...firstRange.map(c => c.low));
 
+    // خطوط IB
     candleSeries.createPriceLine({
         price: ibHigh,
         color: 'lime',
@@ -109,7 +116,7 @@ function drawIB(candles) {
 // =======================
 window.loadSymbol = function (symbol) {
     document.getElementById("priceBox").innerHTML =
-        "📊 " + symbol + " loaded (demo)";
+        "📊 " + symbol + " loaded";
 };
 
 window.signals = function () {
