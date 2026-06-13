@@ -11,39 +11,54 @@ body{
     overflow:hidden;
 }
 
-/* sidebar */
+/* ================= SIDEBAR ================= */
 .sidebar{
     position:fixed;
     left:0;
     top:0;
-    width:230px;
+    width:240px;
     height:100vh;
     background:#131313;
-    padding:20px;
+    padding:15px;
     border-right:1px solid #2a2a2a;
 }
 
 .sidebar h2{
     color:#ffd700;
-    margin-bottom:20px;
+    text-align:center;
+    margin-bottom:15px;
 }
 
+.section-title{
+    color:#888;
+    margin:10px 0 5px;
+    font-size:12px;
+}
+
+/* buttons */
 .sidebar button{
     width:100%;
     padding:10px;
-    margin:5px 0;
+    margin:4px 0;
     background:#1f1f1f;
     border:none;
     color:white;
     cursor:pointer;
+    border-radius:6px;
+    transition:0.2s;
 }
 
-/* topbar */
+.sidebar button:hover{
+    background:#ffd700;
+    color:black;
+}
+
+/* ================= TOPBAR ================= */
 .topbar{
     position:fixed;
-    left:230px;
+    left:240px;
     right:0;
-    height:60px;
+    height:55px;
     background:#141414;
     display:flex;
     justify-content:space-between;
@@ -52,24 +67,24 @@ body{
     border-bottom:1px solid #2a2a2a;
 }
 
-/* chart */
+/* ================= CHART ================= */
 #chart{
     position:fixed;
-    left:230px;
+    left:240px;
     right:320px;
-    top:60px;
+    top:55px;
     bottom:0;
     background:#0b0b0b;
 }
 
-/* signal */
+/* ================= RIGHT PANEL ================= */
 .signalBox{
     position:fixed;
     right:0;
-    top:60px;
+    top:55px;
     width:320px;
     bottom:0;
     background:#131313;
-    padding:20px;
+    padding:15px;
     border-left:1px solid #2a2a2a;
 }
