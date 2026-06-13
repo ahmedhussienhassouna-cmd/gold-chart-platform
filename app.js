@@ -68,4 +68,50 @@ window.service = function(type){
     };
 
     document.getElementById("signal").innerHTML = msg[type];
+const overlay = document.getElementById("overlayCanvas");
+const octx = overlay.getContext("2d");
+
+function resizeOverlay(){
+    const chart = document.getElementById("chart");
+    overlay.width = chart.clientWidth;
+    overlay.height = chart.clientHeight;
+}
+
+window.addEventListener("resize", resizeOverlay);
+setTimeout(resizeOverlay, 1000);
+
+// =======================
+// FAKE STRUCTURE LEVELS (هنبدلها ببيانات حقيقية بعدين)
+// =======================
+function drawLevels(){
+
+    octx.clearRect(0,0,overlay.width,overlay.height);
+
+    const levels = [
+        {y: 120, label:"Liquidity High"},
+        {y: 260, label:"IB High"},
+        {y: 420, label:"Support Zone"},
+        {y: 580, label:"Liquidity Low"}
+    ];
+
+    levels.forEach(lvl => {
+
+        octx.strokeStyle = "rgba(0,255,100,0.6)";
+        octx.beginPath();
+        octx.moveTo(0, lvl.y);
+        octx.lineTo(overlay.width, lvl.y);
+        octx.stroke();
+
+        octx.fillStyle = "#00ff88";
+        octx.fillText(lvl.label, 10, lvl.y - 5);
+    });
+}
+
+// تحديث مستمر
+function loopOverlay(){
+    drawLevels();
+    requestAnimationFrame(loopOverlay);
+}
+loopOverlay();
+    
 };
