@@ -7,24 +7,23 @@
 
 <link rel="stylesheet" href="style.css">
 
-<script src="https://s3.tradingview.com/tv.js"></script>
-
 </head>
 
 <body>
 
+<!-- Sidebar -->
 <div class="sidebar">
 
 <h2>🟡 Golden Trade</h2>
 
 <!-- Symbols -->
-<button onclick="loadSymbol('OANDA:XAUUSD')">🥇 Gold</button>
-<button onclick="loadSymbol('OANDA:EURUSD')">💶 EURUSD</button>
-<button onclick="loadSymbol('BITSTAMP:BTCUSD')">₿ BTCUSD</button>
+<button onclick="loadSymbol('XAUUSD')">🥇 Gold</button>
+<button onclick="loadSymbol('EURUSD')">💶 EURUSD</button>
+<button onclick="loadSymbol('BTCUSD')">₿ BTCUSD</button>
 
 <hr>
 
-<!-- Tools (تم الربط هنا) -->
+<!-- Tools -->
 <button onclick="signals()">📊 Signals</button>
 <button onclick="liquidity()">📉 Liquidity</button>
 <button onclick="priceAction()">📐 Price Channel</button>
@@ -33,23 +32,19 @@
 
 </div>
 
+<!-- Topbar -->
 <div class="topbar">
-
 <div>🟢 LIVE</div>
 <div id="priceBox">Loading...</div>
-
 </div>
 
-<div id="tvchart"></div>
+<!-- 🔥 CANVAS CHART (بديل TradingView) -->
+<canvas id="chartCanvas"></canvas>
 
+<!-- Signal Box -->
 <div class="signalBox">
-
 <h3>Today's Signal</h3>
-
-<p id="signal">
-Waiting...
-</p>
-
+<p id="signal">Waiting...</p>
 </div>
 
 <script src="app.js"></script>
