@@ -1,8 +1,17 @@
 const canvas = document.getElementById("chartCanvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// =======================
+// CANVAS FIX (IMPORTANT)
+// =======================
+function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
 // =======================
 // MARKET DATA
@@ -47,11 +56,11 @@ function calculateIB() {
 // =======================
 function drawChart() {
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     if (!candles.length) return;
 
-    let x = 60;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let x = 40;
     let candleWidth = 6;
 
     let all = candles.flatMap(c => [c.high, c.low]);
@@ -62,7 +71,7 @@ function drawChart() {
         return canvas.height - ((p - min) / (max - min)) * canvas.height;
     }
 
-    candles.forEach((c, index) => {
+    candles.forEach((c) => {
 
         let o = toY(c.open);
         let h = toY(c.high);
@@ -84,11 +93,12 @@ function drawChart() {
     });
 
     // =======================
-    // رسم IB
+    // IB LINES
     // =======================
     calculateIB();
 
     if (ibHigh && ibLow) {
+
         let yHigh = toY(ibHigh);
         let yLow = toY(ibLow);
 
@@ -117,7 +127,7 @@ function render() {
 render();
 
 // =======================
-// UI CONNECTORS
+// UI
 // =======================
 window.loadSymbol = function (symbol) {
     document.getElementById("priceBox").innerHTML =
@@ -125,6 +135,7 @@ window.loadSymbol = function (symbol) {
 };
 
 window.signals = function () {
+    document.getElementById("signal") = document.getElementById("signal");
     document.getElementById("signal").innerHTML = `
         <div class="signalCard">
             <div class="buy">SYSTEM ACTIVE</div>
