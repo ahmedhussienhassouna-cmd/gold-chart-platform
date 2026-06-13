@@ -65,20 +65,19 @@ body{
     z-index:20;
 }
 
-/* ================= CHART CANVAS (IMPORTANT FIX) ================= */
-#chartCanvas{
+/* ================= CHART (IMPORTANT FIX) ================= */
+#chart{
     position:fixed;
     left:230px;
     right:320px;
     top:60px;
     bottom:0;
 
+    background:#0b0b0b;
+
+    /* مهم جداً عشان Lightweight Charts */
     width:calc(100% - 550px);
     height:calc(100% - 60px);
-
-    background:#0b0b0b;
-    display:block;
-    z-index:1;
 }
 
 /* ================= SIGNAL BOX ================= */
