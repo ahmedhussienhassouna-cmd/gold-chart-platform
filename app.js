@@ -1,38 +1,21 @@
-let chart;
-let series;
-
-// =======================
-// INIT CHART (SAFE VERSION)
-// =======================
 window.addEventListener("load", () => {
 
     const container = document.getElementById("chart");
 
-    if (!container) {
-        console.log("NO CHART CONTAINER");
-        return;
-    }
-
-    chart = LightweightCharts.createChart(container, {
+    const chart = LightweightCharts.createChart(container, {
         layout: {
             background: { color: "#0b0b0b" },
-            textColor: "#ffffff",
+            textColor: "#fff"
         },
         width: container.clientWidth,
-        height: container.clientHeight,
+        height: container.clientHeight
     });
 
-    series = chart.addCandlestickSeries();
+    // ✅ FIX FOR V5+
+    const series = chart.addSeries(LightweightCharts.CandlestickSeries);
 
-    generateData();
-});
+    const data = [];
 
-// =======================
-// FAKE GOLD DATA (STABLE)
-// =======================
-function generateData() {
-
-    let data = [];
     let price = 2400;
 
     for (let i = 0; i < 100; i++) {
@@ -56,15 +39,4 @@ function generateData() {
     series.setData(data);
 
     document.getElementById("priceBox").innerHTML = "🟡 GOLD READY";
-}
-
-// =======================
-// UI
-// =======================
-window.loadSymbol = function () {
-    document.getElementById("priceBox").innerHTML = "XAUUSD LOADED";
-};
-
-window.signals = function () {
-    document.getElementById("signal").innerHTML = "SYSTEM ACTIVE 🔥";
-};
+});
