@@ -20,41 +20,13 @@ body{
     height:100vh;
     background:#131313;
     padding:15px;
-    border-right:1px solid #2a2a2a;
-}
-
-.sidebar h2{
-    color:#ffd700;
-    text-align:center;
-    margin-bottom:15px;
-}
-
-.section-title{
-    color:#888;
-    font-size:12px;
-    margin:10px 0 5px;
-}
-
-.sidebar button{
-    width:100%;
-    padding:10px;
-    margin:4px 0;
-    background:#1f1f1f;
-    border:none;
-    color:white;
-    border-radius:6px;
-    cursor:pointer;
-}
-
-.sidebar button:hover{
-    background:#ffd700;
-    color:black;
 }
 
 /* TOPBAR */
 .topbar{
     position:fixed;
     left:240px;
+    top:0;
     right:0;
     height:55px;
     background:#141414;
@@ -64,13 +36,13 @@ body{
     padding:0 20px;
 }
 
-/* CHART */
+/* 🔥 FIXED CHART */
 #chart{
     position:fixed;
     left:240px;
-    right:320px;
     top:55px;
-    bottom:0;
+    width: calc(100vw - 560px);
+    height: calc(100vh - 55px);
     background:#0b0b0b;
 }
 
