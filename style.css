@@ -2,7 +2,7 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family:Arial;
 }
 
 body{
@@ -11,7 +11,7 @@ body{
     overflow:hidden;
 }
 
-/* ================= SIDEBAR ================= */
+/* sidebar */
 .sidebar{
     position:fixed;
     left:0;
@@ -19,42 +19,36 @@ body{
     width:230px;
     height:100vh;
     background:#131313;
-    border-right:1px solid #2d2d2d;
     padding:20px;
-    overflow-y:auto;
-    z-index:10;
+    border-right:1px solid #2a2a2a;
 }
 
 .sidebar h2{
-    color:#FFD700;
-    margin-bottom:30px;
-    text-align:center;
+    color:#ffd700;
+    margin-bottom:20px;
 }
 
 .sidebar button{
     width:100%;
-    padding:14px;
-    margin-bottom:10px;
+    padding:12px;
+    margin:8px 0;
     background:#1f1f1f;
-    color:white;
     border:none;
-    border-radius:8px;
+    color:white;
     cursor:pointer;
-    transition:.3s;
-    font-size:15px;
+    border-radius:6px;
 }
 
 .sidebar button:hover{
-    background:#FFD700;
+    background:#ffd700;
     color:black;
 }
 
-/* ================= TOPBAR ================= */
+/* topbar */
 .topbar{
     position:fixed;
     left:230px;
     right:0;
-    top:0;
     height:60px;
     background:#141414;
     display:flex;
@@ -62,58 +56,26 @@ body{
     align-items:center;
     padding:0 20px;
     border-bottom:1px solid #2a2a2a;
-    z-index:20;
 }
 
-/* ================= CHART (IMPORTANT FIX) ================= */
+/* chart */
 #chart{
     position:fixed;
     left:230px;
     right:320px;
     top:60px;
     bottom:0;
-
     background:#0b0b0b;
-
-    /* مهم جداً عشان Lightweight Charts */
-    width:calc(100% - 550px);
-    height:calc(100% - 60px);
 }
 
-/* ================= SIGNAL BOX ================= */
+/* signal */
 .signalBox{
     position:fixed;
-    top:60px;
     right:0;
+    top:60px;
     width:320px;
     bottom:0;
     background:#131313;
-    border-left:1px solid #2d2d2d;
+    border-left:1px solid #2a2a2a;
     padding:20px;
-    overflow-y:auto;
-    z-index:10;
-}
-
-.signalBox h3{
-    color:#FFD700;
-    margin-bottom:20px;
-}
-
-.signalCard{
-    background:#1d1d1d;
-    border-radius:10px;
-    padding:15px;
-    margin-bottom:15px;
-}
-
-.buy{
-    color:#00ff88;
-    font-size:22px;
-    font-weight:bold;
-}
-
-.sell{
-    color:#ff4d4d;
-    font-size:22px;
-    font-weight:bold;
 }
