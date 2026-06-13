@@ -4,32 +4,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Golden Trade Platform</title>
-
-<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+<!-- ================= SIDEBAR ================= -->
 <div class="sidebar">
-<h2>🟡 GOLD</h2>
-<button onclick="loadSymbol()">XAUUSD</button>
-<button onclick="signals()">Signals</button>
+
+    <h2>🟡 Golden Trade</h2>
+
+    <!-- 3 ASSETS -->
+    <div class="section-title">Assets</div>
+
+    <button onclick="changeAsset('GOLD')">🥇 Gold</button>
+    <button onclick="changeAsset('EURUSD')">💶 EUR/USD</button>
+    <button onclick="changeAsset('BTCUSD')">₿ Bitcoin</button>
+
+    <!-- SERVICES -->
+    <div class="section-title">Services</div>
+
+    <button onclick="service('daily')">📊 التحليل اليومي</button>
+    <button onclick="service('strategy')">💰 إستراتيجية فلوس</button>
+    <button onclick="service('support')">📍 الدعم</button>
+    <button onclick="service('settings')">⚙️ Settings</button>
+
 </div>
 
+<!-- ================= TOP BAR ================= -->
 <div class="topbar">
-<div>LIVE</div>
-<div id="priceBox">Loading...</div>
+    <div id="activeAsset">GOLD</div>
+    <div id="priceBox">Loading...</div>
 </div>
 
-<div id="chart"></div>
+<!-- ================= CHART ================= -->
+<canvas id="chart"></canvas>
 
+<!-- ================= RIGHT PANEL ================= -->
 <div class="signalBox">
-<h3>Signals</h3>
-<p id="signal">Waiting...</p>
+    <h3>Panel</h3>
+    <p id="signal">Waiting...</p>
 </div>
 
 <script src="app.js"></script>
