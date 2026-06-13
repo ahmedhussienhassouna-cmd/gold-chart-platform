@@ -1,12 +1,25 @@
-let chart = null;
-let candleSeries = null;
+let chart;
+let candleSeries;
 
 // =======================
-// INIT CHART (TradingView style)
+// START SAFE (IMPORTANT)
+// =======================
+window.addEventListener("load", () => {
+    initChart();
+    loadData();
+});
+
+// =======================
+// INIT CHART
 // =======================
 function initChart() {
 
     const container = document.getElementById("chart");
+
+    if (!container) {
+        console.log("❌ chart container not found");
+        return;
+    }
 
     chart = LightweightCharts.createChart(container, {
         layout: {
@@ -17,6 +30,12 @@ function initChart() {
             vertLines: { color: '#1f1f1f' },
             horzLines: { color: '#1f1f1f' },
         },
+        rightPriceScale: {
+            borderColor: '#2b2b2b',
+        },
+        timeScale: {
+            borderColor: '#2b2b2b',
+        },
         width: container.clientWidth,
         height: container.clientHeight,
     });
@@ -24,33 +43,32 @@ function initChart() {
     candleSeries = chart.addCandlestickSeries();
 }
 
-initChart();
-
 // =======================
-// GOLD LIVE DATA (XAUUSD)
+// LIVE GOLD DATA (FIXED)
 // =======================
 async function loadData() {
 
     try {
 
-        const url =
-            "https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1min&outputsize=200&apikey=PUT_YOUR_API_KEY_HERE";
+        const url = "https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1min&outputsize=200&apikey=PUT_YOUR_API_KEY_HERE";
 
         const res = await fetch(url);
         const data = await res.json();
 
-        if (!data.values) {
-            console.log("API ERROR:", data);
+        if (!data || !data.values) {
+            console.log("❌ API ERROR:", data);
             return;
         }
 
-        const candles = data.values.reverse().map(c => ({
-            time: new Date(c.datetime).getTime() / 1000,
-            open: parseFloat(c.open),
-            high: parseFloat(c.high),
-            low: parseFloat(c.low),
-            close: parseFloat(c.close),
-        }));
+        const candles = data.values
+            .reverse()
+            .map(c => ({
+                time: Math.floor(new Date(c.datetime).getTime() / 1000),
+                open: parseFloat(c.open),
+                high: parseFloat(c.high),
+                low: parseFloat(c.low),
+                close: parseFloat(c.close),
+            }));
 
         candleSeries.setData(candles);
 
@@ -60,20 +78,16 @@ async function loadData() {
         drawIB(candles);
 
     } catch (err) {
-        console.log("FETCH ERROR:", err);
+        console.log("❌ FETCH ERROR:", err);
     }
 }
 
-// أول تحميل
-loadData();
-
-// تحديث كل دقيقة
-setInterval(loadData, 60000);
-
 // =======================
-// RESIZE FIX
+// RESIZE FIX (VERY IMPORTANT)
 // =======================
 window.addEventListener("resize", () => {
+
+    if (!chart) return;
 
     const container = document.getElementById("chart");
 
@@ -84,39 +98,40 @@ window.addEventListener("resize", () => {
 });
 
 // =======================
-// IB ENGINE (First 20 candles)
+// IB ENGINE
 // =======================
 function drawIB(candles) {
 
     if (!candles || candles.length < 20) return;
 
-    const firstRange = candles.slice(0, 20);
+    const range = candles.slice(0, 20);
 
-    let ibHigh = Math.max(...firstRange.map(c => c.high));
-    let ibLow = Math.min(...firstRange.map(c => c.low));
+    const ibHigh = Math.max(...range.map(c => c.high));
+    const ibLow = Math.min(...range.map(c => c.low));
 
-    // خطوط IB
+    // IB HIGH
     candleSeries.createPriceLine({
         price: ibHigh,
         color: 'lime',
         lineWidth: 2,
-        title: 'IB HIGH'
+        title: 'IB HIGH',
     });
 
+    // IB LOW
     candleSeries.createPriceLine({
         price: ibLow,
         color: 'red',
         lineWidth: 2,
-        title: 'IB LOW'
+        title: 'IB LOW',
     });
 }
 
 // =======================
-// UI FUNCTIONS
+// UI
 // =======================
 window.loadSymbol = function (symbol) {
     document.getElementById("priceBox").innerHTML =
-        "📊 " + symbol + " loaded";
+        "📊 " + symbol;
 };
 
 window.signals = function () {
