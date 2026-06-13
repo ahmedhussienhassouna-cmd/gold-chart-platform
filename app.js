@@ -1,155 +1,71 @@
 let chart;
-let candleSeries;
-
-// =======================
-// START SAFE (IMPORTANT)
-// =======================
-window.addEventListener("load", () => {
-    initChart();
-    loadData();
-});
+let series;
 
 // =======================
 // INIT CHART
 // =======================
-function initChart() {
+window.addEventListener("load", () => {
 
     const container = document.getElementById("chart");
-
-    if (!container) {
-        console.log("❌ chart container not found");
-        return;
-    }
 
     chart = LightweightCharts.createChart(container, {
         layout: {
-            background: { color: '#0b0b0b' },
-            textColor: '#ffffff',
-        },
-        grid: {
-            vertLines: { color: '#1f1f1f' },
-            horzLines: { color: '#1f1f1f' },
-        },
-        rightPriceScale: {
-            borderColor: '#2b2b2b',
-        },
-        timeScale: {
-            borderColor: '#2b2b2b',
+            background: { color: "#0b0b0b" },
+            textColor: "#fff"
         },
         width: container.clientWidth,
-        height: container.clientHeight,
+        height: container.clientHeight
     });
 
-    candleSeries = chart.addCandlestickSeries();
-}
+    series = chart.addCandlestickSeries();
 
-// =======================
-// LIVE GOLD DATA (FIXED)
-// =======================
-async function loadData() {
-
-    try {
-
-        const url = "https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1min&outputsize=200&apikey=PUT_YOUR_API_KEY_HERE";
-
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (!data || !data.values) {
-            console.log("❌ API ERROR:", data);
-            return;
-        }
-
-        const candles = data.values
-            .reverse()
-            .map(c => ({
-                time: Math.floor(new Date(c.datetime).getTime() / 1000),
-                open: parseFloat(c.open),
-                high: parseFloat(c.high),
-                low: parseFloat(c.low),
-                close: parseFloat(c.close),
-            }));
-
-        candleSeries.setData(candles);
-
-        document.getElementById("priceBox").innerHTML =
-            "🟡 GOLD LIVE (XAUUSD)";
-
-        drawIB(candles);
-
-    } catch (err) {
-        console.log("❌ FETCH ERROR:", err);
-    }
-}
-
-// =======================
-// RESIZE FIX (VERY IMPORTANT)
-// =======================
-window.addEventListener("resize", () => {
-
-    if (!chart) return;
-
-    const container = document.getElementById("chart");
-
-    chart.applyOptions({
-        width: container.clientWidth,
-        height: container.clientHeight,
-    });
+    loadData();
 });
 
 // =======================
-// IB ENGINE
+// FAKE GOLD DATA (Guaranteed working)
 // =======================
-function drawIB(candles) {
+function loadData() {
 
-    if (!candles || candles.length < 20) return;
+    let candles = [];
+    let price = 2400;
 
-    const range = candles.slice(0, 20);
+    for (let i = 0; i < 100; i++) {
 
-    const ibHigh = Math.max(...range.map(c => c.high));
-    const ibLow = Math.min(...range.map(c => c.low));
+        let open = price;
+        let close = price + (Math.random() - 0.5) * 10;
+        let high = Math.max(open, close) + Math.random() * 5;
+        let low = Math.min(open, close) - Math.random() * 5;
 
-    // IB HIGH
-    candleSeries.createPriceLine({
-        price: ibHigh,
-        color: 'lime',
-        lineWidth: 2,
-        title: 'IB HIGH',
-    });
+        candles.push({
+            time: 1700000000 + i * 60,
+            open,
+            high,
+            low,
+            close
+        });
 
-    // IB LOW
-    candleSeries.createPriceLine({
-        price: ibLow,
-        color: 'red',
-        lineWidth: 2,
-        title: 'IB LOW',
-    });
+        price = close;
+    }
+
+    series.setData(candles);
+
+    document.getElementById("priceBox").innerHTML = "🟡 GOLD READY";
 }
 
 // =======================
 // UI
 // =======================
-window.loadSymbol = function (symbol) {
-    document.getElementById("priceBox").innerHTML =
-        "📊 " + symbol;
+window.loadSymbol = function(symbol){
+    document.getElementById("priceBox").innerHTML = "📊 " + symbol;
 };
 
-window.signals = function () {
-    document.getElementById("signal").innerHTML = `
-        <div class="signalCard">
-            <div class="buy">SYSTEM ACTIVE</div>
-        </div>
-    `;
+window.signals = function(){
+    document.getElementById("signal").innerHTML =
+        "SYSTEM ACTIVE 🔥";
 };
 
-window.liquidity = function () {
-    document.getElementById("signal").innerHTML = `
-        <div class="signalCard">
-            <div class="buy">LIQUIDITY MODE READY</div>
-        </div>
-    `;
+window.liquidity = function(){
+    document.getElementById("signal").innerHTML =
+        "LIQUIDITY MODE 📉";
 };
-
-window.priceAction = function () {};
-window.poc = function () {};
-window.settings = function () {};
