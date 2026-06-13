@@ -1,12 +1,14 @@
-const canvas = document.getElementById("chart");
+const canvas = document.createElement("canvas");
+document.getElementById("chart").appendChild(canvas);
 const ctx = canvas.getContext("2d");
 
 // =======================
 // RESIZE FIX
 // =======================
 function resize(){
-    canvas.width = window.innerWidth - 560;
-    canvas.height = window.innerHeight - 55;
+    const box = document.getElementById("chart");
+    canvas.width = box.clientWidth;
+    canvas.height = box.clientHeight;
 }
 window.addEventListener("resize", resize);
 resize();
@@ -16,10 +18,7 @@ resize();
 // =======================
 let candles = [];
 
-// =======================
-// FAKE + SAFE DATA ENGINE (NO API CRASH)
-// =======================
-function generate(){
+function generateData(){
 
     candles = [];
 
@@ -40,7 +39,7 @@ function generate(){
 }
 
 // =======================
-// DRAW CHART
+// DRAW
 // =======================
 function draw(){
 
@@ -82,27 +81,23 @@ function loop(){
 }
 loop();
 
-// =======================
-// START
-// =======================
-generate();
-setInterval(generate, 1000);
+generateData();
 
 // =======================
 // UI
 // =======================
-window.changeAsset = function(asset){
-    document.getElementById("activeAsset").innerHTML = asset;
+window.changeAsset = function(a){
+    document.getElementById("activeAsset").innerHTML = a;
 };
 
 window.service = function(type){
 
-    let msg = "";
+    let msg = {
+        daily:"📊 Daily Analysis",
+        strategy:"💰 Strategy",
+        support:"📍 Support",
+        settings:"⚙️ Settings"
+    };
 
-    if(type === "daily") msg = "📊 التحليل اليومي";
-    if(type === "strategy") msg = "💰 إستراتيجية فلوس";
-    if(type === "support") msg = "📍 الدعم";
-    if(type === "settings") msg = "⚙️ Settings";
-
-    document.getElementById("signal").innerHTML = msg;
+    document.getElementById("signal").innerHTML = msg[type];
 };
