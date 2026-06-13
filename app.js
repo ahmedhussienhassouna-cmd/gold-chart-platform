@@ -2,7 +2,7 @@ const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 
 // =======================
-// RESIZE
+// RESIZE FIX
 // =======================
 function resize(){
     canvas.width = window.innerWidth - 560;
@@ -12,56 +12,14 @@ window.addEventListener("resize", resize);
 resize();
 
 // =======================
-// API KEY
-// =======================
-const API_KEY = "47d321948be348c68c998b1b08dbecea";
-
-// =======================
 // DATA
 // =======================
 let candles = [];
 
 // =======================
-// FETCH LIVE GOLD
+// FAKE + SAFE DATA ENGINE (NO API CRASH)
 // =======================
-async function loadLive(){
-
-    try{
-
-        const url = https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1min&outputsize=120&apikey=${API_KEY};
-
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if(!data.values){
-            console.log("API ERROR:", data);
-
-            // 🔥 fallback عشان الشارت مايقعش
-            generateFake();
-            return;
-        }
-
-        candles = data.values.map(c => ({
-            open: parseFloat(c.open),
-            high: parseFloat(c.high),
-            low: parseFloat(c.low),
-            close: parseFloat(c.close)
-        })).reverse();
-
-        document.getElementById("priceBox").innerHTML = "🟡 LIVE GOLD";
-
-    } catch(err){
-        console.log("FETCH ERROR:", err);
-
-        // 🔥 fallback مهم جدًا
-        generateFake();
-    }
-}
-
-// =======================
-// FALLBACK DATA
-// =======================
-function generateFake(){
+function generate(){
 
     candles = [];
 
@@ -70,7 +28,7 @@ function generateFake(){
     for(let i=0;i<120;i++){
 
         let open = price;
-        let close = price + (Math.random()-0.5)*5;
+        let close = price + (Math.random()-0.5)*6;
         let high = Math.max(open,close)+Math.random()*2;
         let low = Math.min(open,close)-Math.random()*2;
 
@@ -78,11 +36,11 @@ function generateFake(){
         price = close;
     }
 
-    document.getElementById("priceBox").innerHTML = "🟡 DEMO MODE";
+    document.getElementById("priceBox").innerHTML = "🟡 LIVE SIMULATION";
 }
 
 // =======================
-// DRAW
+// DRAW CHART
 // =======================
 function draw(){
 
@@ -109,12 +67,7 @@ function draw(){
         ctx.stroke();
 
         ctx.fillStyle = c.close > c.open ? "#00ff88" : "#ff4d4d";
-        ctx.fillRect(
-            x-2,
-            Math.min(y(c.open),y(c.close)),
-            w,
-            Math.abs(y(c.open)-y(c.close))
-        );
+        ctx.fillRect(x-2,Math.min(y(c.open),y(c.close)),w,Math.abs(y(c.open)-y(c.close)));
 
         x += 10;
     });
@@ -132,15 +85,14 @@ loop();
 // =======================
 // START
 // =======================
-loadLive();
-setInterval(loadLive, 60000);
+generate();
+setInterval(generate, 1000);
 
 // =======================
-// UI ACTIONS
+// UI
 // =======================
 window.changeAsset = function(asset){
     document.getElementById("activeAsset").innerHTML = asset;
-    document.getElementById("priceBox").innerHTML = asset + " LOADED";
 };
 
 window.service = function(type){
@@ -149,7 +101,7 @@ window.service = function(type){
 
     if(type === "daily") msg = "📊 التحليل اليومي";
     if(type === "strategy") msg = "💰 إستراتيجية فلوس";
-    if(type === "support") msg = "📍 الدعم الفني";
+    if(type === "support") msg = "📍 الدعم";
     if(type === "settings") msg = "⚙️ Settings";
 
     document.getElementById("signal").innerHTML = msg;
