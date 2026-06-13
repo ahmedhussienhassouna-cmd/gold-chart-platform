@@ -1,93 +1,68 @@
-const canvas = document.createElement("canvas");
-document.getElementById("chart").appendChild(canvas);
-const ctx = canvas.getContext("2d");
+const container = document.getElementById("chart");
 
 // =======================
-// RESIZE FIX
+// FIX: نظّف أي محتوى قديم (canvas)
 // =======================
-function resize(){
-    const box = document.getElementById("chart");
-    canvas.width = box.clientWidth;
-    canvas.height = box.clientHeight;
-}
-window.addEventListener("resize", resize);
-resize();
+container.innerHTML = "";
 
 // =======================
-// DATA
+// TradingView Widget
 // =======================
-let candles = [];
+new TradingView.widget({
+    container_id: "chart",
 
-function generateData(){
+    width: "100%",
+    height: "100%",
 
-    candles = [];
+    symbol: "OANDA:XAUUSD",   // الذهب الحقيقي
+    interval: "1",
 
-    let price = 2400;
+    timezone: "Etc/UTC",
 
-    for(let i=0;i<120;i++){
+    theme: "dark",
 
-        let open = price;
-        let close = price + (Math.random()-0.5)*6;
-        let high = Math.max(open,close)+Math.random()*2;
-        let low = Math.min(open,close)-Math.random()*2;
+    style: "1",
 
-        candles.push({open,high,low,close});
-        price = close;
-    }
+    locale: "en",
 
-    document.getElementById("priceBox").innerHTML = "🟡 LIVE SIMULATION";
-}
+    allow_symbol_change: true,
 
-// =======================
-// DRAW
-// =======================
-function draw(){
+    hide_top_toolbar: false,
+    hide_side_toolbar: false,
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    enable_publishing: false,
 
-    if(!candles.length) return;
-
-    let x = 40;
-    let w = 6;
-
-    let max = Math.max(...candles.map(c=>c.high));
-    let min = Math.min(...candles.map(c=>c.low));
-
-    function y(p){
-        return canvas.height - ((p-min)/(max-min))*canvas.height;
-    }
-
-    candles.forEach(c=>{
-
-        ctx.strokeStyle="#888";
-        ctx.beginPath();
-        ctx.moveTo(x,y(c.high));
-        ctx.lineTo(x,y(c.low));
-        ctx.stroke();
-
-        ctx.fillStyle = c.close > c.open ? "#00ff88" : "#ff4d4d";
-        ctx.fillRect(x-2,Math.min(y(c.open),y(c.close)),w,Math.abs(y(c.open)-y(c.close)));
-
-        x += 10;
-    });
-}
+    withdateranges: true
+});
 
 // =======================
-// LOOP
-// =======================
-function loop(){
-    draw();
-    requestAnimationFrame(loop);
-}
-loop();
-
-generateData();
-
-// =======================
-// UI
+// UI (نفس وظائفك بدون تغيير)
 // =======================
 window.changeAsset = function(a){
     document.getElementById("activeAsset").innerHTML = a;
+
+    let symbolMap = {
+        GOLD: "OANDA:XAUUSD",
+        EURUSD: "FX:EURUSD",
+        BTCUSD: "BINANCE:BTCUSDT"
+    };
+
+    if(symbolMap[a]){
+        // إعادة تحميل الشارت بسيمبول جديد
+        new TradingView.widget({
+            container_id: "chart",
+            width: "100%",
+            height: "100%",
+            symbol: symbolMap[a],
+            interval: "1",
+            theme: "dark",
+            style: "1",
+            locale: "en",
+            allow_symbol_change: true,
+            hide_top_toolbar: false,
+            hide_side_toolbar: false
+        });
+    }
 };
 
 window.service = function(type){
