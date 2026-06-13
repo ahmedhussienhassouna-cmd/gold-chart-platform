@@ -17,30 +17,25 @@
 
 <h2>🟡 Golden Trade</h2>
 
+<!-- Symbols -->
 <button onclick="loadSymbol('OANDA:XAUUSD')">🥇 Gold</button>
-
 <button onclick="loadSymbol('OANDA:EURUSD')">💶 EURUSD</button>
-
 <button onclick="loadSymbol('BITSTAMP:BTCUSD')">₿ BTCUSD</button>
 
 <hr>
 
-<button>📊 Signals</button>
-
-<button>📉 Liquidity</button>
-
-<button>📐 Price Channel</button>
-
-<button>🎯 Moving POC</button>
-
-<button>⚙ Settings</button>
+<!-- Tools (تم الربط هنا) -->
+<button onclick="signals()">📊 Signals</button>
+<button onclick="liquidity()">📉 Liquidity</button>
+<button onclick="priceAction()">📐 Price Channel</button>
+<button onclick="poc()">🎯 Moving POC</button>
+<button onclick="settings()">⚙️ Settings</button>
 
 </div>
 
 <div class="topbar">
 
 <div>🟢 LIVE</div>
-
 <div id="priceBox">Loading...</div>
 
 </div>
