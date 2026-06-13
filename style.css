@@ -23,7 +23,7 @@ body{
 
     display:flex;
     flex-direction:column;
-    align-items:stretch; /* مهم جدًا */
+    align-items:stretch;
 }
 
 /* TOPBAR */
@@ -40,14 +40,17 @@ body{
     padding:0 20px;
 }
 
-/* CHART */
+/* CHART (🔥 FIX IMPORTANT FOR TRADINGVIEW) */
 #chart{
     position:fixed;
     left:240px;
     top:55px;
-    width: calc(100vw - 560px);
-    height: calc(100vh - 55px);
+    right:320px;
+    bottom:0;
+
     background:#0b0b0b;
+
+    overflow:hidden;   /* مهم جداً */
 }
 
 /* RIGHT PANEL */
@@ -69,7 +72,7 @@ body{
     letter-spacing:1px;
 }
 
-/* BUTTONS (IMPORTANT FIX) */
+/* BUTTONS */
 .sidebar button{
     width:100%;
     display:block;
@@ -86,4 +89,10 @@ body{
 .sidebar button:hover{
     background:#ffd700;
     color:black;
+}
+
+/* 🔥 IMPORTANT FIX FOR TRADINGVIEW IFRAME */
+#chart iframe{
+    width:100% !important;
+    height:100% !important;
 }
