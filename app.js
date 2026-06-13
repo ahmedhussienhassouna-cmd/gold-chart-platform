@@ -12,28 +12,44 @@ window.addEventListener("resize", resize);
 resize();
 
 // =======================
+// API KEY
+// =======================
+const API_KEY = "47d321948be348c68c998b1b08dbecea";
+
+// =======================
 // DATA
 // =======================
 let candles = [];
 
-function generate(){
+// =======================
+// FETCH LIVE GOLD
+// =======================
+async function loadLive(){
 
-    candles = [];
+    try{
 
-    let price = 2400;
+        const url = https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=1min&outputsize=120&apikey=${API_KEY};
 
-    for(let i=0;i<120;i++){
+        const res = await fetch(url);
+        const data = await res.json();
 
-        let open = price;
-        let close = price + (Math.random()-0.5)*8;
-        let high = Math.max(open,close)+Math.random()*3;
-        let low = Math.min(open,close)-Math.random()*3;
+        if(!data.values){
+            console.log("API ERROR:", data);
+            return;
+        }
 
-        candles.push({open,high,low,close});
-        price = close;
+        candles = data.values.map(c => ({
+            open: parseFloat(c.open),
+            high: parseFloat(c.high),
+            low: parseFloat(c.low),
+            close: parseFloat(c.close)
+        })).reverse();
+
+        document.getElementById("priceBox").innerHTML = "🟡 LIVE GOLD";
+
+    } catch(err){
+        console.log("FETCH ERROR:", err);
     }
-
-    document.getElementById("priceBox").innerHTML = "GOLD READY";
 }
 
 // =======================
@@ -63,8 +79,13 @@ function draw(){
         ctx.lineTo(x,y(c.low));
         ctx.stroke();
 
-        ctx.fillStyle = c.close>c.open ? "#00ff88" : "#ff4d4d";
-        ctx.fillRect(x-2,Math.min(y(c.open),y(c.close)),w,Math.abs(y(c.open)-y(c.close)));
+        ctx.fillStyle = c.close > c.open ? "#00ff88" : "#ff4d4d";
+        ctx.fillRect(
+            x-2,
+            Math.min(y(c.open),y(c.close)),
+            w,
+            Math.abs(y(c.open)-y(c.close))
+        );
 
         x += 10;
     });
@@ -79,7 +100,13 @@ function loop(){
 }
 loop();
 
-generate();
+// =======================
+// START LIVE DATA
+// =======================
+loadLive();
+
+// تحديث كل دقيقة
+setInterval(loadLive, 60000);
 
 // =======================
 // UI ACTIONS
