@@ -11,6 +11,7 @@ body{
     overflow:hidden;
 }
 
+/* ================= SIDEBAR ================= */
 .sidebar{
     position:fixed;
     left:0;
@@ -20,6 +21,7 @@ body{
     background:#131313;
     border-right:1px solid #2d2d2d;
     padding:20px;
+    overflow-y:auto;
 }
 
 .sidebar h2{
@@ -46,6 +48,7 @@ body{
     color:black;
 }
 
+/* ================= TOPBAR ================= */
 .topbar{
     position:fixed;
     left:230px;
@@ -60,6 +63,7 @@ body{
     z-index:10;
 }
 
+/* ================= CHART ================= */
 #tvchart{
     position:fixed;
     left:230px;
@@ -68,6 +72,7 @@ body{
     bottom:0;
 }
 
+/* ================= SIGNAL BOX ================= */
 .signalBox{
     position:fixed;
     top:60px;
@@ -77,6 +82,7 @@ body{
     background:#131313;
     border-left:1px solid #2d2d2d;
     padding:20px;
+    overflow-y:auto;
 }
 
 .signalBox h3{
@@ -101,4 +107,71 @@ body{
     color:#ff4d4d;
     font-size:22px;
     font-weight:bold;
+}
+
+/* ================= MOBILE LANDSCAPE ================= */
+@media (max-width: 900px) and (orientation: landscape){
+
+    .sidebar{
+        width:140px;
+        padding:10px;
+    }
+
+    .sidebar h2{
+        font-size:14px;
+        margin-bottom:15px;
+    }
+
+    .sidebar button{
+        padding:10px;
+        font-size:12px;
+    }
+
+    .topbar{
+        left:140px;
+        height:45px;
+        font-size:12px;
+        padding:0 10px;
+    }
+
+    #tvchart{
+        left:140px;
+        right:280px;
+        top:45px;
+        bottom:0;
+    }
+
+    .signalBox{
+        width:280px;
+        top:45px;
+    }
+}
+
+/* ================= MOBILE PORTRAIT ================= */
+@media (max-width: 900px) and (orientation: portrait){
+
+    body::before{
+        content:"📱 Please rotate your device to landscape mode";
+        position:fixed;
+        top:0;
+        left:0;
+        right:0;
+        bottom:0;
+        background:#000;
+        color:#FFD700;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-size:18px;
+        z-index:9999;
+        text-align:center;
+        padding:20px;
+    }
+
+    .sidebar,
+    .topbar,
+    #tvchart,
+    .signalBox{
+        display:none;
+    }
 }
