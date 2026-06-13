@@ -63,13 +63,15 @@ body{
     z-index:10;
 }
 
-/* ================= CHART ================= */
-#tvchart{
+/* ================= CHART (UPDATED) ================= */
+/* بدل tvchart → Canvas */
+#chartCanvas{
     position:fixed;
     left:230px;
     right:320px;
     top:60px;
     bottom:0;
+    background:#0b0b0b;
 }
 
 /* ================= SIGNAL BOX ================= */
