@@ -11,6 +11,7 @@ body{
     overflow:hidden;
 }
 
+/* sidebar */
 .sidebar{
     position:fixed;
     left:0;
@@ -19,6 +20,7 @@ body{
     height:100vh;
     background:#131313;
     padding:20px;
+    border-right:1px solid #2a2a2a;
 }
 
 .sidebar h2{
@@ -30,8 +32,13 @@ body{
     width:100%;
     padding:10px;
     margin:5px 0;
+    background:#1f1f1f;
+    border:none;
+    color:white;
+    cursor:pointer;
 }
 
+/* topbar */
 .topbar{
     position:fixed;
     left:230px;
@@ -42,8 +49,10 @@ body{
     justify-content:space-between;
     align-items:center;
     padding:0 20px;
+    border-bottom:1px solid #2a2a2a;
 }
 
+/* chart */
 #chart{
     position:fixed;
     left:230px;
@@ -53,6 +62,7 @@ body{
     background:#0b0b0b;
 }
 
+/* signal */
 .signalBox{
     position:fixed;
     right:0;
@@ -61,4 +71,5 @@ body{
     bottom:0;
     background:#131313;
     padding:20px;
+    border-left:1px solid #2a2a2a;
 }
