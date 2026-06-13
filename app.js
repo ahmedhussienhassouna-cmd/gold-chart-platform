@@ -1,13 +1,14 @@
 let widget = null;
+let strategyOn = false;
 
+// =======================
+// CREATE TRADINGVIEW CHART
+// =======================
 function createChart(symbol){
 
     const container = document.getElementById("chart");
-
-    // مهم جدًا: تنظيف القديم
     container.innerHTML = "";
 
-    // إنشاء جديد
     widget = new TradingView.widget({
         container_id: "chart",
 
@@ -24,23 +25,23 @@ function createChart(symbol){
         locale: "en",
 
         allow_symbol_change: true,
-
         hide_top_toolbar: false,
         hide_side_toolbar: false,
-
         enable_publishing: false,
         withdateranges: true
     });
 }
 
 // =======================
-// أول تشغيل (بعد تحميل الصفحة)
+// START CHART
+// =======================
 window.addEventListener("load", () => {
     createChart("OANDA:XAUUSD");
 });
 
 // =======================
-// تغيير الأصول
+// CHANGE ASSET
+// =======================
 window.changeAsset = function(a){
 
     document.getElementById("activeAsset").innerHTML = a;
@@ -57,7 +58,8 @@ window.changeAsset = function(a){
 };
 
 // =======================
-// Services
+// SERVICES (UI ONLY)
+// =======================
 window.service = function(type){
 
     let msg = {
@@ -68,4 +70,116 @@ window.service = function(type){
     };
 
     document.getElementById("signal").innerHTML = msg[type];
+
+    if(type === "strategy"){
+        toggleStrategy(); // 🔥 تشغيل الاستراتيجية من الزر
+    }
 };
+
+// =======================
+// STRATEGY ENGINE (IB V3)
+// =======================
+let ib = {
+    high: null,
+    low: null,
+    count: 0,
+    brokeHigh: false,
+    brokeLow: false,
+    buyBreak: null,
+    sellBreak: null
+};
+
+const barsIB = 12;
+const moveMin = 7;
+const moveMax = 10;
+
+function toggleStrategy(){
+
+    strategyOn = !strategyOn;
+
+    document.getElementById("signal").innerHTML =
+        strategyOn ? "🟢 Strategy ON" : "🔴 Strategy OFF";
+
+    if(strategyOn){
+        runStrategy();
+    }
+}
+
+// =======================
+// FAKE PRICE (لاحقًا هنربطه بسوق حقيقي)
+// =======================
+function getPrice(){
+    return 2400 + (Math.random() * 10 - 5);
+}
+
+// =======================
+// STRATEGY LOOP
+// =======================
+function runStrategy(){
+
+    if(!strategyOn) return;
+
+    setTimeout(() => {
+
+        let price = getPrice();
+
+        // reset بسيط
+        if(ib.count > 200){
+            ib = {
+                high:null,
+                low:null,
+                count:0,
+                brokeHigh:false,
+                brokeLow:false,
+                buyBreak:null,
+                sellBreak:null
+            };
+        }
+
+        // ================= IB BUILD
+        if(ib.count < barsIB){
+
+            ib.high = ib.high === null ? price : Math.max(ib.high, price);
+            ib.low  = ib.low === null ? price : Math.min(ib.low, price);
+
+            ib.count++;
+        }
+
+        // ================= BREAKOUT
+        if(!ib.brokeHigh && price > ib.high){
+            ib.brokeHigh = true;
+            ib.buyBreak = price;
+        }
+
+        if(!ib.brokeLow && price < ib.low){
+            ib.brokeLow = true;
+            ib.sellBreak = price;
+        }
+
+        // ================= MOMENTUM
+        let buyMove = ib.buyBreak ? (price - ib.buyBreak) : null;
+        let sellMove = ib.sellBreak ? (ib.sellBreak - price) : null;
+
+        // ================= SIGNALS
+        let buySignal =
+            buyMove !== null &&
+            buyMove >= moveMin &&
+            buyMove <= moveMax;
+
+        let sellSignal =
+            sellMove !== null &&
+            sellMove >= moveMin &&
+            sellMove <= moveMax;
+
+        if(buySignal){
+            document.getElementById("signal").innerHTML = "🟢 BUY V3 CONFIRMED";
+        }
+
+        if(sellSignal){
+            document.getElementById("signal").innerHTML = "🔴 SELL V3 CONFIRMED";
+        }
+
+        runStrategy();
+
+    }, 1000);
+}
