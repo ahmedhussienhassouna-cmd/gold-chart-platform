@@ -7,23 +7,22 @@
 
 <link rel="stylesheet" href="style.css">
 
+<!-- TradingView Lightweight Charts -->
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
 </head>
 
 <body>
 
-<!-- ================= SIDEBAR ================= -->
 <div class="sidebar">
-
 <h2>🟡 Golden Trade</h2>
 
-<!-- Symbols -->
 <button onclick="loadSymbol('XAUUSD')">🥇 Gold</button>
 <button onclick="loadSymbol('EURUSD')">💶 EURUSD</button>
 <button onclick="loadSymbol('BTCUSD')">₿ BTCUSD</button>
 
 <hr>
 
-<!-- Tools -->
 <button onclick="signals()">📊 Signals</button>
 <button onclick="liquidity()">📉 Liquidity</button>
 <button onclick="priceAction()">📐 Price Channel</button>
@@ -32,22 +31,19 @@
 
 </div>
 
-<!-- ================= TOPBAR ================= -->
 <div class="topbar">
 <div>🟢 LIVE</div>
 <div id="priceBox">Loading...</div>
 </div>
 
-<!-- ================= CHART CANVAS ================= -->
-<canvas id="chartCanvas"></canvas>
+<!-- 🔥 NEW CHART -->
+<div id="chart"></div>
 
-<!-- ================= SIGNAL BOX ================= -->
 <div class="signalBox">
 <h3>Today's Signal</h3>
 <p id="signal">Waiting...</p>
 </div>
 
-<!-- ================= SCRIPT ================= -->
 <script src="app.js"></script>
 
 </body>
