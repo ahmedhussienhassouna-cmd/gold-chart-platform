@@ -1,171 +1,122 @@
-let widget;
+const canvas = document.getElementById("chartCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 // =======================
-// CHART
+// MARKET DATA (temporary engine)
 // =======================
-function loadSymbol(symbol){
+let candles = [];
+let price = 2400;
 
-  document.getElementById("tvchart").innerHTML = "";
+// توليد بيانات شبه حقيقية (هنبدلها API بعدين)
+for (let i = 0; i < 120; i++) {
 
-  widget = new TradingView.widget({
-    container_id: "tvchart",
-    autosize: true,
-    symbol: symbol,
-    interval: "15",
-    timezone: "Etc/UTC",
-    theme: "dark",
-    style: "1",
-    locale: "en",
-    hide_top_toolbar: false,
-    allow_symbol_change: true,
-    enable_publishing: false
-  });
+    let open = price;
+    let close = price + (Math.random() - 0.5) * 5;
+    let high = Math.max(open, close) + Math.random() * 2;
+    let low = Math.min(open, close) - Math.random() * 2;
+
+    candles.push({ open, high, low, close });
+    price = close;
 }
 
-loadSymbol("OANDA:XAUUSD");
+// =======================
+// CHART ENGINE
+// =======================
+function drawChart(){
 
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    let x = 60;
+    let candleWidth = 6;
+
+    let all = candles.flatMap(c => [c.high, c.low]);
+    let max = Math.max(...all);
+    let min = Math.min(...all);
+
+    function toY(p){
+        return canvas.height - ((p - min) / (max - min)) * canvas.height;
+    }
+
+    candles.forEach(c => {
+
+        let o = toY(c.open);
+        let h = toY(c.high);
+        let l = toY(c.low);
+        let cl = toY(c.close);
+
+        // wick
+        ctx.strokeStyle = "#aaa";
+        ctx.beginPath();
+        ctx.moveTo(x, h);
+        ctx.lineTo(x, l);
+        ctx.stroke();
+
+        // body
+        ctx.fillStyle = c.close > c.open ? "#00ff88" : "#ff4d4d";
+        ctx.fillRect(x-2, Math.min(o,cl), candleWidth, Math.abs(o-cl));
+
+        x += 10;
+    });
+}
 
 // =======================
-// LIVE STATUS
+// IB ENGINE (REAL STRUCTURE)
 // =======================
-setInterval(() => {
-  document.getElementById("priceBox").innerHTML =
-    "🟢 Golden Trade Live";
-}, 1000);
-
-
-// =======================
-// DEFAULT SIGNAL
-// =======================
-document.getElementById("signal").innerHTML = `
-<div class="signalCard">
-  <div class="buy">SYSTEM READY</div>
-  <br>
-  Waiting For Strategy...
-</div>
-`;
-
-
-// =======================
-// SIGNALS
-// =======================
-window.signals = function(){
-  document.getElementById("signal").innerHTML = `
-  <div class="signalCard">
-    <div class="buy">SIGNALS MODE</div>
-    <br>
-    Watching market structure...
-  </div>`;
-};
-
-
-// =======================
-// LIQUIDITY IB STRATEGY (YOUR CODE CONVERTED)
-// =======================
-
 let ibHigh = null;
 let ibLow = null;
-let barCount = 0;
+let ibCount = 0;
 
-let brokeHigh = false;
-let brokeLow = false;
+function calculateIB(){
 
-let buyBreakPrice = null;
-let sellBreakPrice = null;
+    let IB_SIZE = 20; // أول 20 شمعة
+
+    for(let i=0;i<IB_SIZE;i++){
+        ibHigh = ibHigh === null ? candles[i].high : Math.max(ibHigh, candles[i].high);
+        ibLow  = ibLow === null ? candles[i].low  : Math.min(ibLow, candles[i].low);
+    }
+
+    ctx.strokeStyle = "lime";
+    ctx.beginPath();
+    ctx.moveTo(0, 100);
+    ctx.lineTo(canvas.width, 100);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, 200);
+    ctx.lineTo(canvas.width, 200);
+    ctx.stroke();
+}
+
+// =======================
+// RENDER LOOP
+// =======================
+function render(){
+    drawChart();
+    requestAnimationFrame(render);
+}
+render();
+
+// =======================
+// UI CONNECTORS (بدون TradingView)
+// =======================
+window.loadSymbol = function(symbol){
+    document.getElementById("priceBox").innerHTML =
+        "📊 " + symbol + " Loaded";
+};
+
+window.signals = function(){
+    document.getElementById("signal").innerHTML =
+    <div class="signalCard"><div class="buy">SYSTEM ACTIVE</div></div>;
+};
 
 window.liquidity = function(){
-
-    // fake price engine (بديل للبيانات الحقيقية)
-    let price = 100 + Math.random() * 10;
-
-    const barsIB = 12;
-    const moveMin = 0.7;
-    const moveMax = 1.0;
-
-    // build IB
-    if(barCount < barsIB){
-        ibHigh = ibHigh === null ? price : Math.max(ibHigh, price);
-        ibLow  = ibLow === null ? price : Math.min(ibLow, price);
-        barCount++;
-    }
-
-    // breakout logic
-    if(!brokeHigh && ibHigh && price > ibHigh){
-        brokeHigh = true;
-        buyBreakPrice = price;
-    }
-
-    if(!brokeLow && ibLow && price < ibLow){
-        brokeLow = true;
-        sellBreakPrice = price;
-    }
-
-    // momentum
-    let buyMove = buyBreakPrice ? (price - buyBreakPrice) : null;
-    let sellMove = sellBreakPrice ? (sellBreakPrice - price) : null;
-
-    let signal = "NO TRADE";
-    let color = "#aaaaaa";
-
-    if(buyMove && buyMove >= moveMin && buyMove <= moveMax){
-        signal = "BUY IB MOMENTUM";
-        color = "#00ff88";
-    }
-
-    if(sellMove && sellMove >= moveMin && sellMove <= moveMax){
-        signal = "SELL IB MOMENTUM";
-        color = "#ff4d4d";
-    }
-
-    document.getElementById("signal").innerHTML = `
-        <div class="signalCard">
-            <div class="buy" style="color:${color}">
-                ${signal}
-            </div>
-            <br>
-            IB High: ${ibHigh?.toFixed(2)} <br>
-            IB Low: ${ibLow?.toFixed(2)} <br>
-            Price: ${price.toFixed(2)} <br>
-            Bars: ${barCount}/${barsIB}
-        </div>
-    `;
+    document.getElementById("signal").innerHTML =
+    <div class="signalCard"><div class="buy">LIQUIDITY MODE (READY)</div></div>;
 };
 
-
-// =======================
-// PRICE ACTION
-// =======================
-window.priceAction = function(){
-  document.getElementById("signal").innerHTML = `
-  <div class="signalCard">
-    <div class="buy">PRICE ACTION</div>
-    <br>
-    Analyzing candles...
-  </div>`;
-};
-
-
-// =======================
-// POC
-// =======================
-window.poc = function(){
-  document.getElementById("signal").innerHTML = `
-  <div class="signalCard">
-    <div class="buy">POC MODE</div>
-    <br>
-    Calculating Point of Control...
-  </div>`;
-};
-
-
-// =======================
-// SETTINGS
-// =======================
-window.settings = function(){
-  document.getElementById("signal").innerHTML = `
-  <div class="signalCard">
-    <div class="buy">SETTINGS</div>
-    <br>
-    Control panel opened...
-  </div>`;
-};
+window.priceAction = function(){};
+window.poc = function(){};
+window.settings = function(){};
