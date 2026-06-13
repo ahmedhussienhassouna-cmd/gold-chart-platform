@@ -35,6 +35,9 @@ async function loadLive(){
 
         if(!data.values){
             console.log("API ERROR:", data);
+
+            // 🔥 fallback عشان الشارت مايقعش
+            generateFake();
             return;
         }
 
@@ -49,7 +52,33 @@ async function loadLive(){
 
     } catch(err){
         console.log("FETCH ERROR:", err);
+
+        // 🔥 fallback مهم جدًا
+        generateFake();
     }
+}
+
+// =======================
+// FALLBACK DATA
+// =======================
+function generateFake(){
+
+    candles = [];
+
+    let price = 2400;
+
+    for(let i=0;i<120;i++){
+
+        let open = price;
+        let close = price + (Math.random()-0.5)*5;
+        let high = Math.max(open,close)+Math.random()*2;
+        let low = Math.min(open,close)-Math.random()*2;
+
+        candles.push({open,high,low,close});
+        price = close;
+    }
+
+    document.getElementById("priceBox").innerHTML = "🟡 DEMO MODE";
 }
 
 // =======================
@@ -101,11 +130,9 @@ function loop(){
 loop();
 
 // =======================
-// START LIVE DATA
+// START
 // =======================
 loadLive();
-
-// تحديث كل دقيقة
 setInterval(loadLive, 60000);
 
 // =======================
