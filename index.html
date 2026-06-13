@@ -11,9 +11,7 @@
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
-
     <h2>🟡 Golden Trade</h2>
 
     <div class="section-title">Assets</div>
@@ -24,23 +22,20 @@
 
     <div class="section-title">Services</div>
 
-    <button onclick="service('daily')">📊 التحليل اليومي</button>
-    <button onclick="service('strategy')">💰 إستراتيجية فلوس</button>
-    <button onclick="service('support')">📍 الدعم</button>
+    <button onclick="service('daily')">📊 التحليل</button>
+    <button onclick="service('strategy')">💰 Strategy</button>
+    <button onclick="service('support')">📍 Support</button>
     <button onclick="service('settings')">⚙️ Settings</button>
-
 </div>
 
-<!-- TOPBAR -->
 <div class="topbar">
     <div id="activeAsset">GOLD</div>
     <div id="priceBox">Loading...</div>
 </div>
 
-<!-- CHART -->
+<!-- 🔥 IMPORTANT FIX -->
 <div id="chart"></div>
 
-<!-- RIGHT PANEL -->
 <div class="signalBox">
     <h3>Panel</h3>
     <p id="signal">Waiting...</p>
