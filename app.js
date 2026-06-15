@@ -44,6 +44,13 @@ function clearLines(){
     ibLines = [];
 }
 
+function clearVWAP(){
+    if(vwapSeries){
+        chart.removeSeries(vwapSeries);
+        vwapSeries = null;
+    }
+}
+
 // =======================
 // CREATE CHART
 // =======================
@@ -66,25 +73,28 @@ function createChart(){
         timeScale: {
             timeVisible: true,
             secondsVisible: false
+        },
+        crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal
+        },
+        rightPriceScale: {
+            borderColor: "#333"
         }
     });
 
+    const candleOptions = {
+        upColor: "#26a69a",
+        downColor: "#ef5350",
+        borderUpColor: "#26a69a",
+        borderDownColor: "#ef5350",
+        wickUpColor: "#26a69a",
+        wickDownColor: "#ef5350"
+    };
+
     if(chart.addCandlestickSeries){
-        candleSeries = chart.addCandlestickSeries({
-            upColor: "#00c8ff",
-            downColor: "#ff4fa3",
-            borderVisible: false,
-            wickUpColor: "#00c8ff",
-            wickDownColor: "#ff4fa3"
-        });
+        candleSeries = chart.addCandlestickSeries(candleOptions);
     } else {
-        candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, {
-            upColor: "#00c8ff",
-            downColor: "#ff4fa3",
-            borderVisible: false,
-            wickUpColor: "#00c8ff",
-            wickDownColor: "#ff4fa3"
-        });
+        candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, candleOptions);
     }
 
     firstLoad = true;
@@ -141,6 +151,7 @@ async function loadMarketData(){
         if(liquidityOn) drawLiquidity(candles);
         if(ibOn) drawIB(candles);
         if(vwapOn) drawVWAP(candles);
+        if(strategyOn) runSimpleStrategy(candles);
 
     }catch(error){
         console.error(error);
@@ -168,6 +179,8 @@ window.changeAsset = function(a){
     setText("activeAsset", a);
     setText("signal", "Asset changed to " + a);
 
+    clearVWAP();
+
     updatePanel();
     createChart();
 };
@@ -193,10 +206,46 @@ window.toggleStrategy = function(){
 
     strategyOn = !strategyOn;
 
+    if(!strategyOn){
+        candleSeries.setMarkers([]);
+    }
+
     setText("signal", strategyOn ? "🟢 Strategy ON" : "🔴 Strategy OFF");
 
     updatePanel();
+    loadMarketData();
 };
+
+function runSimpleStrategy(candles){
+
+    const last = candles[candles.length - 1];
+
+    let marker;
+
+    if(last.close > last.open){
+        marker = {
+            time: last.time,
+            position: "belowBar",
+            color: "#26a69a",
+            shape: "arrowUp",
+            text: "BUY"
+        };
+
+        setText("signal", "🟢 BUY marker on chart");
+    } else {
+        marker = {
+            time: last.time,
+            position: "aboveBar",
+            color: "#ef5350",
+            shape: "arrowDown",
+            text: "SELL"
+        };
+
+        setText("signal", "🔴 SELL marker on chart");
+    }
+
+    candleSeries.setMarkers([marker]);
+}
 
 // =======================
 // LIQUIDITY
@@ -289,6 +338,10 @@ window.toggleVWAP = function(){
 
     vwapOn = !vwapOn;
 
+    if(!vwapOn){
+        clearVWAP();
+    }
+
     setText("signal", vwapOn ? "📈 VWAP ON" : "📈 VWAP OFF");
 
     updatePanel();
@@ -297,20 +350,17 @@ window.toggleVWAP = function(){
 
 function drawVWAP(candles){
 
-    if(vwapSeries){
-        chart.removeSeries(vwapSeries);
-    }
+    clearVWAP();
+
+    const lineOptions = {
+        color: "#ffd700",
+        lineWidth: 2
+    };
 
     if(chart.addLineSeries){
-        vwapSeries = chart.addLineSeries({
-            color: "#ffd700",
-            lineWidth: 2
-        });
+        vwapSeries = chart.addLineSeries(lineOptions);
     } else {
-        vwapSeries = chart.addSeries(LightweightCharts.LineSeries, {
-            color: "#ffd700",
-            lineWidth: 2
-        });
+        vwapSeries = chart.addSeries(LightweightCharts.LineSeries, lineOptions);
     }
 
     let cumulativePV = 0;
@@ -370,11 +420,10 @@ window.addEventListener("load", () => {
     updateSession();
 });
 
-// تحديث أسرع بدل 60 ثانية
 setInterval(() => {
     loadMarketData();
     updateSession();
-}, 15000);
+}, 10000);
 
 window.addEventListener("resize", () => {
     if(chart){
