@@ -42,7 +42,7 @@ function loginUser() {
         return;
     }
 
-    if (email === saved.email && password === saved.password) {
+    if (name === "" || email === "" || password === "") {
 
         localStorage.setItem("golden_logged", "true");
 
