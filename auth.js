@@ -1,10 +1,7 @@
 alert("AUTH LOADED");
 
-// =======================
 // REGISTER
-// =======================
 function registerUser() {
-
     const name = document.getElementById("registerName").value;
     const email = document.getElementById("registerEmail").value;
     const password = document.getElementById("registerPassword").value;
@@ -23,15 +20,11 @@ function registerUser() {
     localStorage.setItem("golden_user", JSON.stringify(user));
 
     alert("Account Created Successfully");
-
     window.location.href = "login.html";
 }
 
-// =======================
 // LOGIN
-// =======================
 function loginUser() {
-
     const email = document.getElementById("loginEmail").value;
     const password = document.getElementById("loginPassword").value;
 
@@ -50,11 +43,8 @@ function loginUser() {
     }
 }
 
-// =======================
 // PROTECT DASHBOARD
-// =======================
 if (window.location.pathname.includes("dashboard.html")) {
-
     const logged = localStorage.getItem("golden_logged");
 
     if (logged !== "true") {
