@@ -55,6 +55,14 @@ function loginUser() {
 }
 
 // =======================
+// LOGOUT
+// =======================
+function logout() {
+    localStorage.removeItem("golden_logged");
+    window.location.href = "login.html";
+}
+
+// =======================
 // PROTECT DASHBOARD
 // =======================
 if (window.location.pathname.includes("dashboard.html")) {
