@@ -2,6 +2,9 @@ let chart = null;
 let candleSeries = null;
 let vwapSeries = null;
 
+let liquidityLines = [];
+let ibLines = [];
+
 let currentAsset = "GOLD";
 let currentSymbol = "XAU/USD";
 
@@ -9,6 +12,9 @@ let strategyOn = false;
 let liquidityOn = false;
 let ibOn = false;
 let vwapOn = false;
+
+let firstLoad = true;
+let isLoading = false;
 
 const API_KEY = "47d321948be348c68c998b1b08dbecea";
 
@@ -28,6 +34,14 @@ function updatePanel(){
     setText("panelLiquidity", liquidityOn ? "ON" : "OFF");
     setText("panelIB", ibOn ? "ON" : "OFF");
     setText("panelVWAP", vwapOn ? "ON" : "OFF");
+}
+
+function clearLines(){
+    liquidityLines.forEach(line => candleSeries.removePriceLine(line));
+    ibLines.forEach(line => candleSeries.removePriceLine(line));
+
+    liquidityLines = [];
+    ibLines = [];
 }
 
 // =======================
@@ -55,25 +69,25 @@ function createChart(){
         }
     });
 
-    // دعم النسخ الجديدة والقديمة
     if(chart.addCandlestickSeries){
         candleSeries = chart.addCandlestickSeries({
-            upColor: "#26a69a",
-            downColor: "#ef5350",
+            upColor: "#00c8ff",
+            downColor: "#ff4fa3",
             borderVisible: false,
-            wickUpColor: "#26a69a",
-            wickDownColor: "#ef5350"
+            wickUpColor: "#00c8ff",
+            wickDownColor: "#ff4fa3"
         });
     } else {
         candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, {
-            upColor: "#26a69a",
-            downColor: "#ef5350",
+            upColor: "#00c8ff",
+            downColor: "#ff4fa3",
             borderVisible: false,
-            wickUpColor: "#26a69a",
-            wickDownColor: "#ef5350"
+            wickUpColor: "#00c8ff",
+            wickDownColor: "#ff4fa3"
         });
     }
 
+    firstLoad = true;
     loadMarketData();
 }
 
@@ -82,9 +96,9 @@ function createChart(){
 // =======================
 async function loadMarketData(){
 
-    if(!candleSeries) return;
+    if(!candleSeries || isLoading) return;
 
-    setText("signal", "Loading real gold data...");
+    isLoading = true;
 
     const symbol = encodeURIComponent(currentSymbol);
 
@@ -98,6 +112,7 @@ async function loadMarketData(){
         if(!data.values){
             console.log(data);
             setText("signal", "Data error: Check API Key / Symbol");
+            isLoading = false;
             return;
         }
 
@@ -114,9 +129,14 @@ async function loadMarketData(){
         const last = candles[candles.length - 1];
 
         setText("priceBox", `${currentAsset} ${last.close}`);
-        setText("signal", "✅ Real chart loaded");
+        setText("signal", "✅ Live chart updated");
 
-        chart.timeScale().fitContent();
+        if(firstLoad){
+            chart.timeScale().fitContent();
+            firstLoad = false;
+        }
+
+        clearLines();
 
         if(liquidityOn) drawLiquidity(candles);
         if(ibOn) drawIB(candles);
@@ -126,6 +146,8 @@ async function loadMarketData(){
         console.error(error);
         setText("signal", "Connection error");
     }
+
+    isLoading = false;
 }
 
 // =======================
@@ -194,23 +216,27 @@ function drawLiquidity(candles){
     const highLevel = Math.max(...candles.map(c => c.high));
     const lowLevel = Math.min(...candles.map(c => c.low));
 
-    candleSeries.createPriceLine({
-        price: highLevel,
-        color: "#ffd700",
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: "Liquidity High"
-    });
+    liquidityLines.push(
+        candleSeries.createPriceLine({
+            price: highLevel,
+            color: "#ffd700",
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
+            axisLabelVisible: true,
+            title: "Liquidity High"
+        })
+    );
 
-    candleSeries.createPriceLine({
-        price: lowLevel,
-        color: "#ffd700",
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: "Liquidity Low"
-    });
+    liquidityLines.push(
+        candleSeries.createPriceLine({
+            price: lowLevel,
+            color: "#ffd700",
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
+            axisLabelVisible: true,
+            title: "Liquidity Low"
+        })
+    );
 }
 
 // =======================
@@ -233,23 +259,27 @@ function drawIB(candles){
     const ibHigh = Math.max(...ibCandles.map(c => c.high));
     const ibLow = Math.min(...ibCandles.map(c => c.low));
 
-    candleSeries.createPriceLine({
-        price: ibHigh,
-        color: "#00d4ff",
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: "IB High"
-    });
+    ibLines.push(
+        candleSeries.createPriceLine({
+            price: ibHigh,
+            color: "#00d4ff",
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Solid,
+            axisLabelVisible: true,
+            title: "IB High"
+        })
+    );
 
-    candleSeries.createPriceLine({
-        price: ibLow,
-        color: "#00d4ff",
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: "IB Low"
-    });
+    ibLines.push(
+        candleSeries.createPriceLine({
+            price: ibLow,
+            color: "#00d4ff",
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Solid,
+            axisLabelVisible: true,
+            title: "IB Low"
+        })
+    );
 }
 
 // =======================
@@ -340,10 +370,11 @@ window.addEventListener("load", () => {
     updateSession();
 });
 
+// تحديث أسرع بدل 60 ثانية
 setInterval(() => {
     loadMarketData();
     updateSession();
-}, 60000);
+}, 15000);
 
 window.addEventListener("resize", () => {
     if(chart){
