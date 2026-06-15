@@ -1,5 +1,29 @@
 let widget = null;
+
+let currentAsset = "GOLD";
+
 let strategyOn = false;
+let liquidityOn = false;
+let ibOn = false;
+let vwapOn = false;
+
+// =======================
+// HELPERS
+// =======================
+function setText(id, value){
+    const el = document.getElementById(id);
+    if(el){
+        el.innerHTML = value;
+    }
+}
+
+function updatePanel(){
+    setText("panelAsset", currentAsset);
+    setText("panelStrategy", strategyOn ? "ON" : "OFF");
+    setText("panelLiquidity", liquidityOn ? "ON" : "OFF");
+    setText("panelIB", ibOn ? "ON" : "OFF");
+    setText("panelVWAP", vwapOn ? "ON" : "OFF");
+}
 
 // =======================
 // CREATE TRADINGVIEW CHART
@@ -37,6 +61,8 @@ function createChart(symbol){
 // =======================
 window.addEventListener("load", () => {
     createChart("OANDA:XAUUSD");
+    updatePanel();
+    updateSession();
 });
 
 // =======================
@@ -44,7 +70,10 @@ window.addEventListener("load", () => {
 // =======================
 window.changeAsset = function(a){
 
-    document.getElementById("activeAsset").innerHTML = a;
+    currentAsset = a;
+
+    setText("activeAsset", a);
+    setText("signal", "Asset changed to " + a);
 
     const map = {
         GOLD: "OANDA:XAUUSD",
@@ -55,6 +84,8 @@ window.changeAsset = function(a){
     if(map[a]){
         createChart(map[a]);
     }
+
+    updatePanel();
 };
 
 // =======================
@@ -63,72 +94,126 @@ window.changeAsset = function(a){
 window.service = function(type){
 
     let msg = {
-        daily: "📊 Daily Analysis",
-        strategy: "💰 Strategy",
-        support: "📍 Support",
-        settings: "⚙️ Settings"
+        daily: "📊 Daily Analysis Selected",
+        support: "📍 Support Selected",
+        settings: "⚙️ Settings Selected"
     };
 
-    document.getElementById("signal").innerHTML = msg[type] || "Waiting...";
-
-    if(type === "strategy"){
-        toggleStrategy();
-    }
+    setText("signal", msg[type] || "Waiting...");
 };
 
 // =======================
-// STRATEGY ENGINE STATUS
+// STRATEGY
 // =======================
-function toggleStrategy(){
+window.toggleStrategy = function(){
 
     strategyOn = !strategyOn;
 
-    document.getElementById("signal").innerHTML =
+    setText(
+        "signal",
         strategyOn
         ? "🟢 Strategy ON - Waiting for real market data"
-        : "🔴 Strategy OFF";
-}
+        : "🔴 Strategy OFF"
+    );
+
+    updatePanel();
+};
 
 // =======================
 // LIQUIDITY TOOL
 // =======================
-function toggleLiquidity(){
+window.toggleLiquidity = function(){
 
-    document.getElementById("signal").innerHTML =
-    "💧 Liquidity Tool Ready";
+    liquidityOn = !liquidityOn;
 
-    alert("Liquidity tool added. الرسم الحقيقي على الشارت يحتاج Charting Library أو Lightweight Charts.");
-}
+    setText(
+        "signal",
+        liquidityOn
+        ? "💧 Liquidity ON"
+        : "💧 Liquidity OFF"
+    );
+
+    updatePanel();
+};
 
 // =======================
 // IB ZONE TOOL
 // =======================
-function toggleIB(){
+window.toggleIB = function(){
 
-    document.getElementById("signal").innerHTML =
-    "📦 IB Zone Tool Ready";
+    ibOn = !ibOn;
 
-    alert("IB Zone tool added. الرسم الحقيقي على الشارت يحتاج Charting Library أو Lightweight Charts.");
-}
+    setText(
+        "signal",
+        ibOn
+        ? "📦 IB Zone ON"
+        : "📦 IB Zone OFF"
+    );
+
+    updatePanel();
+};
 
 // =======================
 // VWAP TOOL
 // =======================
-function toggleVWAP(){
+window.toggleVWAP = function(){
 
-    document.getElementById("signal").innerHTML =
-    "📈 VWAP Tool Ready";
+    vwapOn = !vwapOn;
 
-    alert("VWAP tool added. الرسم الحقيقي على الشارت يحتاج Charting Library أو Lightweight Charts.");
+    setText(
+        "signal",
+        vwapOn
+        ? "📈 VWAP ON"
+        : "📈 VWAP OFF"
+    );
+
+    updatePanel();
+};
+
+// =======================
+// SESSION CLOCK
+// =======================
+function getCurrentSession(){
+
+    const now = new Date();
+
+    const cairoTime = new Date(
+        now.toLocaleString("en-US", { timeZone: "Africa/Cairo" })
+    );
+
+    const hour = cairoTime.getHours();
+    const minute = cairoTime.getMinutes();
+
+    const current = hour + minute / 60;
+
+    if(current >= 1 && current < 3){
+        return "Sydney";
+    }
+
+    if(current >= 3 && current < 10){
+        return "Asia";
+    }
+
+    if(current >= 10 && current < 15.5){
+        return "London";
+    }
+
+    if(current >= 15.5 && current < 23){
+        return "New York";
+    }
+
+    return "Closed";
+}
+
+function updateSession(){
+    const session = getCurrentSession();
+    setText("panelSession", session);
 }
 
 // =======================
 // LIVE STATUS
 // =======================
 setInterval(() => {
-    const priceBox = document.getElementById("priceBox");
-
-    if(priceBox){
-        priceBox.innerHTML = "🟢 Golden Trade Live";
-    }
+    setText("priceBox", "🟢 Golden Trade Live");
+    updateSession();
 }, 1000);
