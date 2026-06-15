@@ -9,6 +9,7 @@ let candlesData = [];
 
 let currentAsset = "GOLD";
 let currentSymbol = "XAU/USD";
+let currentInterval = "1min";
 
 let strategyOn = false;
 let liquidityOn = false;
@@ -19,7 +20,6 @@ let firstLoad = true;
 let isLoading = false;
 
 const API_KEY = "2ad0666474114f7787a45ccacffdaf44";
-const CURRENT_INTERVAL = "1min";
 
 // =======================
 // HELPERS
@@ -49,6 +49,24 @@ function clearVWAP(){
         chart.removeSeries(vwapSeries);
         vwapSeries = null;
     }
+}
+
+function stopWebSocket(){
+    if(socket){
+        socket.close();
+        socket = null;
+    }
+}
+
+function getOutputSize(){
+    if(currentInterval === "1min") return 1000;
+    if(currentInterval === "5min") return 1000;
+    if(currentInterval === "15min") return 1000;
+    if(currentInterval === "30min") return 1000;
+    if(currentInterval === "1h") return 1000;
+    if(currentInterval === "4h") return 700;
+    if(currentInterval === "1day") return 500;
+    return 1000;
 }
 
 // =======================
@@ -111,9 +129,10 @@ async function loadMarketData(){
     isLoading = true;
 
     const symbol = encodeURIComponent(currentSymbol);
+    const outputsize = getOutputSize();
 
     const url =
-    `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${CURRENT_INTERVAL}&outputsize=1000&apikey=${API_KEY}`;
+    `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=${currentInterval}&outputsize=${outputsize}&apikey=${API_KEY}`;
 
     try{
         const response = await fetch(url);
@@ -121,7 +140,7 @@ async function loadMarketData(){
 
         if(!data.values){
             console.log(data);
-            setText("signal", "Data error: Check API Key / Symbol");
+            setText("signal", "Data error: Check API Key / Symbol / Timeframe");
             isLoading = false;
             return;
         }
@@ -138,8 +157,8 @@ async function loadMarketData(){
 
         const last = candlesData[candlesData.length - 1];
 
-        setText("priceBox", `${currentAsset} ${last.close}`);
-        setText("signal", "✅ Chart loaded");
+        setText("priceBox", `${currentAsset} ${last.close} | ${currentInterval}`);
+        setText("signal", "✅ Chart loaded - " + currentInterval);
 
         if(firstLoad){
             chart.timeScale().fitContent();
@@ -161,9 +180,11 @@ async function loadMarketData(){
 // =======================
 function startWebSocket(){
 
-    if(socket){
-        socket.close();
-        socket = null;
+    stopWebSocket();
+
+    if(currentInterval !== "1min"){
+        setText("signal", "WebSocket active only on 1M");
+        return;
     }
 
     const wsUrl = `wss://ws.twelvedata.com/v1/quotes/price?apikey=${API_KEY}`;
@@ -204,8 +225,10 @@ function startWebSocket(){
     };
 
     socket.onclose = function(){
-        setText("signal", "WebSocket closed - reconnecting...");
-        setTimeout(startWebSocket, 5000);
+        if(currentInterval === "1min"){
+            setText("signal", "WebSocket closed - reconnecting...");
+            setTimeout(startWebSocket, 5000);
+        }
     };
 }
 
@@ -239,11 +262,29 @@ function updateLiveCandle(price, time){
 
     candleSeries.update(last);
 
-    setText("priceBox", `${currentAsset} ${price}`);
+    setText("priceBox", `${currentAsset} ${price} | ${currentInterval}`);
     setText("signal", "🟢 Live price updated");
 
     if(strategyOn) runSimpleStrategy(candlesData);
 }
+
+// =======================
+// TIMEFRAMES
+// =======================
+window.changeTimeframe = function(tf){
+
+    currentInterval = tf;
+
+    setText("signal", "Loading timeframe: " + tf);
+
+    clearVWAP();
+    clearLines();
+
+    firstLoad = true;
+
+    loadMarketData();
+    startWebSocket();
+};
 
 // =======================
 // REDRAW TOOLS
@@ -276,6 +317,7 @@ window.changeAsset = function(a){
     setText("signal", "Asset changed to " + a);
 
     clearVWAP();
+    clearLines();
 
     updatePanel();
     createChart();
@@ -359,6 +401,8 @@ window.toggleLiquidity = function(){
 
 function drawLiquidity(candles){
 
+    if(!candles.length) return;
+
     const highLevel = Math.max(...candles.map(c => c.high));
     const lowLevel = Math.min(...candles.map(c => c.low));
 
@@ -399,6 +443,8 @@ window.toggleIB = function(){
 };
 
 function drawIB(candles){
+
+    if(candles.length < 12) return;
 
     const ibCandles = candles.slice(0, 12);
 
@@ -446,6 +492,8 @@ window.toggleVWAP = function(){
 };
 
 function drawVWAP(candles){
+
+    if(!candles.length) return;
 
     clearVWAP();
 
