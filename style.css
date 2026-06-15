@@ -2,7 +2,7 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:Arial;
+    font-family:Arial, sans-serif;
 }
 
 body{
@@ -16,35 +16,43 @@ body{
     position:fixed;
     left:0;
     top:0;
-    width:240px;
+    width:220px;
     height:100vh;
-    background:#131313;
-    padding:15px;
+    background:#111;
+    padding:14px;
     display:flex;
     flex-direction:column;
-    align-items:stretch;
+    border-right:1px solid #242424;
+}
+
+.sidebar h2{
+    color:#ffd700;
+    font-size:20px;
+    margin-bottom:15px;
 }
 
 /* TOPBAR */
 .topbar{
     position:fixed;
-    left:240px;
+    left:220px;
     top:0;
-    right:0;
-    height:55px;
-    background:#141414;
+    right:260px;
+    height:50px;
+    background:#111;
+    border-bottom:1px solid #242424;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:0 20px;
+    padding:0 18px;
+    font-weight:bold;
 }
 
 /* CHART */
 #chart{
     position:fixed;
-    left:240px;
-    top:55px;
-    right:320px;
+    left:220px;
+    top:50px;
+    right:260px;
     bottom:0;
     background:#0b0b0b;
     overflow:hidden;
@@ -54,34 +62,41 @@ body{
 .signalBox{
     position:fixed;
     right:0;
-    top:55px;
-    width:320px;
+    top:0;
+    width:260px;
     bottom:0;
-    background:#131313;
+    background:#111;
+    border-left:1px solid #242424;
     padding:15px;
+}
+
+.signalBox h3{
+    color:#ffd700;
+    margin-bottom:12px;
 }
 
 /* TITLES */
 .section-title{
-    color:#777;
+    color:#888;
     font-size:11px;
-    margin:12px 0 6px;
+    margin:14px 0 6px;
     letter-spacing:1px;
+    text-transform:uppercase;
 }
 
 /* BUTTONS */
 .sidebar button{
     width:100%;
-    display:block;
     padding:10px;
     margin:4px 0;
-    background:#1f1f1f;
-    border:none;
+    background:#1d1d1d;
+    border:1px solid #2b2b2b;
     color:white;
-    border-radius:6px;
+    border-radius:7px;
     cursor:pointer;
     text-align:left;
-    transition:.3s;
+    transition:.2s;
+    font-size:14px;
 }
 
 .sidebar button:hover{
@@ -89,13 +104,13 @@ body{
     color:black;
 }
 
-/* TRADINGVIEW IFRAME */
+/* TRADINGVIEW */
 #chart iframe{
     width:100% !important;
     height:100% !important;
 }
 
-/* ACADEMY VIDEO */
+/* ACADEMY */
 .academyModal{
     display:none;
     position:fixed;
@@ -133,14 +148,13 @@ body{
     font-size:30px;
     color:white;
     cursor:pointer;
-    transition:.3s;
 }
 
 .closeAcademy:hover{
     color:#ffd700;
 }
 
-/* AUTH PAGES */
+/* AUTH */
 .authBody{
     background:#0b0b0b;
     display:flex;
@@ -193,10 +207,6 @@ body{
     cursor:pointer;
     font-weight:bold;
     margin-top:5px;
-}
-
-.authBox button:hover{
-    opacity:.9;
 }
 
 .authBox p{
