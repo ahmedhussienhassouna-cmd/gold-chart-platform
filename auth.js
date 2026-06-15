@@ -49,7 +49,8 @@ function loginUser() {
 
         localStorage.setItem("golden_logged", "true");
 
-        window.location.href = "dashboard.html";
+        // 🔥 فتح المنصة الرئيسية
+        window.location.href = "index.html";
 
     } else {
 
@@ -66,9 +67,9 @@ function logout() {
 }
 
 // =======================
-// PROTECT DASHBOARD
+// PROTECT PLATFORM
 // =======================
-if (window.location.pathname.includes("dashboard.html")) {
+if (window.location.pathname.includes("index.html")) {
 
     const logged = localStorage.getItem("golden_logged");
 
