@@ -62,7 +62,6 @@ if (window.location.pathname.includes("dashboard.html")) {
     const logged = localStorage.getItem("golden_logged");
 
     if (logged !== "true") {
-
         window.location.href = "login.html";
     }
 }
