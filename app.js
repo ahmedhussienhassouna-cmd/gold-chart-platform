@@ -10,7 +10,7 @@ let liquidityOn = false;
 let ibOn = false;
 let vwapOn = false;
 
-const API_KEY = "PUT_YOUR_TWELVE_DATA_API_KEY_HERE";
+const API_KEY = "47d321948be348c68c998b1b08dbecea";
 
 // =======================
 // HELPERS
