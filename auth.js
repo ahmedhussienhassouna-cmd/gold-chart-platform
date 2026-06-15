@@ -5,11 +5,11 @@ alert("AUTH LOADED");
 // =======================
 function registerUser() {
 
-    const name = document.getElementById("registerName").value;
-    const email = document.getElementById("registerEmail").value;
-    const password = document.getElementById("registerPassword").value;
+    const name = document.getElementById("registerName").value.trim();
+    const email = document.getElementById("registerEmail").value.trim();
+    const password = document.getElementById("registerPassword").value.trim();
 
-    if (!name  !email  !password) {
+    if (name === "" || email === "" || password === "") {
         alert("Please fill all fields");
         return;
     }
@@ -32,8 +32,13 @@ function registerUser() {
 // =======================
 function loginUser() {
 
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+
+    if (email === "" || password === "") {
+        alert("Please fill all fields");
+        return;
+    }
 
     const saved = JSON.parse(localStorage.getItem("golden_user"));
 
@@ -42,7 +47,7 @@ function loginUser() {
         return;
     }
 
-    if (name === "" || email === "" || password === "") {
+    if (email === saved.email && password === saved.password) {
 
         localStorage.setItem("golden_logged", "true");
 
