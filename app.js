@@ -18,7 +18,7 @@ let vwapOn = false;
 let firstLoad = true;
 let isLoading = false;
 
-const API_KEY = "88fc91a021e047e3bc8470c2705e5653";
+const API_KEY = "2ad0666474114f7787a45ccacffdaf44";
 const CURRENT_INTERVAL = "1min";
 
 // =======================
