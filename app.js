@@ -10,7 +10,7 @@ let liquidityOn = false;
 let ibOn = false;
 let vwapOn = false;
 
-const API_KEY = "47d321948be348c68c998b1b08dbecea";
+const API_KEY = "PUT_YOUR_TWELVE_DATA_API_KEY_HERE";
 
 // =======================
 // HELPERS
@@ -31,7 +31,7 @@ function updatePanel(){
 }
 
 // =======================
-// CREATE GOLDEN CHART
+// CREATE CHART
 // =======================
 function createChart(){
 
@@ -52,41 +52,52 @@ function createChart(){
         timeScale: {
             timeVisible: true,
             secondsVisible: false
-        },
-        rightPriceScale: {
-            borderColor: "#333"
         }
     });
 
-    candleSeries = chart.addCandlestickSeries({
-        upColor: "#26a69a",
-        downColor: "#ef5350",
-        borderUpColor: "#26a69a",
-        borderDownColor: "#ef5350",
-        wickUpColor: "#26a69a",
-        wickDownColor: "#ef5350"
-    });
+    // دعم النسخ الجديدة والقديمة
+    if(chart.addCandlestickSeries){
+        candleSeries = chart.addCandlestickSeries({
+            upColor: "#26a69a",
+            downColor: "#ef5350",
+            borderVisible: false,
+            wickUpColor: "#26a69a",
+            wickDownColor: "#ef5350"
+        });
+    } else {
+        candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, {
+            upColor: "#26a69a",
+            downColor: "#ef5350",
+            borderVisible: false,
+            wickUpColor: "#26a69a",
+            wickDownColor: "#ef5350"
+        });
+    }
 
     loadMarketData();
 }
 
 // =======================
-// LOAD MARKET DATA
+// LOAD DATA
 // =======================
 async function loadMarketData(){
 
-    setText("signal", "Loading real market data...");
+    if(!candleSeries) return;
+
+    setText("signal", "Loading real gold data...");
+
+    const symbol = encodeURIComponent(currentSymbol);
 
     const url =
-        `https://api.twelvedata.com/time_series?symbol=${currentSymbol}&interval=1min&outputsize=200&apikey=${API_KEY}`;
+    `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1min&outputsize=200&apikey=${API_KEY}`;
 
     try{
         const response = await fetch(url);
         const data = await response.json();
 
         if(!data.values){
-            setText("signal", "Data error: Check API Key or symbol");
             console.log(data);
+            setText("signal", "Data error: Check API Key / Symbol");
             return;
         }
 
@@ -101,20 +112,15 @@ async function loadMarketData(){
         candleSeries.setData(candles);
 
         const last = candles[candles.length - 1];
+
         setText("priceBox", `${currentAsset} ${last.close}`);
-        setText("signal", "Real chart loaded");
+        setText("signal", "✅ Real chart loaded");
 
-        if(vwapOn){
-            drawVWAP(candles);
-        }
+        chart.timeScale().fitContent();
 
-        if(liquidityOn){
-            drawLiquidity(candles);
-        }
-
-        if(ibOn){
-            drawIB(candles);
-        }
+        if(liquidityOn) drawLiquidity(candles);
+        if(ibOn) drawIB(candles);
+        if(vwapOn) drawVWAP(candles);
 
     }catch(error){
         console.error(error);
@@ -185,11 +191,8 @@ window.toggleLiquidity = function(){
 
 function drawLiquidity(candles){
 
-    const highs = candles.map(c => c.high);
-    const lows = candles.map(c => c.low);
-
-    const highLevel = Math.max(...highs);
-    const lowLevel = Math.min(...lows);
+    const highLevel = Math.max(...candles.map(c => c.high));
+    const lowLevel = Math.min(...candles.map(c => c.low));
 
     candleSeries.createPriceLine({
         price: highLevel,
@@ -268,10 +271,17 @@ function drawVWAP(candles){
         chart.removeSeries(vwapSeries);
     }
 
-    vwapSeries = chart.addLineSeries({
-        color: "#ffd700",
-        lineWidth: 2
-    });
+    if(chart.addLineSeries){
+        vwapSeries = chart.addLineSeries({
+            color: "#ffd700",
+            lineWidth: 2
+        });
+    } else {
+        vwapSeries = chart.addSeries(LightweightCharts.LineSeries, {
+            color: "#ffd700",
+            lineWidth: 2
+        });
+    }
 
     let cumulativePV = 0;
     let cumulativeVolume = 0;
@@ -294,7 +304,7 @@ function drawVWAP(candles){
 }
 
 // =======================
-// SESSION CLOCK
+// SESSION
 // =======================
 function getCurrentSession(){
 
