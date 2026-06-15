@@ -47,11 +47,43 @@ body{
     font-weight:bold;
 }
 
+/* TIMEFRAMES */
+.timeframes{
+    position:fixed;
+    left:220px;
+    right:260px;
+    top:50px;
+    height:40px;
+    background:#111;
+    border-bottom:1px solid #242424;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 12px;
+    z-index:50;
+}
+
+.timeframes button{
+    background:#1d1d1d;
+    border:1px solid #333;
+    color:white;
+    padding:6px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:13px;
+    transition:.2s;
+}
+
+.timeframes button:hover{
+    background:#ffd700;
+    color:black;
+}
+
 /* CHART */
 #chart{
     position:fixed;
     left:220px;
-    top:50px;
+    top:90px;
     right:260px;
     bottom:0;
     background:#0b0b0b;
@@ -139,12 +171,6 @@ body{
 .sidebar button:hover{
     background:#ffd700;
     color:black;
-}
-
-/* TRADINGVIEW */
-#chart iframe{
-    width:100% !important;
-    height:100% !important;
 }
 
 /* ACADEMY */
