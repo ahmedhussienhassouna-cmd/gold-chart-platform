@@ -14,6 +14,7 @@
 <body>
 
 <div class="sidebar">
+
     <h2>🟡 Golden Trade</h2>
 
     <div class="section-title">Assets</div>
@@ -28,11 +29,16 @@
 
     <button onclick="toggleStrategy()">💰 Strategy</button>
 
-    <!-- الجديد -->
     <button onclick="openAcademy()">🎓 Academy</button>
 
     <button onclick="service('support')">📍 Support</button>
+
     <button onclick="service('settings')">⚙️ Settings</button>
+
+    <div style="margin-top:auto;">
+        <button onclick="logout()">🚪 Logout</button>
+    </div>
+
 </div>
 
 <div class="topbar">
@@ -47,7 +53,7 @@
     <p id="signal">Waiting...</p>
 </div>
 
-<!-- نافذة الفيديو -->
+<!-- Academy Modal -->
 <div id="academyModal" class="academyModal">
 
     <div class="academyContent">
@@ -72,23 +78,22 @@
 <script>
 function openAcademy(){
 
-document.getElementById("academyModal").style.display="flex";
+    document.getElementById("academyModal").style.display = "flex";
 
-document.getElementById("academyVideo").src=
-"https://www.youtube.com/embed/Nu4DzhRLRSI?autoplay=1";
-
+    document.getElementById("academyVideo").src =
+    "https://www.youtube.com/embed/Nu4DzhRLRSI?autoplay=1";
 }
 
 function closeAcademy(){
 
-document.getElementById("academyModal").style.display="none";
+    document.getElementById("academyModal").style.display = "none";
 
-document.getElementById("academyVideo").src="";
-
+    document.getElementById("academyVideo").src = "";
 }
 </script>
 
 <script src="app.js" defer></script>
+<script src="auth.js"></script>
 
 </body>
 </html>
