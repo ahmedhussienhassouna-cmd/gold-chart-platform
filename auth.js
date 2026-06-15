@@ -3,9 +3,15 @@
 // =======================
 function registerUser() {
 
-    const name = document.getElementById("registerName").value.trim();
-    const email = document.getElementById("registerEmail").value.trim();
-    const password = document.getElementById("registerPassword").value.trim();
+    const nameInput = document.getElementById("registerName");
+    const emailInput = document.getElementById("registerEmail");
+    const passwordInput = document.getElementById("registerPassword");
+
+    if (!nameInput || !emailInput || !passwordInput) return;
+
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
 
     if (name === "" || email === "" || password === "") {
         alert("Please fill all fields");
@@ -30,8 +36,13 @@ function registerUser() {
 // =======================
 function loginUser() {
 
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value.trim();
+    const emailInput = document.getElementById("loginEmail");
+    const passwordInput = document.getElementById("loginPassword");
+
+    if (!emailInput || !passwordInput) return;
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
 
     if (email === "" || password === "") {
         alert("Please fill all fields");
@@ -46,14 +57,9 @@ function loginUser() {
     }
 
     if (email === saved.email && password === saved.password) {
-
         localStorage.setItem("golden_logged", "true");
-
-        // 🔥 فتح المنصة الرئيسية
         window.location.href = "index.html";
-
     } else {
-
         alert("Wrong Email or Password");
     }
 }
@@ -70,7 +76,6 @@ function logout() {
 // PROTECT PLATFORM
 // =======================
 if (window.location.pathname.includes("index.html")) {
-
     const logged = localStorage.getItem("golden_logged");
 
     if (logged !== "true") {
