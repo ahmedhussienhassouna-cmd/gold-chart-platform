@@ -26,19 +26,12 @@
     <div class="section-title">Services</div>
 
     <button onclick="service('daily')">📊 Analysis</button>
-
     <button onclick="toggleStrategy()">💰 Strategy</button>
-
     <button onclick="toggleLiquidity()">💧 Liquidity</button>
-
     <button onclick="toggleIB()">📦 IB Zone</button>
-
     <button onclick="toggleVWAP()">📈 VWAP</button>
-
     <button onclick="openAcademy()">🎓 Academy</button>
-
     <button onclick="service('support')">📍 Support</button>
-
     <button onclick="service('settings')">⚙️ Settings</button>
 
     <div style="margin-top:auto;">
@@ -55,11 +48,44 @@
 <div id="chart"></div>
 
 <div class="signalBox">
-    <h3>Panel</h3>
-    <p id="signal">Waiting...</p>
+    <h3>Golden Trade Panel</h3>
+
+    <div class="panelRow">
+        <span>Asset</span>
+        <b id="panelAsset">GOLD</b>
+    </div>
+
+    <div class="panelRow">
+        <span>Session</span>
+        <b id="panelSession">Loading</b>
+    </div>
+
+    <div class="panelRow">
+        <span>Strategy</span>
+        <b id="panelStrategy">OFF</b>
+    </div>
+
+    <div class="panelRow">
+        <span>Liquidity</span>
+        <b id="panelLiquidity">OFF</b>
+    </div>
+
+    <div class="panelRow">
+        <span>IB Zone</span>
+        <b id="panelIB">OFF</b>
+    </div>
+
+    <div class="panelRow">
+        <span>VWAP</span>
+        <b id="panelVWAP">OFF</b>
+    </div>
+
+    <div class="panelSignal">
+        <span>Signal</span>
+        <p id="signal">Waiting...</p>
+    </div>
 </div>
 
-<!-- Academy Modal -->
 <div id="academyModal" class="academyModal">
 
     <div class="academyContent">
