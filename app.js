@@ -58,128 +58,77 @@ window.changeAsset = function(a){
 };
 
 // =======================
-// SERVICES (UI ONLY)
+// SERVICES
 // =======================
 window.service = function(type){
 
     let msg = {
-        daily:"📊 Daily Analysis",
-        strategy:"💰 Strategy",
-        support:"📍 Support",
-        settings:"⚙️ Settings"
+        daily: "📊 Daily Analysis",
+        strategy: "💰 Strategy",
+        support: "📍 Support",
+        settings: "⚙️ Settings"
     };
 
-    document.getElementById("signal").innerHTML = msg[type];
+    document.getElementById("signal").innerHTML = msg[type] || "Waiting...";
 
     if(type === "strategy"){
-        toggleStrategy(); // 🔥 تشغيل الاستراتيجية من الزر
+        toggleStrategy();
     }
 };
 
 // =======================
-// STRATEGY ENGINE (IB V3)
+// STRATEGY ENGINE STATUS
 // =======================
-let ib = {
-    high: null,
-    low: null,
-    count: 0,
-    brokeHigh: false,
-    brokeLow: false,
-    buyBreak: null,
-    sellBreak: null
-};
-
-const barsIB = 12;
-const moveMin = 7;
-const moveMax = 10;
-
 function toggleStrategy(){
 
     strategyOn = !strategyOn;
 
     document.getElementById("signal").innerHTML =
-        strategyOn ? "🟢 Strategy ON" : "🔴 Strategy OFF";
+        strategyOn
+        ? "🟢 Strategy ON - Waiting for real market data"
+        : "🔴 Strategy OFF";
+}
 
-    if(strategyOn){
-        runStrategy();
+// =======================
+// LIQUIDITY TOOL
+// =======================
+function toggleLiquidity(){
+
+    document.getElementById("signal").innerHTML =
+    "💧 Liquidity Tool Ready";
+
+    alert("Liquidity tool added. الرسم الحقيقي على الشارت يحتاج Charting Library أو Lightweight Charts.");
+}
+
+// =======================
+// IB ZONE TOOL
+// =======================
+function toggleIB(){
+
+    document.getElementById("signal").innerHTML =
+    "📦 IB Zone Tool Ready";
+
+    alert("IB Zone tool added. الرسم الحقيقي على الشارت يحتاج Charting Library أو Lightweight Charts.");
+}
+
+// =======================
+// VWAP TOOL
+// =======================
+function toggleVWAP(){
+
+    document.getElementById("signal").innerHTML =
+    "📈 VWAP Tool Ready";
+
+    alert("VWAP tool added. الرسم الحقيقي على الشارت يحتاج Charting Library أو Lightweight Charts.");
+}
+
+// =======================
+// LIVE STATUS
+// =======================
+setInterval(() => {
+    const priceBox = document.getElementById("priceBox");
+
+    if(priceBox){
+        priceBox.innerHTML = "🟢 Golden Trade Live";
     }
-}
-
-// =======================
-// FAKE PRICE (لاحقًا هنربطه بسوق حقيقي)
-// =======================
-function getPrice(){
-    return 2400 + (Math.random() * 10 - 5);
-}
-
-// =======================
-// STRATEGY LOOP
-// =======================
-function runStrategy(){
-
-    if(!strategyOn) return;
-
-    setTimeout(() => {
-
-        let price = getPrice();
-
-        // reset بسيط
-        if(ib.count > 200){
-            ib = {
-                high:null,
-                low:null,
-                count:0,
-                brokeHigh:false,
-                brokeLow:false,
-                buyBreak:null,
-                sellBreak:null
-            };
-        }
-
-        // ================= IB BUILD
-        if(ib.count < barsIB){
-
-            ib.high = ib.high === null ? price : Math.max(ib.high, price);
-            ib.low  = ib.low === null ? price : Math.min(ib.low, price);
-
-            ib.count++;
-        }
-
-        // ================= BREAKOUT
-        if(!ib.brokeHigh && price > ib.high){
-            ib.brokeHigh = true;
-            ib.buyBreak = price;
-        }
-
-        if(!ib.brokeLow && price < ib.low){
-            ib.brokeLow = true;
-            ib.sellBreak = price;
-        }
-
-        // ================= MOMENTUM
-        let buyMove = ib.buyBreak ? (price - ib.buyBreak) : null;
-        let sellMove = ib.sellBreak ? (ib.sellBreak - price) : null;
-
-        // ================= SIGNALS
-        let buySignal =
-            buyMove !== null &&
-            buyMove >= moveMin &&
-            buyMove <= moveMax;
-
-        let sellSignal =
-            sellMove !== null &&
-            sellMove >= moveMin &&
-            sellMove <= moveMax;
-
-        if(buySignal){
-            document.getElementById("signal").innerHTML = "🟢 BUY V3 CONFIRMED";
-        }
-
-        if(sellSignal){
-            document.getElementById("signal").innerHTML = "🔴 SELL V3 CONFIRMED";
-        }
-
-        runStrategy();
-
-    }, 1000);
-}
+}, 1000);
