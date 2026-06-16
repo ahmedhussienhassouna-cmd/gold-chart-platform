@@ -5,6 +5,7 @@ let socket = null;
 
 let liquidityLines = [];
 let ibLines = [];
+let strategyLines = [];
 let candlesData = [];
 
 let currentAsset = "GOLD";
@@ -42,6 +43,16 @@ function clearLines(){
     ibLines.forEach(line => candleSeries.removePriceLine(line));
     liquidityLines = [];
     ibLines = [];
+}
+
+function clearStrategy(){
+    candleSeries.setMarkers([]);
+
+    strategyLines.forEach(line => {
+        candleSeries.removePriceLine(line);
+    });
+
+    strategyLines = [];
 }
 
 function clearVWAP(){
@@ -265,7 +276,7 @@ function updateLiveCandle(price, time){
     setText("priceBox", `${currentAsset} ${price} | ${currentInterval}`);
     setText("signal", "🟢 Live price updated");
 
-    if(strategyOn) runSimpleStrategy(candlesData);
+    if(strategyOn) runGoldenStrategy(candlesData);
 }
 
 // =======================
@@ -279,6 +290,7 @@ window.changeTimeframe = function(tf){
 
     clearVWAP();
     clearLines();
+    clearStrategy();
 
     firstLoad = true;
 
@@ -290,12 +302,13 @@ window.changeTimeframe = function(tf){
 // REDRAW TOOLS
 // =======================
 function redrawTools(){
+
     clearLines();
 
+    if(strategyOn) runGoldenStrategy(candlesData);
     if(liquidityOn) drawLiquidity(candlesData);
     if(ibOn) drawIB(candlesData);
     if(vwapOn) drawVWAP(candlesData);
-    if(strategyOn) runSimpleStrategy(candlesData);
 }
 
 // =======================
@@ -318,6 +331,7 @@ window.changeAsset = function(a){
 
     clearVWAP();
     clearLines();
+    clearStrategy();
 
     updatePanel();
     createChart();
@@ -339,51 +353,125 @@ window.service = function(type){
 };
 
 // =======================
-// STRATEGY
+// STRATEGY - Golden Trade IB Pro V3
 // =======================
 window.toggleStrategy = function(){
 
     strategyOn = !strategyOn;
 
     if(!strategyOn){
-        candleSeries.setMarkers([]);
+        clearStrategy();
+        setText("signal", "🔴 Strategy OFF");
+    } else {
+        runGoldenStrategy(candlesData);
+        setText("signal", "🟢 Golden Trade IB Pro V3 ON");
     }
-
-    setText("signal", strategyOn ? "🟢 Strategy ON" : "🔴 Strategy OFF");
 
     updatePanel();
-    redrawTools();
 };
 
-function runSimpleStrategy(candles){
+function runGoldenStrategy(candles){
 
-    const last = candles[candles.length - 1];
+    if(!candles || candles.length < 20) return;
 
-    let marker;
+    clearStrategy();
 
-    if(last.close > last.open){
-        marker = {
-            time: last.time,
-            position: "belowBar",
-            color: "#26a69a",
-            shape: "arrowUp",
-            text: "BUY"
-        };
+    const barsIB = 12;
+    const moveMin = 7.0;
+    const moveMax = 10.0;
 
-        setText("signal", "🟢 BUY marker on chart");
-    } else {
-        marker = {
-            time: last.time,
-            position: "aboveBar",
-            color: "#ef5350",
-            shape: "arrowDown",
-            text: "SELL"
-        };
+    const lastCandle = candles[candles.length - 1];
+    const lastDate = new Date(lastCandle.time * 1000).toDateString();
 
-        setText("signal", "🔴 SELL marker on chart");
+    const todayCandles = candles.filter(c => {
+        return new Date(c.time * 1000).toDateString() === lastDate;
+    });
+
+    if(todayCandles.length < barsIB + 5){
+        setText("signal", "Waiting for IB candles...");
+        return;
     }
 
-    candleSeries.setMarkers([marker]);
+    const ibCandles = todayCandles.slice(0, barsIB);
+
+    const ibHigh = Math.max(...ibCandles.map(c => c.high));
+    const ibLow  = Math.min(...ibCandles.map(c => c.low));
+
+    strategyLines.push(
+        candleSeries.createPriceLine({
+            price: ibHigh,
+            color: "#00ff66",
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Solid,
+            axisLabelVisible: true,
+            title: "GT IB High"
+        })
+    );
+
+    strategyLines.push(
+        candleSeries.createPriceLine({
+            price: ibLow,
+            color: "#ff3333",
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Solid,
+            axisLabelVisible: true,
+            title: "GT IB Low"
+        })
+    );
+
+    let brokeHigh = false;
+    let brokeLow = false;
+
+    let buyBreakPrice = null;
+    let sellBreakPrice = null;
+
+    let markers = [];
+
+    for(let i = barsIB; i < todayCandles.length; i++){
+
+        const c = todayCandles[i];
+
+        if(!brokeHigh && c.close > ibHigh){
+            brokeHigh = true;
+            buyBreakPrice = c.close;
+        }
+
+        if(!brokeLow && c.close < ibLow){
+            brokeLow = true;
+            sellBreakPrice = c.close;
+        }
+
+        const buyMove = buyBreakPrice ? c.close - buyBreakPrice : null;
+        const sellMove = sellBreakPrice ? sellBreakPrice - c.close : null;
+
+        if(buyMove !== null && buyMove >= moveMin && buyMove <= moveMax){
+            markers.push({
+                time: c.time,
+                position: "belowBar",
+                color: "#00ff66",
+                shape: "arrowUp",
+                text: "BUY V3"
+            });
+
+            buyBreakPrice = null;
+        }
+
+        if(sellMove !== null && sellMove >= moveMin && sellMove <= moveMax){
+            markers.push({
+                time: c.time,
+                position: "aboveBar",
+                color: "#ff3333",
+                shape: "arrowDown",
+                text: "SELL V3"
+            });
+
+            sellBreakPrice = null;
+        }
+    }
+
+    candleSeries.setMarkers(markers);
+
+    setText("signal", `✅ Golden Strategy Active | Signals: ${markers.length}`);
 }
 
 // =======================
