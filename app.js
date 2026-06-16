@@ -19,6 +19,8 @@ let vwapOn = false;
 
 let firstLoad = true;
 let isLoading = false;
+let lastChartUpdate = 0;
+let lastStrategyRunTime = 0;
 
 const API_KEY = "2ad0666474114f7787a45ccacffdaf44";
 
@@ -48,9 +50,7 @@ function safeRemovePriceLine(line){
         if(candleSeries && line){
             candleSeries.removePriceLine(line);
         }
-    }catch(e){
-        console.log("Remove line error:", e);
-    }
+    }catch(e){}
 }
 
 function clearLines(){
@@ -65,26 +65,19 @@ function clearMarkers(){
         if(candleSeries && typeof candleSeries.setMarkers === "function"){
             candleSeries.setMarkers([]);
         }
-    }catch(e){
-        console.log("Clear markers error:", e);
-    }
+    }catch(e){}
 }
 
 function setMarkersSafe(markers){
     try{
         if(candleSeries && typeof candleSeries.setMarkers === "function"){
             candleSeries.setMarkers(markers);
-        }else{
-            console.log("setMarkers not supported in this version");
         }
-    }catch(e){
-        console.log("Set markers error:", e);
-    }
+    }catch(e){}
 }
 
 function clearStrategy(){
     clearMarkers();
-
     strategyLines.forEach(line => safeRemovePriceLine(line));
     strategyLines = [];
 }
@@ -93,9 +86,7 @@ function clearVWAP(){
     if(vwapSeries && chart){
         try{
             chart.removeSeries(vwapSeries);
-        }catch(e){
-            console.log("VWAP remove error:", e);
-        }
+        }catch(e){}
         vwapSeries = null;
     }
 }
@@ -108,14 +99,18 @@ function stopWebSocket(){
 }
 
 function getOutputSize(){
-    if(currentInterval === "1min") return 1000;
-    if(currentInterval === "5min") return 1000;
-    if(currentInterval === "15min") return 1000;
-    if(currentInterval === "30min") return 1000;
-    if(currentInterval === "1h") return 1000;
-    if(currentInterval === "4h") return 700;
-    if(currentInterval === "1day") return 500;
-    return 1000;
+    if(currentInterval === "1min") return 300;
+    if(currentInterval === "5min") return 300;
+    if(currentInterval === "15min") return 300;
+    if(currentInterval === "30min") return 250;
+    if(currentInterval === "1h") return 200;
+    if(currentInterval === "4h") return 150;
+    if(currentInterval === "1day") return 120;
+    return 300;
+}
+
+function roundPrice(price){
+    return Number(Number(price).toFixed(2));
 }
 
 // =======================
@@ -124,6 +119,10 @@ function getOutputSize(){
 function createChart(){
 
     const container = document.getElementById("chart");
+    if(!container) return;
+
+    stopWebSocket();
+
     container.innerHTML = "";
 
     chart = LightweightCharts.createChart(container, {
@@ -139,13 +138,15 @@ function createChart(){
         },
         timeScale: {
             timeVisible: true,
-            secondsVisible: false
+            secondsVisible: false,
+            borderColor: "#333"
         },
         crosshair: {
             mode: LightweightCharts.CrosshairMode.Normal
         },
         rightPriceScale: {
-            borderColor: "#333"
+            borderColor: "#333",
+            autoScale: true
         }
     });
 
@@ -155,7 +156,12 @@ function createChart(){
         borderUpColor: "#26a69a",
         borderDownColor: "#ef5350",
         wickUpColor: "#26a69a",
-        wickDownColor: "#ef5350"
+        wickDownColor: "#ef5350",
+        priceFormat: {
+            type: "price",
+            precision: 2,
+            minMove: 0.01
+        }
     };
 
     if(chart.addCandlestickSeries){
@@ -165,7 +171,10 @@ function createChart(){
     }
 
     firstLoad = true;
+    candlesData = [];
+
     loadMarketData();
+    startWebSocket();
 }
 
 // =======================
@@ -196,17 +205,17 @@ async function loadMarketData(){
 
         candlesData = data.values.reverse().map(c => ({
             time: Math.floor(new Date(c.datetime).getTime() / 1000),
-            open: parseFloat(c.open),
-            high: parseFloat(c.high),
-            low: parseFloat(c.low),
-            close: parseFloat(c.close)
+            open: roundPrice(c.open),
+            high: roundPrice(c.high),
+            low: roundPrice(c.low),
+            close: roundPrice(c.close)
         }));
 
         candleSeries.setData(candlesData);
 
         const last = candlesData[candlesData.length - 1];
 
-        setText("priceBox", `${currentAsset} ${last.close} | ${currentInterval}`);
+        setText("priceBox", `${currentAsset} ${last.close.toFixed(2)} | ${currentInterval}`);
         setText("signal", "✅ Chart loaded - " + currentInterval);
 
         if(firstLoad){
@@ -255,15 +264,13 @@ function startWebSocket(){
             const msg = JSON.parse(event.data);
             if(!msg.price) return;
 
-            const price = parseFloat(msg.price);
+            const price = roundPrice(msg.price);
             const now = Math.floor(Date.now() / 1000);
             const minuteTime = Math.floor(now / 60) * 60;
 
             updateLiveCandle(price, minuteTime);
 
-        }catch(error){
-            console.log("WS message:", event.data);
-        }
+        }catch(error){}
     };
 
     socket.onerror = function(error){
@@ -283,13 +290,17 @@ function updateLiveCandle(price, time){
 
     if(!candlesData.length) return;
 
+    price = roundPrice(price);
+
     let last = candlesData[candlesData.length - 1];
+    let isNewCandle = false;
 
     if(last.time === time){
         last.close = price;
         last.high = Math.max(last.high, price);
         last.low = Math.min(last.low, price);
-    } else if(time > last.time){
+    }
+    else if(time > last.time){
         last = {
             time: time,
             open: price,
@@ -299,19 +310,26 @@ function updateLiveCandle(price, time){
         };
 
         candlesData.push(last);
+        isNewCandle = true;
 
-        if(candlesData.length > 1000){
+        if(candlesData.length > getOutputSize()){
             candlesData.shift();
         }
-    } else {
+    }
+    else {
         return;
     }
 
-    candleSeries.update(last);
+    const now = Date.now();
 
-    setText("priceBox", `${currentAsset} ${price} | ${currentInterval}`);
+    if(now - lastChartUpdate > 700 || isNewCandle){
+        candleSeries.update(last);
+        setText("priceBox", `${currentAsset} ${price.toFixed(2)} | ${currentInterval}`);
+        lastChartUpdate = now;
+    }
 
-    if(strategyOn){
+    if(strategyOn && isNewCandle && time !== lastStrategyRunTime){
+        lastStrategyRunTime = time;
         runGoldenStrategy(candlesData);
     }
 }
@@ -330,6 +348,7 @@ window.changeTimeframe = function(tf){
     clearStrategy();
 
     firstLoad = true;
+    candlesData = [];
 
     loadMarketData();
     startWebSocket();
@@ -341,6 +360,8 @@ window.changeTimeframe = function(tf){
 function redrawTools(){
 
     clearLines();
+    clearStrategy();
+    clearVWAP();
 
     if(strategyOn) runGoldenStrategy(candlesData);
     if(liquidityOn) drawLiquidity(candlesData);
@@ -372,7 +393,6 @@ window.changeAsset = function(a){
 
     updatePanel();
     createChart();
-    startWebSocket();
 };
 
 // =======================
@@ -390,7 +410,7 @@ window.service = function(type){
 };
 
 // =======================
-// STRATEGY - Golden Trade IB Pro V3
+// STRATEGY
 // =======================
 window.toggleStrategy = function(){
 
@@ -405,13 +425,7 @@ window.toggleStrategy = function(){
     }
 
     setText("signal", "🟢 Strategy ON");
-
-    try{
-        runGoldenStrategy(candlesData);
-    }catch(error){
-        console.error("Strategy Error:", error);
-        setText("signal", "Strategy Error - check app.js");
-    }
+    runGoldenStrategy(candlesData);
 };
 
 function runGoldenStrategy(candles){
@@ -441,8 +455,8 @@ function runGoldenStrategy(candles){
 
     const ibCandles = todayCandles.slice(0, barsIB);
 
-    const ibHigh = Math.max(...ibCandles.map(c => c.high));
-    const ibLow  = Math.min(...ibCandles.map(c => c.low));
+    const ibHigh = roundPrice(Math.max(...ibCandles.map(c => c.high)));
+    const ibLow  = roundPrice(Math.min(...ibCandles.map(c => c.low)));
 
     strategyLines.push(
         candleSeries.createPriceLine({
@@ -472,6 +486,9 @@ function runGoldenStrategy(candles){
     let buyBreakPrice = null;
     let sellBreakPrice = null;
 
+    let buySignalDone = false;
+    let sellSignalDone = false;
+
     let markers = [];
 
     for(let i = barsIB; i < todayCandles.length; i++){
@@ -488,10 +505,10 @@ function runGoldenStrategy(candles){
             sellBreakPrice = c.close;
         }
 
-        const buyMove = buyBreakPrice ? c.close - buyBreakPrice : null;
-        const sellMove = sellBreakPrice ? sellBreakPrice - c.close : null;
+        const buyMove = buyBreakPrice ? c.high - buyBreakPrice : null;
+        const sellMove = sellBreakPrice ? sellBreakPrice - c.low : null;
 
-        if(buyMove !== null && buyMove >= moveMin && buyMove <= moveMax){
+        if(!buySignalDone && buyMove !== null && buyMove >= moveMin && buyMove <= moveMax){
             markers.push({
                 time: c.time,
                 position: "belowBar",
@@ -500,10 +517,10 @@ function runGoldenStrategy(candles){
                 text: "BUY V3"
             });
 
-            buyBreakPrice = null;
+            buySignalDone = true;
         }
 
-        if(sellMove !== null && sellMove >= moveMin && sellMove <= moveMax){
+        if(!sellSignalDone && sellMove !== null && sellMove >= moveMin && sellMove <= moveMax){
             markers.push({
                 time: c.time,
                 position: "aboveBar",
@@ -512,7 +529,7 @@ function runGoldenStrategy(candles){
                 text: "SELL V3"
             });
 
-            sellBreakPrice = null;
+            sellSignalDone = true;
         }
     }
 
@@ -538,8 +555,17 @@ function drawLiquidity(candles){
 
     if(!candles.length) return;
 
-    const highLevel = Math.max(...candles.map(c => c.high));
-    const lowLevel = Math.min(...candles.map(c => c.low));
+    const lastCandle = candles[candles.length - 1];
+    const lastDate = new Date(lastCandle.time * 1000).toDateString();
+
+    const todayCandles = candles.filter(c => {
+        return new Date(c.time * 1000).toDateString() === lastDate;
+    });
+
+    const usedCandles = todayCandles.length ? todayCandles : candles;
+
+    const highLevel = roundPrice(Math.max(...usedCandles.map(c => c.high)));
+    const lowLevel = roundPrice(Math.min(...usedCandles.map(c => c.low)));
 
     liquidityLines.push(
         candleSeries.createPriceLine({
@@ -579,12 +605,21 @@ window.toggleIB = function(){
 
 function drawIB(candles){
 
-    if(candles.length < 12) return;
+    if(candles.length < 20) return;
 
-    const ibCandles = candles.slice(0, 12);
+    const lastCandle = candles[candles.length - 1];
+    const lastDate = new Date(lastCandle.time * 1000).toDateString();
 
-    const ibHigh = Math.max(...ibCandles.map(c => c.high));
-    const ibLow = Math.min(...ibCandles.map(c => c.low));
+    const todayCandles = candles.filter(c => {
+        return new Date(c.time * 1000).toDateString() === lastDate;
+    });
+
+    if(todayCandles.length < 12) return;
+
+    const ibCandles = todayCandles.slice(0, 12);
+
+    const ibHigh = roundPrice(Math.max(...ibCandles.map(c => c.high)));
+    const ibLow = roundPrice(Math.min(...ibCandles.map(c => c.low)));
 
     ibLines.push(
         candleSeries.createPriceLine({
@@ -634,7 +669,12 @@ function drawVWAP(candles){
 
     const lineOptions = {
         color: "#ffd700",
-        lineWidth: 2
+        lineWidth: 2,
+        priceFormat: {
+            type: "price",
+            precision: 2,
+            minMove: 0.01
+        }
     };
 
     if(chart.addLineSeries){
@@ -656,7 +696,7 @@ function drawVWAP(candles){
 
         return {
             time: c.time,
-            value: cumulativePV / cumulativeVolume
+            value: roundPrice(cumulativePV / cumulativeVolume)
         };
     });
 
@@ -698,7 +738,6 @@ window.addEventListener("load", () => {
     createChart();
     updatePanel();
     updateSession();
-    startWebSocket();
 });
 
 setInterval(() => {
