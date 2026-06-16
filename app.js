@@ -7,36 +7,46 @@ function runGoldenStrategy(candles){
 
     clearStrategy();
 
-    const cairoNow = new Date(
-        new Date().toLocaleString("en-US", { timeZone: "Africa/Cairo" })
-    );
+    const nowCairo = new Date().toLocaleString("en-US", {
+        timeZone: "Africa/Cairo",
+        hour12: false
+    });
 
-    const currentHour = cairoNow.getHours();
-    const currentMinute = cairoNow.getMinutes();
+    const cairoNow = new Date(nowCairo);
 
-    if(currentHour < 14){
-        setText("signal", "⏳ First Hour Zone appears after 2:00 PM Cairo");
+    if(cairoNow.getHours() < 14){
+        setText("signal", "⏳ Strategy appears after 2:00 PM Cairo");
         return;
     }
 
     const lastCandle = candles[candles.length - 1];
 
-    const targetDay = new Date(
-        new Date(lastCandle.time * 1000).toLocaleString("en-US", { timeZone: "Africa/Cairo" })
-    );
+    const lastCairoString = new Date(lastCandle.time * 1000).toLocaleString("en-US", {
+        timeZone: "Africa/Cairo",
+        hour12: false
+    });
 
-    const year = targetDay.getFullYear();
-    const month = targetDay.getMonth();
-    const day = targetDay.getDate();
+    const lastCairoDate = new Date(lastCairoString);
 
-    const startCairo = new Date(year, month, day, 13, 0, 0);
-    const endCairo   = new Date(year, month, day, 14, 0, 0);
-
-    const startTime = Math.floor(startCairo.getTime() / 1000);
-    const endTime   = Math.floor(endCairo.getTime() / 1000);
+    const year = lastCairoDate.getFullYear();
+    const month = lastCairoDate.getMonth();
+    const day = lastCairoDate.getDate();
 
     const firstHourCandles = candles.filter(c => {
-        return c.time >= startTime && c.time < endTime;
+
+        const cairoString = new Date(c.time * 1000).toLocaleString("en-US", {
+            timeZone: "Africa/Cairo",
+            hour12: false
+        });
+
+        const cairoDate = new Date(cairoString);
+
+        return (
+            cairoDate.getFullYear() === year &&
+            cairoDate.getMonth() === month &&
+            cairoDate.getDate() === day &&
+            cairoDate.getHours() === 13
+        );
     });
 
     if(firstHourCandles.length < 1){
@@ -69,5 +79,5 @@ function runGoldenStrategy(candles){
         })
     );
 
-    setText("signal", `✅ 1-2 PM Cairo Zone | High: ${zoneHigh} | Low: ${zoneLow}`);
+    setText("signal", `✅ Strategy Zone | 1-2 PM Cairo | High: ${zoneHigh} | Low: ${zoneLow}`);
 }
