@@ -24,9 +24,6 @@ let lastStrategyRunTime = 0;
 
 const API_KEY = "2ad0666474114f7787a45ccacffdaf44";
 
-// =======================
-// HELPERS
-// =======================
 function setText(id, value){
     const el = document.getElementById(id);
     if(el) el.innerHTML = value;
@@ -113,16 +110,12 @@ function roundPrice(price){
     return Number(Number(price).toFixed(2));
 }
 
-// =======================
-// CREATE CHART
-// =======================
 function createChart(){
 
     const container = document.getElementById("chart");
     if(!container) return;
 
     stopWebSocket();
-
     container.innerHTML = "";
 
     chart = LightweightCharts.createChart(container, {
@@ -177,9 +170,6 @@ function createChart(){
     startWebSocket();
 }
 
-// =======================
-// LOAD HISTORICAL DATA
-// =======================
 async function loadMarketData(){
 
     if(!candleSeries || isLoading) return;
@@ -233,9 +223,6 @@ async function loadMarketData(){
     isLoading = false;
 }
 
-// =======================
-// WEBSOCKET LIVE PRICE
-// =======================
 function startWebSocket(){
 
     stopWebSocket();
@@ -334,9 +321,6 @@ function updateLiveCandle(price, time){
     }
 }
 
-// =======================
-// TIMEFRAMES
-// =======================
 window.changeTimeframe = function(tf){
 
     currentInterval = tf;
@@ -354,9 +338,6 @@ window.changeTimeframe = function(tf){
     startWebSocket();
 };
 
-// =======================
-// REDRAW TOOLS
-// =======================
 function redrawTools(){
 
     clearLines();
@@ -369,9 +350,6 @@ function redrawTools(){
     if(vwapOn) drawVWAP(candlesData);
 }
 
-// =======================
-// CHANGE ASSET
-// =======================
 window.changeAsset = function(a){
 
     currentAsset = a;
@@ -395,9 +373,6 @@ window.changeAsset = function(a){
     createChart();
 };
 
-// =======================
-// SERVICES
-// =======================
 window.service = function(type){
 
     let msg = {
@@ -409,9 +384,6 @@ window.service = function(type){
     setText("signal", msg[type] || "Waiting...");
 };
 
-// =======================
-// STRATEGY
-// =======================
 window.toggleStrategy = function(){
 
     strategyOn = !strategyOn;
@@ -437,110 +409,76 @@ function runGoldenStrategy(candles){
 
     clearStrategy();
 
-    const barsIB = 12;
-    const moveMin = 7.0;
-    const moveMax = 10.0;
+    const nowCairo = new Date(
+        new Date().toLocaleString("en-US", { timeZone: "Africa/Cairo" })
+    );
 
-    const lastCandle = candles[candles.length - 1];
-    const lastDate = new Date(lastCandle.time * 1000).toDateString();
-
-    const todayCandles = candles.filter(c => {
-        return new Date(c.time * 1000).toDateString() === lastDate;
-    });
-
-    if(todayCandles.length < barsIB + 5){
-        setText("signal", "Waiting for IB candles...");
+    if(nowCairo.getHours() < 14){
+        setText("signal", "⏳ Strategy appears after 2:00 PM Cairo");
         return;
     }
 
-    const ibCandles = todayCandles.slice(0, barsIB);
+    const lastCandle = candles[candles.length - 1];
 
-    const ibHigh = roundPrice(Math.max(...ibCandles.map(c => c.high)));
-    const ibLow  = roundPrice(Math.min(...ibCandles.map(c => c.low)));
+    const lastCairo = new Date(
+        new Date(lastCandle.time * 1000).toLocaleString("en-US", {
+            timeZone: "Africa/Cairo"
+        })
+    );
+
+    const targetYear = lastCairo.getFullYear();
+    const targetMonth = lastCairo.getMonth();
+    const targetDay = lastCairo.getDate();
+
+    const zoneCandles = candles.filter(c => {
+
+        const cairoDate = new Date(
+            new Date(c.time * 1000).toLocaleString("en-US", {
+                timeZone: "Africa/Cairo"
+            })
+        );
+
+        return (
+            cairoDate.getFullYear() === targetYear &&
+            cairoDate.getMonth() === targetMonth &&
+            cairoDate.getDate() === targetDay &&
+            cairoDate.getHours() === 13
+        );
+    });
+
+    if(zoneCandles.length < 1){
+        setText("signal", "No data from 1:00 PM to 2:00 PM Cairo");
+        return;
+    }
+
+    const zoneHigh = roundPrice(Math.max(...zoneCandles.map(c => c.high)));
+    const zoneLow  = roundPrice(Math.min(...zoneCandles.map(c => c.low)));
 
     strategyLines.push(
         candleSeries.createPriceLine({
-            price: ibHigh,
+            price: zoneHigh,
             color: "#00ff66",
             lineWidth: 2,
             lineStyle: LightweightCharts.LineStyle.Solid,
             axisLabelVisible: true,
-            title: "GT IB High"
+            title: "1-2 PM High"
         })
     );
 
     strategyLines.push(
         candleSeries.createPriceLine({
-            price: ibLow,
+            price: zoneLow,
             color: "#ff3333",
             lineWidth: 2,
             lineStyle: LightweightCharts.LineStyle.Solid,
             axisLabelVisible: true,
-            title: "GT IB Low"
+            title: "1-2 PM Low"
         })
     );
 
-    let brokeHigh = false;
-    let brokeLow = false;
-
-    let buyBreakPrice = null;
-    let sellBreakPrice = null;
-
-    let buySignalDone = false;
-    let sellSignalDone = false;
-
-    let markers = [];
-
-    for(let i = barsIB; i < todayCandles.length; i++){
-
-        const c = todayCandles[i];
-
-        if(!brokeHigh && c.close > ibHigh){
-            brokeHigh = true;
-            buyBreakPrice = c.close;
-        }
-
-        if(!brokeLow && c.close < ibLow){
-            brokeLow = true;
-            sellBreakPrice = c.close;
-        }
-
-        const buyMove = buyBreakPrice ? c.high - buyBreakPrice : null;
-        const sellMove = sellBreakPrice ? sellBreakPrice - c.low : null;
-
-        if(!buySignalDone && buyMove !== null && buyMove >= moveMin && buyMove <= moveMax){
-            markers.push({
-                time: c.time,
-                position: "belowBar",
-                color: "#00ff66",
-                shape: "arrowUp",
-                text: "BUY V3"
-            });
-
-            buySignalDone = true;
-        }
-
-        if(!sellSignalDone && sellMove !== null && sellMove >= moveMin && sellMove <= moveMax){
-            markers.push({
-                time: c.time,
-                position: "aboveBar",
-                color: "#ff3333",
-                shape: "arrowDown",
-                text: "SELL V3"
-            });
-
-            sellSignalDone = true;
-        }
-    }
-
-    setMarkersSafe(markers);
-
-    setText("signal", `✅ Golden Strategy Active | Signals: ${markers.length}`);
+    setText("signal", `✅ Strategy | 1-2 PM Cairo | High: ${zoneHigh} | Low: ${zoneLow}`);
 }
 
-// =======================
-// LIQUIDITY
-// =======================
 window.toggleLiquidity = function(){
 
     liquidityOn = !liquidityOn;
@@ -590,9 +528,6 @@ function drawLiquidity(candles){
     );
 }
 
-// =======================
-// IB ZONE
-// =======================
 window.toggleIB = function(){
 
     ibOn = !ibOn;
@@ -644,9 +579,6 @@ function drawIB(candles){
     );
 }
 
-// =======================
-// VWAP
-// =======================
 window.toggleVWAP = function(){
 
     vwapOn = !vwapOn;
@@ -703,9 +635,6 @@ function drawVWAP(candles){
     vwapSeries.setData(vwapData);
 }
 
-// =======================
-// SESSION
-// =======================
 function getCurrentSession(){
 
     const now = new Date();
@@ -731,9 +660,6 @@ function updateSession(){
     setText("panelSession", getCurrentSession());
 }
 
-// =======================
-// START
-// =======================
 window.addEventListener("load", () => {
     createChart();
     updatePanel();
