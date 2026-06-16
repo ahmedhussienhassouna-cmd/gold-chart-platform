@@ -2,6 +2,9 @@ let chart = null;
 let candleSeries = null;
 let vwapSeries = null;
 let socket = null;
+let reconnectTimer = null;
+let pricePollTimer = null;
+let manualSocketClose = false;
 
 let liquidityLines = [];
 let ibLines = [];
@@ -99,13 +102,6 @@ function clearVWAP(){
     }
 }
 
-function stopWebSocket(){
-    if(socket){
-        socket.close();
-        socket = null;
-    }
-}
-
 function getOutputSize(){
     if(currentInterval === "1min") return 1000;
     if(currentInterval === "5min") return 1000;
@@ -124,6 +120,8 @@ function createChart(){
 
     const container = document.getElementById("chart");
     container.innerHTML = "";
+
+    stopLiveUpdates();
 
     chart = LightweightCharts.createChart(container, {
         width: container.clientWidth,
@@ -224,16 +222,55 @@ async function loadMarketData(){
 }
 
 // =======================
-// WEBSOCKET LIVE PRICE
+// LIVE PRICE SYSTEM
 // =======================
+function stopWebSocket(){
+    manualSocketClose = true;
+
+    if(reconnectTimer){
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+    }
+
+    if(socket){
+        try{
+            socket.onclose = null;
+            socket.close();
+        }catch(e){}
+        socket = null;
+    }
+}
+
+function stopPricePolling(){
+    if(pricePollTimer){
+        clearInterval(pricePollTimer);
+        pricePollTimer = null;
+    }
+}
+
+function stopLiveUpdates(){
+    stopWebSocket();
+    stopPricePolling();
+}
+
+function startLiveUpdates(){
+    if(currentInterval === "1min"){
+        startWebSocket();
+        startPricePolling();
+    }else{
+        stopLiveUpdates();
+    }
+}
+
 function startWebSocket(){
 
-    stopWebSocket();
+    if(currentInterval !== "1min") return;
 
-    if(currentInterval !== "1min"){
-        setText("signal", "WebSocket active only on 1M");
+    if(socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)){
         return;
     }
+
+    manualSocketClose = false;
 
     const wsUrl = `wss://ws.twelvedata.com/v1/quotes/price?apikey=${API_KEY}`;
     socket = new WebSocket(wsUrl);
@@ -246,7 +283,7 @@ function startWebSocket(){
             }
         }));
 
-        setText("signal", "🟢 WebSocket connected");
+        console.log("WebSocket connected");
     };
 
     socket.onmessage = function(event){
@@ -266,21 +303,56 @@ function startWebSocket(){
     };
 
     socket.onerror = function(error){
-        console.error("WebSocket error:", error);
-        setText("signal", "WebSocket error");
+        console.log("WebSocket error:", error);
     };
 
     socket.onclose = function(){
-        if(currentInterval === "1min"){
-            setText("signal", "WebSocket closed - reconnecting...");
-            setTimeout(startWebSocket, 5000);
+        socket = null;
+
+        if(!manualSocketClose && currentInterval === "1min"){
+            console.log("WebSocket closed - reconnecting...");
+            if(reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(startWebSocket, 10000);
         }
     };
 }
 
+function startPricePolling(){
+
+    if(pricePollTimer) return;
+
+    pricePollTimer = setInterval(() => {
+        fetchLatestPrice();
+    }, 10000);
+}
+
+async function fetchLatestPrice(){
+
+    if(currentInterval !== "1min") return;
+
+    try{
+        const symbol = encodeURIComponent(currentSymbol);
+        const url = `https://api.twelvedata.com/price?symbol=${symbol}&apikey=${API_KEY}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if(!data.price) return;
+
+        const price = parseFloat(data.price);
+        const now = Math.floor(Date.now() / 1000);
+        const minuteTime = Math.floor(now / 60) * 60;
+
+        updateLiveCandle(price, minuteTime);
+
+    }catch(error){
+        console.log("Fallback price error:", error);
+    }
+}
+
 function updateLiveCandle(price, time){
 
-    if(!candlesData.length) return;
+    if(!candlesData.length || !candleSeries) return;
 
     let last = candlesData[candlesData.length - 1];
 
@@ -326,7 +398,7 @@ window.changeTimeframe = function(tf){
     firstLoad = true;
 
     loadMarketData();
-    startWebSocket();
+    startLiveUpdates();
 };
 
 // =======================
@@ -366,7 +438,7 @@ window.changeAsset = function(a){
 
     updatePanel();
     createChart();
-    startWebSocket();
+    startLiveUpdates();
 };
 
 // =======================
@@ -640,7 +712,7 @@ window.addEventListener("load", () => {
     createChart();
     updatePanel();
     updateSession();
-    startWebSocket();
+    startLiveUpdates();
 });
 
 setInterval(() => {
