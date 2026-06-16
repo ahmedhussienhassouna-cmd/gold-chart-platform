@@ -36,28 +36,66 @@ function updatePanel(){
     setText("panelLiquidity", liquidityOn ? "ON" : "OFF");
     setText("panelIB", ibOn ? "ON" : "OFF");
     setText("panelVWAP", vwapOn ? "ON" : "OFF");
+
+    const btn = document.getElementById("strategyBtn");
+    if(btn){
+        btn.innerHTML = strategyOn ? "✅ Strategy ON" : "💰 Strategy";
+    }
+}
+
+function safeRemovePriceLine(line){
+    try{
+        if(candleSeries && line){
+            candleSeries.removePriceLine(line);
+        }
+    }catch(e){
+        console.log("Remove line error:", e);
+    }
 }
 
 function clearLines(){
-    liquidityLines.forEach(line => candleSeries.removePriceLine(line));
-    ibLines.forEach(line => candleSeries.removePriceLine(line));
+    liquidityLines.forEach(line => safeRemovePriceLine(line));
+    ibLines.forEach(line => safeRemovePriceLine(line));
     liquidityLines = [];
     ibLines = [];
 }
 
+function clearMarkers(){
+    try{
+        if(candleSeries && typeof candleSeries.setMarkers === "function"){
+            candleSeries.setMarkers([]);
+        }
+    }catch(e){
+        console.log("Clear markers error:", e);
+    }
+}
+
+function setMarkersSafe(markers){
+    try{
+        if(candleSeries && typeof candleSeries.setMarkers === "function"){
+            candleSeries.setMarkers(markers);
+        }else{
+            console.log("setMarkers not supported in this version");
+        }
+    }catch(e){
+        console.log("Set markers error:", e);
+    }
+}
+
 function clearStrategy(){
-    candleSeries.setMarkers([]);
+    clearMarkers();
 
-    strategyLines.forEach(line => {
-        candleSeries.removePriceLine(line);
-    });
-
+    strategyLines.forEach(line => safeRemovePriceLine(line));
     strategyLines = [];
 }
 
 function clearVWAP(){
-    if(vwapSeries){
-        chart.removeSeries(vwapSeries);
+    if(vwapSeries && chart){
+        try{
+            chart.removeSeries(vwapSeries);
+        }catch(e){
+            console.log("VWAP remove error:", e);
+        }
         vwapSeries = null;
     }
 }
@@ -213,10 +251,8 @@ function startWebSocket(){
     };
 
     socket.onmessage = function(event){
-
         try{
             const msg = JSON.parse(event.data);
-
             if(!msg.price) return;
 
             const price = parseFloat(msg.price);
@@ -274,9 +310,10 @@ function updateLiveCandle(price, time){
     candleSeries.update(last);
 
     setText("priceBox", `${currentAsset} ${price} | ${currentInterval}`);
-    setText("signal", "🟢 Live price updated");
 
-    if(strategyOn) runGoldenStrategy(candlesData);
+    if(strategyOn){
+        runGoldenStrategy(candlesData);
+    }
 }
 
 // =======================
@@ -359,20 +396,30 @@ window.toggleStrategy = function(){
 
     strategyOn = !strategyOn;
 
+    updatePanel();
+
     if(!strategyOn){
         clearStrategy();
         setText("signal", "🔴 Strategy OFF");
-    } else {
-        runGoldenStrategy(candlesData);
-        setText("signal", "🟢 Golden Trade IB Pro V3 ON");
+        return;
     }
 
-    updatePanel();
+    setText("signal", "🟢 Strategy ON");
+
+    try{
+        runGoldenStrategy(candlesData);
+    }catch(error){
+        console.error("Strategy Error:", error);
+        setText("signal", "Strategy Error - check app.js");
+    }
 };
 
 function runGoldenStrategy(candles){
 
-    if(!candles || candles.length < 20) return;
+    if(!candles || candles.length < 20){
+        setText("signal", "Waiting for candles...");
+        return;
+    }
 
     clearStrategy();
 
@@ -469,7 +516,7 @@ function runGoldenStrategy(candles){
         }
     }
 
-    candleSeries.setMarkers(markers);
+    setMarkersSafe(markers);
 
     setText("signal", `✅ Golden Strategy Active | Signals: ${markers.length}`);
 }
