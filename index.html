@@ -6,9 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Golden Trade Platform</title>
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20">
 
-<!-- Lightweight Charts -->
 <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
 </head>
@@ -28,7 +27,7 @@
     <div class="section-title">Services</div>
 
     <button onclick="service('daily')">📊 Analysis</button>
-    <button onclick="toggleStrategy()">💰 Strategy</button>
+    <button id="strategyBtn" onclick="toggleStrategy()">💰 Strategy</button>
     <button onclick="toggleLiquidity()">💧 Liquidity</button>
     <button onclick="toggleIB()">📦 IB Zone</button>
     <button onclick="toggleVWAP()">📈 VWAP</button>
@@ -100,7 +99,6 @@
 
 </div>
 
-<!-- Academy Modal -->
 <div id="academyModal" class="academyModal">
 
     <div class="academyContent">
@@ -123,26 +121,20 @@
 </div>
 
 <script>
-
 function openAcademy(){
-
     document.getElementById("academyModal").style.display = "flex";
-
     document.getElementById("academyVideo").src =
     "https://www.youtube.com/embed/Nu4DzhRLRSI?autoplay=1";
 }
 
 function closeAcademy(){
-
     document.getElementById("academyModal").style.display = "none";
-
     document.getElementById("academyVideo").src = "";
 }
-
 </script>
 
-<script src="app.js"></script>
-<script src="auth.js"></script>
+<script src="auth.js?v=20"></script>
+<script src="app.js?v=20"></script>
 
 </body>
 </html>
