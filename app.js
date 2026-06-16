@@ -84,7 +84,6 @@ function setMarkersSafe(markers){
 
 function clearStrategy(){
     clearMarkers();
-
     strategyLines.forEach(line => safeRemovePriceLine(line));
     strategyLines = [];
 }
@@ -308,12 +307,7 @@ function updateLiveCandle(price, time){
     }
 
     candleSeries.update(last);
-
     setText("priceBox", `${currentAsset} ${price} | ${currentInterval}`);
-
-    if(strategyOn){
-        runGoldenStrategy(candlesData);
-    }
 }
 
 // =======================
@@ -390,7 +384,7 @@ window.service = function(type){
 };
 
 // =======================
-// STRATEGY - Golden Trade IB Pro V3
+// STRATEGY FROM FIREBASE
 // =======================
 window.toggleStrategy = function(){
 
@@ -405,120 +399,68 @@ window.toggleStrategy = function(){
     }
 
     setText("signal", "🟢 Strategy ON");
-
-    try{
-        runGoldenStrategy(candlesData);
-    }catch(error){
-        console.error("Strategy Error:", error);
-        setText("signal", "Strategy Error - check app.js");
-    }
+    runGoldenStrategy(candlesData);
 };
 
-function runGoldenStrategy(candles){
-
-    if(!candles || candles.length < 20){
-        setText("signal", "Waiting for candles...");
-        return;
-    }
+async function runGoldenStrategy(candles){
 
     clearStrategy();
 
-    const barsIB = 12;
-    const moveMin = 7.0;
-    const moveMax = 10.0;
-
-    const lastCandle = candles[candles.length - 1];
-    const lastDate = new Date(lastCandle.time * 1000).toDateString();
-
-    const todayCandles = candles.filter(c => {
-        return new Date(c.time * 1000).toDateString() === lastDate;
-    });
-
-    if(todayCandles.length < barsIB + 5){
-        setText("signal", "Waiting for IB candles...");
+    if(!candleSeries){
+        setText("signal", "Chart not ready");
         return;
     }
 
-    const ibCandles = todayCandles.slice(0, barsIB);
-
-    const ibHigh = Math.max(...ibCandles.map(c => c.high));
-    const ibLow  = Math.min(...ibCandles.map(c => c.low));
-
-    strategyLines.push(
-        candleSeries.createPriceLine({
-            price: ibHigh,
-            color: "#00ff66",
-            lineWidth: 2,
-            lineStyle: LightweightCharts.LineStyle.Solid,
-            axisLabelVisible: true,
-            title: "GT IB High"
-        })
-    );
-
-    strategyLines.push(
-        candleSeries.createPriceLine({
-            price: ibLow,
-            color: "#ff3333",
-            lineWidth: 2,
-            lineStyle: LightweightCharts.LineStyle.Solid,
-            axisLabelVisible: true,
-            title: "GT IB Low"
-        })
-    );
-
-    let brokeHigh = false;
-    let brokeLow = false;
-
-    let buyBreakPrice = null;
-    let sellBreakPrice = null;
-
-    let markers = [];
-
-    for(let i = barsIB; i < todayCandles.length; i++){
-
-        const c = todayCandles[i];
-
-        if(!brokeHigh && c.close > ibHigh){
-            brokeHigh = true;
-            buyBreakPrice = c.close;
-        }
-
-        if(!brokeLow && c.close < ibLow){
-            brokeLow = true;
-            sellBreakPrice = c.close;
-        }
-
-        const buyMove = buyBreakPrice ? c.close - buyBreakPrice : null;
-        const sellMove = sellBreakPrice ? sellBreakPrice - c.close : null;
-
-        if(buyMove !== null && buyMove >= moveMin && buyMove <= moveMax){
-            markers.push({
-                time: c.time,
-                position: "belowBar",
-                color: "#00ff66",
-                shape: "arrowUp",
-                text: "BUY V3"
-            });
-
-            buyBreakPrice = null;
-        }
-
-        if(sellMove !== null && sellMove >= moveMin && sellMove <= moveMax){
-            markers.push({
-                time: c.time,
-                position: "aboveBar",
-                color: "#ff3333",
-                shape: "arrowDown",
-                text: "SELL V3"
-            });
-
-            sellBreakPrice = null;
-        }
+    if(typeof window.loadStrategyLevels !== "function"){
+        setText("signal", "Firebase not loaded");
+        return;
     }
 
-    setMarkersSafe(markers);
+    try{
+        const levels = await window.loadStrategyLevels();
 
-    setText("signal", `✅ Golden Strategy Active | Signals: ${markers.length}`);
+        if(!levels){
+            setText("signal", "No strategy levels found");
+            return;
+        }
+
+        const high = Number(levels.high);
+        const low  = Number(levels.low);
+        const message = levels.message || "Golden Trade Strategy";
+
+        if(!Number.isFinite(high) || !Number.isFinite(low)){
+            setText("signal", "Strategy levels invalid");
+            return;
+        }
+
+        strategyLines.push(
+            candleSeries.createPriceLine({
+                price: high,
+                color: "#00ff66",
+                lineWidth: 2,
+                lineStyle: LightweightCharts.LineStyle.Solid,
+                axisLabelVisible: true,
+                title: "Liquidity High"
+            })
+        );
+
+        strategyLines.push(
+            candleSeries.createPriceLine({
+                price: low,
+                color: "#ff3333",
+                lineWidth: 2,
+                lineStyle: LightweightCharts.LineStyle.Solid,
+                axisLabelVisible: true,
+                title: "Liquidity Low"
+            })
+        );
+
+        setText("signal", `✅ ${message} | High: ${high} | Low: ${low}`);
+
+    }catch(error){
+        console.error("Strategy Firebase Error:", error);
+        setText("signal", "Strategy Firebase Error");
+    }
 }
 
 // =======================
