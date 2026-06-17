@@ -12,7 +12,7 @@ let strategyLines = [];
 let candlesData = [];
 
 let currentAsset = "GOLD";
-let currentSymbol = "XAU/USD";
+let currentSymbol = "XAUUSD";
 let currentInterval = "1min";
 
 let strategyOn = false;
@@ -403,10 +403,10 @@ window.changeAsset = function(a){
     currentAsset = a;
 
     const map = {
-        GOLD: "XAU/USD",
-        EURUSD: "EUR/USD",
-        BTCUSD: "BTC/USD"
-    };
+    GOLD: "XAUUSD",
+    EURUSD: "EURUSD",
+    BTCUSD: "BTCUSD"
+};
 
     currentSymbol = map[a] || "XAU/USD";
 
