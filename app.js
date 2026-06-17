@@ -1,5 +1,4 @@
 let currentTheme = localStorage.getItem("theme") || "dark";
-let widget = null;
 
 let currentAsset = "GOLD";
 let currentTVSymbol = "OANDA:XAUUSD";
@@ -29,8 +28,18 @@ function updatePanel(){
     const themeBtn = document.getElementById("themeBtn");
     if(themeBtn){
         themeBtn.innerHTML = currentTheme === "dark"
-            ? "🌙 Dark Mode"
-            : "☀️ Light Mode";
+            ? "☀️ Light Mode"
+            : "🌙 Dark Mode";
+    }
+}
+
+function applyPageTheme(){
+    if(currentTheme === "light"){
+        document.body.style.background = "#f4f4f4";
+        document.body.style.color = "#111";
+    }else{
+        document.body.style.background = "#0b0b0b";
+        document.body.style.color = "white";
     }
 }
 
@@ -42,10 +51,11 @@ function createChart(){
     container.innerHTML = "";
 
     const tvSymbol = encodeURIComponent(currentTVSymbol);
+    const theme = currentTheme === "light" ? "Light" : "Dark";
 
     container.innerHTML = `
         <iframe
-            src="https://www.tradingview.com/widgetembed/?symbol=${tvSymbol}&interval=1&theme=${currentTheme}&style=1&timezone=Africa%2FCairo&hide_side_toolbar=false&allow_symbol_change=true&save_image=false&calendar=false"
+            src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${tvSymbol}&interval=1&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=[]&theme=${theme}&style=1&timezone=Africa%2FCairo&withdateranges=1&hideideas=1"
             style="width:100%; height:100%; border:0;"
             allowtransparency="true"
             scrolling="no"
@@ -63,6 +73,7 @@ window.toggleTheme = function(){
 
     localStorage.setItem("theme", currentTheme);
 
+    applyPageTheme();
     createChart();
     updatePanel();
 };
@@ -180,6 +191,7 @@ function updateSession(){
 }
 
 window.addEventListener("load", () => {
+    applyPageTheme();
     createChart();
     updatePanel();
     updateSession();
@@ -189,6 +201,10 @@ setInterval(() => {
     updateSession();
 }, 1000);
 
+let resizeTimer = null;
 window.addEventListener("resize", () => {
-    createChart();
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        createChart();
+    }, 500);
 });
