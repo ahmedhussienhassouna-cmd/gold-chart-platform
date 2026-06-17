@@ -254,7 +254,11 @@ function startPricePolling(){
 
 function stopLiveUpdates(){
     stopWebSocket();
-    stopPricePolling();
+
+    if(pricePollTimer){
+        clearInterval(pricePollTimer);
+        pricePollTimer = null;
+    }
 }
 
 function startLiveUpdates(){
