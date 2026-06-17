@@ -41,33 +41,21 @@ function applyPageTheme(){
 function createChart(){
 
     const container = document.getElementById("chart");
+
     if(!container) return;
 
     container.innerHTML = "";
 
-    if(typeof TradingView === "undefined"){
-        setText("signal", "TradingView library not loaded");
-        return;
-    }
+    const tvSymbol = encodeURIComponent(currentTVSymbol);
 
-    new TradingView.widget({
-        container_id: "chart",
-        autosize: true,
-        symbol: currentTVSymbol,
-        interval: "1",
-        timezone: "Africa/Cairo",
-        theme: currentTheme,
-        style: "1",
-        locale: "en",
-        toolbar_bg: currentTheme === "dark" ? "#111111" : "#f1f3f6",
-        enable_publishing: false,
-        hide_top_toolbar: false,
-        hide_side_toolbar: false,
-        allow_symbol_change: true,
-        save_image: false,
-        withdateranges: true,
-        studies: []
-    });
+    container.innerHTML = `
+        <iframe
+            src="https://www.tradingview.com/widgetembed/?symbol=${tvSymbol}&interval=1&theme=dark&style=1&timezone=Africa%2FCairo&hide_side_toolbar=false&allow_symbol_change=true&save_image=false&calendar=false"
+            style="width:100%;height:100%;border:0;"
+            scrolling="no"
+            allowfullscreen>
+        </iframe>
+    `;
 
     setText("priceBox", `${currentAsset} Live Chart`);
     setText("signal", `✅ ${currentAsset} TradingView Chart Loaded`);
