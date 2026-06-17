@@ -241,11 +241,15 @@ function stopWebSocket(){
     }
 }
 
-function stopPricePolling(){
-    if(pricePollTimer){
-        clearInterval(pricePollTimer);
-        pricePollTimer = null;
-    }
+function startPricePolling(){
+
+    if(pricePollTimer) return;
+
+    pricePollTimer = setInterval(() => {
+        if(currentInterval === "1min" && !isLoading){
+            loadMarketData();
+        }
+    }, 15000);
 }
 
 function stopLiveUpdates(){
