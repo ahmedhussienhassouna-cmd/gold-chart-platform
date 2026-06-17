@@ -17,11 +17,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.loadStrategyLevels = async function(){
+window.loadStrategyLevels = async function(asset){
 
     try{
 
-        const docRef = doc(db, "strategy", "today");
+        const docRef = doc(db, "strategy", asset);
         const docSnap = await getDoc(docRef);
 
         if(!docSnap.exists()){
