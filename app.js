@@ -166,7 +166,7 @@ function createChart(){
 }
 
 // =======================
-// LOAD HISTORICAL DATA
+// LOAD DATA
 // =======================
 async function loadMarketData(){
 
@@ -241,39 +241,28 @@ function stopWebSocket(){
     }
 }
 
-function startPricePolling(){
-
-    if(pricePollTimer) return;
-
-    pricePollTimer = setInterval(() => {
-        if(currentInterval === "1min" && !isLoading){
-            loadMarketData();
-        }
-    }, 15000);
-}
 function stopPricePolling(){
     if(pricePollTimer){
         clearInterval(pricePollTimer);
         pricePollTimer = null;
     }
 }
+
 function stopLiveUpdates(){
     stopWebSocket();
-
-    if(pricePollTimer){
-        clearInterval(pricePollTimer);
-        pricePollTimer = null;
-    }
+    stopPricePolling();
 }
 
 function startLiveUpdates(){
     if(currentInterval === "1min"){
         startWebSocket();
+
+        // مهم: مقفول عشان TwelveData ما يعملش 429 Too Many Requests
         // startPricePolling();
+
     }else{
         stopLiveUpdates();
     }
-}
 }
 
 function startWebSocket(){
@@ -336,32 +325,10 @@ function startPricePolling(){
     if(pricePollTimer) return;
 
     pricePollTimer = setInterval(() => {
-        fetchLatestPrice();
-    }, 2000);
-}
-
-async function fetchLatestPrice(){
-
-    if(currentInterval !== "1min") return;
-
-    try{
-        const symbol = encodeURIComponent(currentSymbol);
-        const url = `https://api.twelvedata.com/price?symbol=${symbol}&apikey=${API_KEY}`;
-
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if(!data.price) return;
-
-        const price = parseFloat(data.price);
-        const now = Math.floor(Date.now() / 1000);
-        const minuteTime = Math.floor(now / 60) * 60;
-
-        updateLiveCandle(price, minuteTime);
-
-    }catch(error){
-        console.log("Fallback price error:", error);
-    }
+        if(currentInterval === "1min" && !isLoading){
+            loadMarketData();
+        }
+    }, 15000);
 }
 
 function updateLiveCandle(price, time){
