@@ -251,7 +251,12 @@ function startPricePolling(){
         }
     }, 15000);
 }
-
+function stopPricePolling(){
+    if(pricePollTimer){
+        clearInterval(pricePollTimer);
+        pricePollTimer = null;
+    }
+}
 function stopLiveUpdates(){
     stopWebSocket();
 
