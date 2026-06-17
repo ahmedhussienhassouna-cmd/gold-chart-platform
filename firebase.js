@@ -2,7 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
     getFirestore,
     doc,
-    getDoc
+    getDoc,
+    setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -41,7 +42,7 @@ window.loadStrategyLevels = async function(asset){
 };
 
 // =======================
-// CHANNEL
+// CHANNEL READ
 // =======================
 window.loadChannelMessage = async function(){
 
@@ -60,5 +61,31 @@ window.loadChannelMessage = async function(){
 
         console.error(error);
         return null;
+    }
+};
+
+// =======================
+// CHANNEL SAVE
+// =======================
+window.saveChannelMessage = async function(title, message){
+
+    try{
+
+        await setDoc(
+            doc(db, "channel", "welcome"),
+            {
+                title: title,
+                message: message,
+                createdAt: new Date().toLocaleString(),
+                type: "public"
+            }
+        );
+
+        return true;
+
+    }catch(error){
+
+        console.error(error);
+        return false;
     }
 };
