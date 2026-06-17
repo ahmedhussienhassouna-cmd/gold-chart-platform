@@ -6,7 +6,7 @@
 }
 
 body{
-    background:#0b0b0b;
+    background:#050505;
     color:white;
     overflow:hidden;
 }
@@ -16,75 +16,72 @@ body{
     position:fixed;
     left:0;
     top:0;
-    width:220px;
+    width:260px;
     height:100vh;
-    background:#111;
-    padding:14px;
+    background:linear-gradient(180deg,#090909,#111);
+    padding:18px;
     display:flex;
     flex-direction:column;
-    border-right:1px solid #242424;
+    border-right:1px solid #2a2a2a;
 }
 
 .sidebar h2{
     color:#ffd700;
-    font-size:20px;
+    font-size:26px;
     margin-bottom:15px;
+}
+
+/* PROFILE */
+.profileBox{
+    text-align:center;
+    margin:15px 0 25px;
+}
+
+.profileImage{
+    width:130px;
+    height:130px;
+    object-fit:cover;
+    border-radius:50%;
+    border:3px solid #ffd700;
+    box-shadow:0 0 25px rgba(255,215,0,.45);
+}
+
+.profileName{
+    margin-top:12px;
+    color:#ffd700;
+    font-weight:bold;
+    font-size:20px;
+}
+
+.profileTitle{
+    margin-top:5px;
+    color:#aaa;
+    font-size:13px;
 }
 
 /* TOPBAR */
 .topbar{
     position:fixed;
-    left:220px;
+    left:260px;
     top:0;
-    right:260px;
-    height:50px;
+    right:290px;
+    height:60px;
     background:#111;
-    border-bottom:1px solid #242424;
+    border-bottom:1px solid #2a2a2a;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:0 18px;
+    padding:0 22px;
     font-weight:bold;
-}
-
-/* TIMEFRAMES */
-.timeframes{
-    position:fixed;
-    left:220px;
-    right:260px;
-    top:50px;
-    height:40px;
-    background:#111;
-    border-bottom:1px solid #242424;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:0 12px;
-    z-index:50;
-}
-
-.timeframes button{
-    background:#1d1d1d;
-    border:1px solid #333;
-    color:white;
-    padding:6px 12px;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:13px;
-    transition:.2s;
-}
-
-.timeframes button:hover{
-    background:#ffd700;
-    color:black;
+    z-index:10;
 }
 
 /* CHART */
 #chart{
     position:fixed;
-    left:220px;
-    top:90px;
-    right:260px;
+    left:260px;
+    top:60px;
+    right:290px;
     bottom:0;
     background:#0b0b0b;
     overflow:hidden;
@@ -95,11 +92,12 @@ body{
     position:fixed;
     right:0;
     top:0;
-    width:260px;
+    width:290px;
     bottom:0;
-    background:#111;
-    border-left:1px solid #242424;
-    padding:15px;
+    background:linear-gradient(180deg,#090909,#111);
+    border-left:1px solid #2a2a2a;
+    padding:18px;
+    overflow-y:auto;
 }
 
 .signalBox h3{
@@ -107,30 +105,13 @@ body{
     margin-bottom:12px;
 }
 
-/* PANEL */
-.panelRow{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:10px 0;
-    border-bottom:1px solid #242424;
-    font-size:14px;
-}
-
-.panelRow span{
-    color:#aaa;
-}
-
-.panelRow b{
-    color:#ffd700;
-}
-
+/* PANEL SIGNAL */
 .panelSignal{
-    margin-top:15px;
+    margin-top:12px;
     background:#1b1b1b;
-    border:1px solid #2b2b2b;
-    border-radius:8px;
-    padding:12px;
+    border:1px solid #333;
+    border-radius:10px;
+    padding:14px;
 }
 
 .panelSignal span{
@@ -142,34 +123,60 @@ body{
     margin-top:8px;
     color:white;
     font-weight:bold;
+    line-height:1.5;
+}
+
+/* CHANNEL */
+#channelBox{
+    margin-top:10px;
 }
 
 /* TITLES */
 .section-title{
     color:#888;
-    font-size:11px;
-    margin:14px 0 6px;
+    font-size:12px;
+    margin:16px 0 8px;
     letter-spacing:1px;
     text-transform:uppercase;
+    font-weight:bold;
 }
 
 /* BUTTONS */
 .sidebar button{
     width:100%;
-    padding:10px;
-    margin:4px 0;
-    background:#1d1d1d;
-    border:1px solid #2b2b2b;
+    padding:13px 14px;
+    margin:5px 0;
+    background:#1c1c1c;
+    border:1px solid #333;
     color:white;
-    border-radius:7px;
+    border-radius:10px;
     cursor:pointer;
     text-align:left;
     transition:.2s;
-    font-size:14px;
+    font-size:15px;
+    font-weight:bold;
 }
 
 .sidebar button:hover{
     background:#ffd700;
+    color:black;
+    transform:translateX(3px);
+}
+
+/* THEME BUTTON */
+#themeBtn{
+    background:#ffd700;
+    color:#000;
+    border:none;
+    padding:8px 12px;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+    white-space:nowrap;
+}
+
+#themeBtn:hover{
+    background:white;
     color:black;
 }
 
@@ -282,23 +289,4 @@ body{
     color:#ffd700;
     text-decoration:none;
     font-weight:bold;
-    
-    /* THEME BUTTON */
-#themeBtn{
-    background:#ffd700;
-    color:#000;
-    border:none;
-    padding:8px 12px;
-    border-radius:6px;
-    font-weight:bold;
-    cursor:pointer;
-    margin-left:10px;
-    white-space:nowrap;
-    min-width:140px;
-}
-
-#themeBtn:hover{
-    background:white;
-    color:black;
-}
 }
