@@ -282,4 +282,23 @@ body{
     color:#ffd700;
     text-decoration:none;
     font-weight:bold;
+    
+    /* THEME BUTTON */
+#themeBtn{
+    background:#ffd700;
+    color:#000;
+    border:none;
+    padding:8px 12px;
+    border-radius:6px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-left:10px;
+    white-space:nowrap;
+    min-width:140px;
+}
+
+#themeBtn:hover{
+    background:white;
+    color:black;
+}
 }
