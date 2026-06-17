@@ -96,7 +96,7 @@ window.toggleStrategy = async function(){
     }
 
     try{
-        const levels = await window.loadStrategyLevels();
+const levels = await window.loadStrategyLevels(currentAsset);
 
         if(!levels){
             setText("signal", "No strategy levels found");
