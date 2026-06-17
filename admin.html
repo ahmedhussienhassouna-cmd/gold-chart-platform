@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Golden Trade Admin</title>
+
+<style>
+body{
+    background:#0b0b0b;
+    color:white;
+    font-family:Arial;
+    padding:20px;
+}
+
+.card{
+    background:#151515;
+    padding:20px;
+    margin-bottom:20px;
+    border-radius:10px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    margin-bottom:10px;
+    background:#222;
+    color:white;
+    border:none;
+}
+
+button{
+    padding:12px 20px;
+    background:#ffd700;
+    border:none;
+    cursor:pointer;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🟡 Golden Trade Admin</h1>
+
+<div class="card">
+
+<h2>Gold</h2>
+
+<input id="goldHigh" placeholder="Gold High">
+<input id="goldLow" placeholder="Gold Low">
+
+</div>
+
+<div class="card">
+
+<h2>EURUSD</h2>
+
+<input id="eurHigh" placeholder="EURUSD High">
+<input id="eurLow" placeholder="EURUSD Low">
+
+</div>
+
+<div class="card">
+
+<h2>BTCUSD</h2>
+
+<input id="btcHigh" placeholder="BTCUSD High">
+<input id="btcLow" placeholder="BTCUSD Low">
+
+</div>
+
+<button onclick="saveLevels()">SAVE LEVELS</button>
+
+<script type="module" src="admin.js"></script>
+
+</body>
+</html>
