@@ -323,7 +323,7 @@ function startPricePolling(){
 
     pricePollTimer = setInterval(() => {
         fetchLatestPrice();
-    }, 10000);
+    }, 2000);
 }
 
 async function fetchLatestPrice(){
