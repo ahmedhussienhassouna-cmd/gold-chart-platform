@@ -269,10 +269,11 @@ function stopLiveUpdates(){
 function startLiveUpdates(){
     if(currentInterval === "1min"){
         startWebSocket();
-        startPricePolling();
+        // startPricePolling();
     }else{
         stopLiveUpdates();
     }
+}
 }
 
 function startWebSocket(){
