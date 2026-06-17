@@ -171,6 +171,42 @@ window.toggleVWAP = function(){
     setText("signal", vwapOn ? "📈 VWAP ON" : "📈 VWAP OFF");
 };
 
+// =======================
+// CHANNEL
+// =======================
+async function loadChannel(){
+
+    const box = document.getElementById("channelBox");
+
+    if(!box) return;
+
+    if(typeof window.loadChannelMessage !== "function"){
+        box.innerHTML = "Channel not loaded";
+        return;
+    }
+
+    try{
+        const data = await window.loadChannelMessage();
+
+        if(!data){
+            box.innerHTML = "No channel message";
+            return;
+        }
+
+        box.innerHTML = `
+            <div style="background:#1b1b1b;border:1px solid #333;border-radius:8px;padding:10px;margin-top:8px;">
+                <b style="color:#ffd700;">${data.title || "Golden Trade"}</b>
+                <p style="margin-top:8px;line-height:1.5;">${data.message || ""}</p>
+                <small style="color:#888;">${data.createdAt || ""}</small>
+            </div>
+        `;
+
+    }catch(error){
+        console.error(error);
+        box.innerHTML = "Channel error";
+    }
+}
+
 function getCurrentSession(){
 
     const now = new Date();
@@ -201,11 +237,19 @@ window.addEventListener("load", () => {
     createChart();
     updatePanel();
     updateSession();
+
+    setTimeout(() => {
+        loadChannel();
+    }, 1000);
 });
 
 setInterval(() => {
     updateSession();
 }, 1000);
+
+setInterval(() => {
+    loadChannel();
+}, 30000);
 
 let resizeTimer = null;
 window.addEventListener("resize", () => {
