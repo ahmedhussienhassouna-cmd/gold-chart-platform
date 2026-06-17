@@ -309,15 +309,18 @@ function startWebSocket(){
         console.log("WebSocket error:", error);
     };
 
-    socket.onclose = function(){
-        socket = null;
+   socket.onclose = function(event){
 
-        if(!manualSocketClose && currentInterval === "1min"){
-            console.log("WebSocket closed - reconnecting...");
-            if(reconnectTimer) clearTimeout(reconnectTimer);
-            reconnectTimer = setTimeout(startWebSocket, 10000);
-        }
-    };
+    console.log("CLOSE CODE:", event.code);
+    console.log("CLOSE REASON:", event.reason);
+
+    socket = null;
+
+    if(!manualSocketClose && currentInterval === "1min"){
+        console.log("WebSocket closed - reconnecting...");
+        reconnectTimer = setTimeout(startWebSocket, 10000);
+    }
+};
 }
 
 function startPricePolling(){
