@@ -17,11 +17,37 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// =======================
+// STRATEGY
+// =======================
 window.loadStrategyLevels = async function(asset){
 
     try{
 
         const docRef = doc(db, "strategy", asset);
+        const docSnap = await getDoc(docRef);
+
+        if(!docSnap.exists()){
+            return null;
+        }
+
+        return docSnap.data();
+
+    }catch(error){
+
+        console.error(error);
+        return null;
+    }
+};
+
+// =======================
+// CHANNEL
+// =======================
+window.loadChannelMessage = async function(){
+
+    try{
+
+        const docRef = doc(db, "channel", "welcome");
         const docSnap = await getDoc(docRef);
 
         if(!docSnap.exists()){
