@@ -34,13 +34,8 @@ function updatePanel(){
 }
 
 function applyPageTheme(){
-    if(currentTheme === "light"){
-        document.body.style.background = "#f4f4f4";
-        document.body.style.color = "#111";
-    }else{
-        document.body.style.background = "#0b0b0b";
-        document.body.style.color = "white";
-    }
+    document.body.classList.remove("darkTheme", "lightTheme");
+    document.body.classList.add(currentTheme === "dark" ? "darkTheme" : "lightTheme");
 }
 
 function createChart(){
@@ -50,18 +45,29 @@ function createChart(){
 
     container.innerHTML = "";
 
-    const tvSymbol = encodeURIComponent(currentTVSymbol);
-    const theme = currentTheme === "light" ? "Light" : "Dark";
+    if(typeof TradingView === "undefined"){
+        setText("signal", "TradingView library not loaded");
+        return;
+    }
 
-    container.innerHTML = `
-        <iframe
-            src="https://www.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${tvSymbol}&interval=1&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=[]&theme=${theme}&style=1&timezone=Africa%2FCairo&withdateranges=1&hideideas=1"
-            style="width:100%; height:100%; border:0;"
-            allowtransparency="true"
-            scrolling="no"
-            allowfullscreen>
-        </iframe>
-    `;
+    new TradingView.widget({
+        container_id: "chart",
+        autosize: true,
+        symbol: currentTVSymbol,
+        interval: "1",
+        timezone: "Africa/Cairo",
+        theme: currentTheme,
+        style: "1",
+        locale: "en",
+        toolbar_bg: currentTheme === "dark" ? "#111111" : "#f1f3f6",
+        enable_publishing: false,
+        hide_top_toolbar: false,
+        hide_side_toolbar: false,
+        allow_symbol_change: true,
+        save_image: false,
+        withdateranges: true,
+        studies: []
+    });
 
     setText("priceBox", `${currentAsset} Live Chart`);
     setText("signal", `✅ ${currentAsset} TradingView Chart Loaded`);
