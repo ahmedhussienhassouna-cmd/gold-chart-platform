@@ -1,3 +1,4 @@
+let currentTheme = localStorage.getItem("theme") || "dark";
 let widget = null;
 
 let currentAsset = "GOLD";
@@ -24,6 +25,13 @@ function updatePanel(){
     if(btn){
         btn.innerHTML = strategyOn ? "✅ Strategy ON" : "💰 Strategy";
     }
+
+    const themeBtn = document.getElementById("themeBtn");
+    if(themeBtn){
+        themeBtn.innerHTML = currentTheme === "dark"
+            ? "🌙 Dark Mode"
+            : "☀️ Light Mode";
+    }
 }
 
 function createChart(){
@@ -37,7 +45,7 @@ function createChart(){
 
     container.innerHTML = `
         <iframe
-            src="https://www.tradingview.com/widgetembed/?symbol=${tvSymbol}&interval=1&theme=dark&style=1&timezone=Africa%2FCairo&hide_side_toolbar=false&allow_symbol_change=true&save_image=false&calendar=false"
+            src="https://www.tradingview.com/widgetembed/?symbol=${tvSymbol}&interval=1&theme=${currentTheme}&style=1&timezone=Africa%2FCairo&hide_side_toolbar=false&allow_symbol_change=true&save_image=false&calendar=false"
             style="width:100%; height:100%; border:0;"
             allowtransparency="true"
             scrolling="no"
@@ -48,6 +56,16 @@ function createChart(){
     setText("priceBox", `${currentAsset} Live Chart`);
     setText("signal", `✅ ${currentAsset} TradingView Chart Loaded`);
 }
+
+window.toggleTheme = function(){
+
+    currentTheme = currentTheme === "dark" ? "light" : "dark";
+
+    localStorage.setItem("theme", currentTheme);
+
+    createChart();
+    updatePanel();
+};
 
 window.changeAsset = function(a){
 
@@ -96,7 +114,7 @@ window.toggleStrategy = async function(){
     }
 
     try{
-const levels = await window.loadStrategyLevels(currentAsset);
+        const levels = await window.loadStrategyLevels(currentAsset);
 
         if(!levels){
             setText("signal", "No strategy levels found");
