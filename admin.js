@@ -1,4 +1,3 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
     getFirestore,
@@ -18,6 +17,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// =======================
+// SAVE LEVELS
+// =======================
 window.saveLevels = async function(){
 
     try{
@@ -46,5 +48,33 @@ window.saveLevels = async function(){
 
         console.error(error);
         alert("❌ Save Error");
+    }
+};
+
+// =======================
+// SEND CHANNEL MESSAGE
+// =======================
+window.sendChannelMessage = async function(){
+
+    try{
+
+        const title = document.getElementById("channelTitle").value;
+        const message = document.getElementById("channelMessage").value;
+
+        await setDoc(doc(db, "channel", "welcome"), {
+
+            title: title,
+            message: message,
+            createdAt: new Date().toLocaleString(),
+            type: "public"
+
+        });
+
+        alert("✅ Channel Message Sent");
+
+    }catch(error){
+
+        console.error(error);
+        alert("❌ Channel Error");
     }
 };
