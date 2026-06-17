@@ -8,6 +8,11 @@ let liquidityOn = false;
 let ibOn = false;
 let vwapOn = false;
 
+let lastPrice = null;
+
+// =======================
+// HELPERS
+// =======================
 function setText(id, value){
     const el = document.getElementById(id);
     if(el) el.innerHTML = value;
@@ -38,10 +43,41 @@ function applyPageTheme(){
     document.body.classList.add(currentTheme === "dark" ? "darkTheme" : "lightTheme");
 }
 
+// =======================
+// OANDA LIVE PRICE
+// =======================
+async function loadOandaPrice(){
+    try{
+        const res = await fetch("/api/price");
+        const data = await res.json();
+
+        if(!data.prices || !data.prices[0]){
+            setText("priceBox", "OANDA price error");
+            return;
+        }
+
+        const priceData = data.prices[0];
+        const bid = Number(priceData.bids[0].price);
+        const ask = Number(priceData.asks[0].price);
+        const mid = ((bid + ask) / 2).toFixed(2);
+
+        lastPrice = Number(mid);
+
+        setText("priceBox", `🥇 XAUUSD Live: ${mid}`);
+        setText("signal", `✅ OANDA Connected | Bid: ${bid} | Ask: ${ask}`);
+
+    }catch(error){
+        console.error(error);
+        setText("priceBox", "OANDA disconnected");
+    }
+}
+
+// =======================
+// CHART
+// =======================
 function createChart(){
 
     const container = document.getElementById("chart");
-
     if(!container) return;
 
     container.innerHTML = "";
@@ -61,10 +97,11 @@ function createChart(){
     setText("signal", `✅ ${currentAsset} TradingView Chart Loaded`);
 }
 
+// =======================
+// BUTTONS
+// =======================
 window.toggleTheme = function(){
-
     currentTheme = currentTheme === "dark" ? "light" : "dark";
-
     localStorage.setItem("theme", currentTheme);
 
     applyPageTheme();
@@ -90,6 +127,10 @@ window.changeAsset = function(a){
 
     createChart();
     updatePanel();
+
+    if(a === "GOLD"){
+        loadOandaPrice();
+    }
 };
 
 window.service = function(type){
@@ -132,7 +173,7 @@ window.toggleStrategy = async function(){
 
         setText(
             "signal",
-            `✅ ${message}<br>High: ${high}<br>Low: ${low}`
+            `✅ ${message}<br>High: ${high}<br>Low: ${low}<br>Live Price: ${lastPrice || "Loading..."}`
         );
 
     }catch(error){
@@ -165,7 +206,6 @@ window.toggleVWAP = function(){
 async function loadChannel(){
 
     const box = document.getElementById("channelBox");
-
     if(!box) return;
 
     if(typeof window.loadChannelMessage !== "function"){
@@ -195,6 +235,9 @@ async function loadChannel(){
     }
 }
 
+// =======================
+// SESSION
+// =======================
 function getCurrentSession(){
 
     const now = new Date();
@@ -220,11 +263,15 @@ function updateSession(){
     setText("panelSession", getCurrentSession());
 }
 
+// =======================
+// LOAD
+// =======================
 window.addEventListener("load", () => {
     applyPageTheme();
     createChart();
     updatePanel();
     updateSession();
+    loadOandaPrice();
 
     setTimeout(() => {
         loadChannel();
@@ -238,6 +285,12 @@ setInterval(() => {
 setInterval(() => {
     loadChannel();
 }, 30000);
+
+setInterval(() => {
+    if(currentAsset === "GOLD"){
+        loadOandaPrice();
+    }
+}, 3000);
 
 let resizeTimer = null;
 window.addEventListener("resize", () => {
