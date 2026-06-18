@@ -1,7 +1,6 @@
 let currentTheme = localStorage.getItem("theme") || "dark";
 
 let currentAsset = "GOLD";
-let currentTVSymbol = "OANDA:XAUUSD";
 
 let strategyOn = false;
 let liquidityOn = false;
@@ -68,7 +67,6 @@ async function loadOandaPrice(){
         lastPrice = Number(mid);
 
         setText("priceBox", `🥇 XAUUSD Live: ${mid}`);
-        setText("signal", `✅ OANDA Connected | Bid: ${bid} | Ask: ${ask}`);
 
     }catch(error){
         console.error(error);
@@ -118,14 +116,21 @@ async function createChart(){
 
     const chartBox = document.getElementById("oandaChart");
 
+    chartBox.style.width = "100%";
+    chartBox.style.height = "100%";
+
     if(typeof LightweightCharts === "undefined"){
         setText("signal", "Lightweight Charts library not loaded");
         return;
     }
 
+    const rect = container.getBoundingClientRect();
+    const width = Math.max(rect.width, 600);
+    const height = Math.max(rect.height, 400);
+
     oandaChart = LightweightCharts.createChart(chartBox, {
-        width: chartBox.clientWidth,
-        height: chartBox.clientHeight,
+        width: width,
+        height: height,
         layout: {
             background: { color: "#0b0b0b" },
             textColor: "#d1d4dc"
@@ -162,8 +167,7 @@ async function createChart(){
         candleSeries.setData(candles);
         oandaChart.timeScale().fitContent();
 
-        setText("priceBox", `${currentAsset} OANDA Chart`);
-        setText("signal", `✅ ${currentAsset} OANDA Candles Loaded`);
+        setText("signal", `✅ GOLD OANDA Chart Loaded`);
     }else{
         setText("signal", "No OANDA candles found");
     }
@@ -196,14 +200,6 @@ window.toggleTheme = function(){
 window.changeAsset = function(a){
 
     currentAsset = a;
-
-    const map = {
-        GOLD: "OANDA:XAUUSD",
-        EURUSD: "OANDA:EURUSD",
-        BTCUSD: "BINANCE:BTCUSDT"
-    };
-
-    currentTVSymbol = map[a] || "OANDA:XAUUSD";
 
     setText("activeAsset", a);
     setText("signal", "Loading " + a + " chart...");
@@ -354,10 +350,14 @@ function updateSession(){
 // =======================
 window.addEventListener("load", () => {
     applyPageTheme();
-    createChart();
+
+    setTimeout(() => {
+        createChart();
+        loadOandaPrice();
+    }, 300);
+
     updatePanel();
     updateSession();
-    loadOandaPrice();
 
     setTimeout(() => {
         loadChannel();
