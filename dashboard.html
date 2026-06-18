@@ -4,16 +4,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Golden Trade Dashboard</title>
-
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <div class="sidebar">
-
     <h2>🟡 Golden Trade</h2>
 
     <div class="profileBox">
@@ -23,13 +20,11 @@
     </div>
 
     <div class="section-title">Assets</div>
-
     <button onclick="changeAsset('GOLD')">🥇 Gold</button>
     <button onclick="changeAsset('EURUSD')">💶 EUR/USD</button>
     <button onclick="changeAsset('BTCUSD')">₿ Bitcoin</button>
 
     <div class="section-title">Services</div>
-
     <button onclick="service('daily')">📊 Analysis</button>
     <button onclick="toggleStrategy()">💰 Strategy</button>
     <button onclick="openAcademy()">🎓 Academy</button>
@@ -38,7 +33,6 @@
     <div style="margin-top:auto">
         <button onclick="logout()">🚪 Logout</button>
     </div>
-
 </div>
 
 <div class="topbar">
@@ -47,10 +41,54 @@
     <button onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
 </div>
 
-<div id="chart"></div>
+<div id="chart">
+
+    <div id="chartToolbar" style="
+        position:absolute;
+        top:10px;
+        left:10px;
+        z-index:20;
+        display:flex;
+        gap:6px;
+        flex-wrap:wrap;
+        background:rgba(10,10,10,.85);
+        padding:8px;
+        border:1px solid #333;
+        border-radius:8px;
+    ">
+        <button onclick="changeTimeframe('M1')">1m</button>
+        <button onclick="changeTimeframe('M5')">5m</button>
+        <button onclick="changeTimeframe('M15')">15m</button>
+        <button onclick="changeTimeframe('H1')">1H</button>
+        <button onclick="changeTimeframe('H4')">4H</button>
+        <button onclick="changeTimeframe('D')">1D</button>
+        <button onclick="zoomIn()">+</button>
+        <button onclick="zoomOut()">-</button>
+        <button onclick="resetChart()">Reset</button>
+        <button onclick="enableHorizontalLine()">H-Line</button>
+        <button onclick="clearDrawings()">Clear</button>
+    </div>
+
+    <div id="oandaChart"></div>
+
+    <div id="chartContextMenu" style="
+        display:none;
+        position:absolute;
+        z-index:9999;
+        background:#111;
+        border:1px solid #333;
+        border-radius:8px;
+        overflow:hidden;
+        min-width:180px;
+    ">
+        <div onclick="enableHorizontalLine()" style="padding:10px;cursor:pointer;">➖ Horizontal Line</div>
+        <div onclick="resetChart()" style="padding:10px;cursor:pointer;">🔄 Reset Chart</div>
+        <div onclick="clearDrawings()" style="padding:10px;cursor:pointer;">🗑 Clear Drawings</div>
+    </div>
+
+</div>
 
 <div class="signalBox">
-
     <h3>Golden Trade Panel</h3>
 
     <div class="panelSignal">
@@ -61,33 +99,19 @@
     <hr style="margin:15px 0;border-color:#222;">
 
     <h3>📢 Golden Trade Channel</h3>
-
-    <div id="channelBox">
-        Loading channel...
-    </div>
-
+    <div id="channelBox">Loading channel...</div>
 </div>
 
 <div id="academyModal" class="academyModal">
-
     <div class="academyContent">
-
         <span class="closeAcademy" onclick="closeAcademy()">✖</span>
-
-        <iframe
-            id="academyVideo"
-            src=""
-            allowfullscreen>
-        </iframe>
-
+        <iframe id="academyVideo" src="" allowfullscreen></iframe>
     </div>
-
 </div>
 
 <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
-
 <script type="module" src="firebase.js"></script>
-<script src="app.js?v=61"></script>
+<script src="app.js?v=70"></script>
 <script src="auth.js"></script>
 
 <script>
