@@ -536,7 +536,13 @@ function renderSessionProfile(){
 
     if(!sessionProfileOn || !candlesData.length) return;
 
-    const groups = buildSessionGroups(candlesData).slice(-20);
+    const today = new Date().toLocaleDateString("en-CA", {
+        timeZone: "Africa/Cairo"
+    });
+
+    const groups = buildSessionGroups(candlesData).filter(g => {
+        return g.key.startsWith(today);
+    });
 
     groups.forEach(g => {
         const x1 = oandaChart.timeScale().timeToCoordinate(g.start);
