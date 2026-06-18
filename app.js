@@ -17,6 +17,8 @@ let resizeTimer = null;
 let drawingMode = "cursor";
 let drawings = [];
 let priceLineDrawings = [];
+let strategyLines = [];
+
 let pendingPoint = null;
 let drawingsLocked = false;
 let drawingsVisible = true;
@@ -78,6 +80,47 @@ function setActiveToolButton(){
 
     const eye = document.getElementById("tool-eye");
     if(eye) eye.classList.toggle("active", drawingsVisible);
+}
+
+// =======================
+// STRATEGY LINES
+// =======================
+function clearStrategyLines(){
+    if(!candleSeries) return;
+
+    strategyLines.forEach(line => {
+        candleSeries.removePriceLine(line);
+    });
+
+    strategyLines = [];
+}
+
+function drawStrategyZone(high, low){
+    if(!candleSeries) return;
+
+    clearStrategyLines();
+
+    const highLine = candleSeries.createPriceLine({
+        price: high,
+        color: "#ffd700",
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Solid,
+        axisLabelVisible: true,
+        title: "GT HIGH"
+    });
+
+    const lowLine = candleSeries.createPriceLine({
+        price: low,
+        color: "#ffd700",
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Solid,
+        axisLabelVisible: true,
+        title: "GT LOW"
+    });
+
+    strategyLines.push(highLine, lowLine);
+
+    setText("signal", `✅ Strategy Zone Drawn<br>High: ${high}<br>Low: ${low}`);
 }
 
 // =======================
@@ -190,6 +233,9 @@ async function createChart(){
     chartBox.style.width = "100%";
     chartBox.style.height = "100%";
     chartBox.style.position = "relative";
+
+    strategyLines = [];
+    priceLineDrawings = [];
 
     if(typeof LightweightCharts === "undefined"){
         setText("signal", "Lightweight Charts library not loaded");
@@ -714,6 +760,7 @@ window.toggleStrategy = async function(){
     updatePanel();
 
     if(!strategyOn){
+        clearStrategyLines();
         setText("signal", "🔴 Strategy OFF");
         return;
     }
@@ -734,6 +781,8 @@ window.toggleStrategy = async function(){
         const high = Number(levels.high);
         const low = Number(levels.low);
         const message = levels.message || "Golden Trade Strategy";
+
+        drawStrategyZone(high, low);
 
         setText(
             "signal",
