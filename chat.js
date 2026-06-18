@@ -23,6 +23,17 @@ function escapeHtml(text){
     return div.innerHTML;
 }
 
+function getInitials(name){
+    if(!name) return "GT";
+
+    return name
+        .split(" ")
+        .map(word => word.charAt(0))
+        .join("")
+        .substring(0, 2)
+        .toUpperCase();
+}
+
 function formatChatTime(createdAt){
     if(!createdAt) return "";
 
@@ -55,16 +66,14 @@ function renderChatMessages(messages){
         const row = document.createElement("div");
         row.className = isMe ? "chatMessageRow me" : "chatMessageRow";
 
+        const initials = getInitials(msg.name || "Client");
+
         row.innerHTML = `
-            <img 
-                src="${msg.photo || "images/ahmed.jpg"}" 
-                class="chatAvatar"
-                onerror="this.src='images/ahmed.jpg'"
-            >
+            <div class="chatAvatarText">${initials}</div>
 
             <div class="chatBubble">
                 <div class="chatMeta">
-                    <span>${msg.name || "Client"}</span>
+                    <span>${escapeHtml(msg.name || "Client")}</span>
                     <small>${formatChatTime(msg.createdAt)}</small>
                 </div>
 
