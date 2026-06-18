@@ -14,8 +14,14 @@ let oandaChart = null;
 let candleSeries = null;
 let resizeTimer = null;
 
-let drawingMode = null;
+let drawingMode = "cursor";
 let drawings = [];
+let priceLineDrawings = [];
+let pendingPoint = null;
+let drawingsLocked = false;
+let drawingsVisible = true;
+let magnetMode = false;
+let drawingSvg = null;
 
 // =======================
 // HELPERS
@@ -46,6 +52,32 @@ function updatePanel(){
 function applyPageTheme(){
     document.body.classList.remove("darkTheme", "lightTheme");
     document.body.classList.add(currentTheme === "dark" ? "darkTheme" : "lightTheme");
+}
+
+function setActiveTimeframeButton(){
+    ["M1","M5","M15","H1","H4","D"].forEach(tf => {
+        const btn = document.getElementById("tf-" + tf);
+        if(btn) btn.classList.toggle("active", tf === currentGranularity);
+    });
+}
+
+function setActiveToolButton(){
+    [
+        "cursor","trend","horizontal","vertical",
+        "rectangle","arrow","text"
+    ].forEach(tool => {
+        const btn = document.getElementById("tool-" + tool);
+        if(btn) btn.classList.toggle("active", tool === drawingMode);
+    });
+
+    const magnet = document.getElementById("tool-magnet");
+    if(magnet) magnet.classList.toggle("active", magnetMode);
+
+    const lock = document.getElementById("tool-lock");
+    if(lock) lock.classList.toggle("active", drawingsLocked);
+
+    const eye = document.getElementById("tool-eye");
+    if(eye) eye.classList.toggle("active", drawingsVisible);
 }
 
 // =======================
@@ -157,6 +189,7 @@ async function createChart(){
     chartBox.innerHTML = "";
     chartBox.style.width = "100%";
     chartBox.style.height = "100%";
+    chartBox.style.position = "relative";
 
     if(typeof LightweightCharts === "undefined"){
         setText("signal", "Lightweight Charts library not loaded");
@@ -189,10 +222,7 @@ async function createChart(){
             timeVisible: true,
             secondsVisible: false,
             rightOffset: 10,
-            barSpacing: 8,
-            fixLeftEdge: false,
-            fixRightEdge: false,
-            lockVisibleTimeRangeOnResize: false
+            barSpacing: 8
         },
         handleScroll: {
             mouseWheel: true,
@@ -218,6 +248,8 @@ async function createChart(){
         lastValueVisible: true
     });
 
+    createDrawingLayer();
+
     const candles = await loadOandaCandles();
 
     if(candles.length){
@@ -241,6 +273,345 @@ async function createChart(){
     }
 
     setupContextMenu();
+    setupDrawingEvents();
+    setActiveTimeframeButton();
+    setActiveToolButton();
+
+    oandaChart.timeScale().subscribeVisibleTimeRangeChange(() => {
+        renderDrawings();
+    });
+}
+
+// =======================
+// DRAWING LAYER
+// =======================
+function createDrawingLayer(){
+    const chartBox = document.getElementById("oandaChart");
+    if(!chartBox) return;
+
+    drawingSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    drawingSvg.setAttribute("id", "drawingSvg");
+    drawingSvg.style.position = "absolute";
+    drawingSvg.style.left = "0";
+    drawingSvg.style.top = "0";
+    drawingSvg.style.width = "100%";
+    drawingSvg.style.height = "100%";
+    drawingSvg.style.zIndex = "30";
+    drawingSvg.style.pointerEvents = "none";
+    drawingSvg.style.display = drawingsVisible ? "block" : "none";
+
+    chartBox.appendChild(drawingSvg);
+
+    renderDrawings();
+}
+
+function chartPointFromMouse(e){
+    const chartBox = document.getElementById("oandaChart");
+    const rect = chartBox.getBoundingClientRect();
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const price = candleSeries.coordinateToPrice(y);
+    const time = oandaChart.timeScale().coordinateToTime(x);
+
+    if(price == null || time == null) return null;
+
+    return {
+        x,
+        y,
+        price: Number(price),
+        time
+    };
+}
+
+function coordinateFromPoint(point){
+    if(!oandaChart || !candleSeries) return null;
+
+    const x = oandaChart.timeScale().timeToCoordinate(point.time);
+    const y = candleSeries.priceToCoordinate(point.price);
+
+    if(x == null || y == null) return null;
+
+    return { x, y };
+}
+
+function svgEl(type, attrs){
+    const el = document.createElementNS("http://www.w3.org/2000/svg", type);
+    Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+    return el;
+}
+
+function renderDrawings(){
+    if(!drawingSvg) return;
+
+    drawingSvg.innerHTML = "";
+
+    if(!drawingsVisible) return;
+
+    drawings.forEach(d => {
+        if(d.type === "trend" || d.type === "arrow"){
+            const p1 = coordinateFromPoint(d.points[0]);
+            const p2 = coordinateFromPoint(d.points[1]);
+            if(!p1 || !p2) return;
+
+            const line = svgEl("line", {
+                x1:p1.x, y1:p1.y,
+                x2:p2.x, y2:p2.y,
+                stroke:d.color || "#ffd700",
+                "stroke-width":2,
+                "stroke-linecap":"round"
+            });
+
+            drawingSvg.appendChild(line);
+
+            if(d.type === "arrow"){
+                const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                const size = 10;
+
+                const a1 = angle - Math.PI / 6;
+                const a2 = angle + Math.PI / 6;
+
+                const x1 = p2.x - size * Math.cos(a1);
+                const y1 = p2.y - size * Math.sin(a1);
+                const x2 = p2.x - size * Math.cos(a2);
+                const y2 = p2.y - size * Math.sin(a2);
+
+                drawingSvg.appendChild(svgEl("line", {
+                    x1:p2.x, y1:p2.y, x2:x1, y2:y1,
+                    stroke:d.color || "#ffd700",
+                    "stroke-width":2
+                }));
+
+                drawingSvg.appendChild(svgEl("line", {
+                    x1:p2.x, y1:p2.y, x2:x2, y2:y2,
+                    stroke:d.color || "#ffd700",
+                    "stroke-width":2
+                }));
+            }
+        }
+
+        if(d.type === "vertical"){
+            const p = coordinateFromPoint(d.points[0]);
+            if(!p) return;
+
+            drawingSvg.appendChild(svgEl("line", {
+                x1:p.x, y1:0,
+                x2:p.x, y2:"100%",
+                stroke:d.color || "#ffd700",
+                "stroke-width":2,
+                "stroke-dasharray":"6 6"
+            }));
+        }
+
+        if(d.type === "rectangle"){
+            const p1 = coordinateFromPoint(d.points[0]);
+            const p2 = coordinateFromPoint(d.points[1]);
+            if(!p1 || !p2) return;
+
+            const x = Math.min(p1.x, p2.x);
+            const y = Math.min(p1.y, p2.y);
+            const w = Math.abs(p2.x - p1.x);
+            const h = Math.abs(p2.y - p1.y);
+
+            drawingSvg.appendChild(svgEl("rect", {
+                x, y, width:w, height:h,
+                fill:"rgba(255,215,0,.12)",
+                stroke:"#ffd700",
+                "stroke-width":2
+            }));
+        }
+
+        if(d.type === "text"){
+            const p = coordinateFromPoint(d.points[0]);
+            if(!p) return;
+
+            const text = svgEl("text", {
+                x:p.x,
+                y:p.y,
+                fill:"#ffd700",
+                "font-size":"16",
+                "font-weight":"bold"
+            });
+
+            text.textContent = d.text || "Text";
+            drawingSvg.appendChild(text);
+        }
+    });
+}
+
+// =======================
+// TOOLS
+// =======================
+window.setDrawingTool = function(tool){
+    drawingMode = tool;
+    pendingPoint = null;
+
+    setActiveToolButton();
+
+    const menu = document.getElementById("chartContextMenu");
+    if(menu) menu.style.display = "none";
+
+    if(tool === "cursor"){
+        setText("signal", "Cursor Mode");
+    }else{
+        setText("signal", `Tool Selected: ${tool}`);
+    }
+};
+
+window.enableHorizontalLine = function(){
+    window.setDrawingTool("horizontal");
+};
+
+window.toggleMagnet = function(){
+    magnetMode = !magnetMode;
+    setActiveToolButton();
+    setText("signal", magnetMode ? "Magnet ON" : "Magnet OFF");
+};
+
+window.toggleLockDrawings = function(){
+    drawingsLocked = !drawingsLocked;
+    setActiveToolButton();
+    setText("signal", drawingsLocked ? "Drawings Locked" : "Drawings Unlocked");
+};
+
+window.toggleDrawingsVisibility = function(){
+    drawingsVisible = !drawingsVisible;
+
+    if(drawingSvg){
+        drawingSvg.style.display = drawingsVisible ? "block" : "none";
+    }
+
+    setActiveToolButton();
+    setText("signal", drawingsVisible ? "Drawings Visible" : "Drawings Hidden");
+};
+
+function addHorizontalLine(price){
+    if(!candleSeries) return;
+
+    const line = candleSeries.createPriceLine({
+        price: price,
+        color: "#ffd700",
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Solid,
+        axisLabelVisible: true,
+        title: "Golden Line"
+    });
+
+    priceLineDrawings.push(line);
+    setText("signal", `Horizontal Line Added: ${price.toFixed(2)}`);
+}
+
+window.clearDrawings = function(){
+    if(candleSeries){
+        priceLineDrawings.forEach(line => {
+            candleSeries.removePriceLine(line);
+        });
+    }
+
+    priceLineDrawings = [];
+    drawings = [];
+    pendingPoint = null;
+
+    renderDrawings();
+
+    const menu = document.getElementById("chartContextMenu");
+    if(menu) menu.style.display = "none";
+
+    setText("signal", "All Drawings Cleared");
+};
+
+function setupDrawingEvents(){
+    const chartBox = document.getElementById("oandaChart");
+    if(!chartBox) return;
+
+    chartBox.onclick = function(e){
+        if(drawingsLocked) return;
+        if(drawingMode === "cursor") return;
+
+        const point = chartPointFromMouse(e);
+        if(!point) return;
+
+        if(drawingMode === "horizontal"){
+            addHorizontalLine(point.price);
+            drawingMode = "cursor";
+            setActiveToolButton();
+            return;
+        }
+
+        if(drawingMode === "vertical"){
+            drawings.push({
+                type:"vertical",
+                points:[point],
+                color:"#ffd700"
+            });
+
+            renderDrawings();
+            drawingMode = "cursor";
+            setActiveToolButton();
+            return;
+        }
+
+        if(drawingMode === "text"){
+            const text = prompt("Write text on chart:");
+            if(text){
+                drawings.push({
+                    type:"text",
+                    points:[point],
+                    text,
+                    color:"#ffd700"
+                });
+                renderDrawings();
+            }
+
+            drawingMode = "cursor";
+            setActiveToolButton();
+            return;
+        }
+
+        if(["trend","rectangle","arrow"].includes(drawingMode)){
+            if(!pendingPoint){
+                pendingPoint = point;
+                setText("signal", "Select second point...");
+                return;
+            }
+
+            drawings.push({
+                type:drawingMode,
+                points:[pendingPoint, point],
+                color:"#ffd700"
+            });
+
+            pendingPoint = null;
+            renderDrawings();
+
+            drawingMode = "cursor";
+            setActiveToolButton();
+        }
+    };
+}
+
+function setupContextMenu(){
+    const chartBox = document.getElementById("oandaChart");
+    const menu = document.getElementById("chartContextMenu");
+
+    if(!chartBox || !menu) return;
+
+    chartBox.oncontextmenu = function(e){
+        e.preventDefault();
+
+        const rect = chartBox.getBoundingClientRect();
+
+        menu.style.display = "block";
+        menu.style.left = (e.clientX - rect.left) + "px";
+        menu.style.top = (e.clientY - rect.top) + "px";
+    };
+
+    document.onclick = function(e){
+        if(!menu.contains(e.target)){
+            menu.style.display = "none";
+        }
+    };
 }
 
 // =======================
@@ -250,6 +621,7 @@ window.changeTimeframe = async function(tf){
     currentGranularity = tf;
     currentLiveCandle = null;
 
+    setActiveTimeframeButton();
     setText("signal", `Loading timeframe ${tf}...`);
 
     await createChart();
@@ -297,82 +669,6 @@ window.resetChart = function(){
     const menu = document.getElementById("chartContextMenu");
     if(menu) menu.style.display = "none";
 };
-
-// =======================
-// SIMPLE DRAWING TOOLS
-// =======================
-window.enableHorizontalLine = function(){
-    drawingMode = "horizontal";
-    setText("signal", "Click on chart to add Horizontal Line");
-
-    const menu = document.getElementById("chartContextMenu");
-    if(menu) menu.style.display = "none";
-};
-
-function addHorizontalLine(price){
-    if(!candleSeries) return;
-
-    const line = candleSeries.createPriceLine({
-        price: price,
-        color: "#ffd700",
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
-        axisLabelVisible: true,
-        title: "Golden Line"
-    });
-
-    drawings.push(line);
-    setText("signal", `Horizontal Line Added: ${price.toFixed(2)}`);
-}
-
-window.clearDrawings = function(){
-    if(!candleSeries) return;
-
-    drawings.forEach(line => {
-        candleSeries.removePriceLine(line);
-    });
-
-    drawings = [];
-
-    const menu = document.getElementById("chartContextMenu");
-    if(menu) menu.style.display = "none";
-
-    setText("signal", "Drawings Cleared");
-};
-
-function setupContextMenu(){
-    const chartContainer = document.getElementById("chart");
-    const chartBox = document.getElementById("oandaChart");
-    const menu = document.getElementById("chartContextMenu");
-
-    if(!chartContainer || !chartBox || !menu) return;
-
-    chartBox.addEventListener("contextmenu", function(e){
-        e.preventDefault();
-
-        menu.style.display = "block";
-        menu.style.left = e.offsetX + "px";
-        menu.style.top = e.offsetY + "px";
-    });
-
-    document.addEventListener("click", function(){
-        menu.style.display = "none";
-    });
-
-    chartBox.addEventListener("click", function(e){
-        if(drawingMode !== "horizontal" || !candleSeries) return;
-
-        const rect = chartBox.getBoundingClientRect();
-        const y = e.clientY - rect.top;
-        const price = candleSeries.coordinateToPrice(y);
-
-        if(price){
-            addHorizontalLine(price);
-        }
-
-        drawingMode = null;
-    });
-}
 
 // =======================
 // BUTTONS
@@ -541,6 +837,8 @@ window.addEventListener("load", () => {
 
     updatePanel();
     updateSession();
+    setActiveTimeframeButton();
+    setActiveToolButton();
 
     setTimeout(() => {
         loadChannel();
