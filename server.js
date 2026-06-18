@@ -6,9 +6,9 @@ require("dotenv").config();
 const app = express();
 
 app.use(cors());
-
-// تشغيل ملفات الموقع
 app.use(express.static(__dirname));
+
+const allowedGranularity = ["M1", "M5", "M15", "H1", "H4", "D"];
 
 // API لجلب سعر الذهب من OANDA
 app.get("/api/price", async (req, res) => {
@@ -31,16 +31,25 @@ app.get("/api/price", async (req, res) => {
 
   } catch (err) {
     console.error(err.response?.data || err.message);
-
     res.status(500).json({
       error: err.response?.data || err.message
     });
   }
 });
 
-// API لجلب شموع الذهب من OANDA
+// API لجلب شموع الذهب من OANDA مع فريمات
 app.get("/api/candles", async (req, res) => {
   try {
+    let granularity = req.query.granularity || "M1";
+    let count = Number(req.query.count || 1500);
+
+    if (!allowedGranularity.includes(granularity)) {
+      granularity = "M1";
+    }
+
+    if (count > 5000) count = 5000;
+    if (count < 100) count = 100;
+
     const response = await axios.get(
       "https://api-fxpractice.oanda.com/v3/instruments/XAU_USD/candles",
       {
@@ -48,8 +57,8 @@ app.get("/api/candles", async (req, res) => {
           Authorization: "Bearer " + process.env.OANDA_API_KEY
         },
         params: {
-          granularity: "M1",
-          count: 500,
+          granularity,
+          count,
           price: "M"
         }
       }
@@ -59,7 +68,6 @@ app.get("/api/candles", async (req, res) => {
 
   } catch (err) {
     console.error(err.response?.data || err.message);
-
     res.status(500).json({
       error: err.response?.data || err.message
     });
