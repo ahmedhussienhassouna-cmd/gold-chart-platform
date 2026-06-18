@@ -1,9 +1,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
     getFirestore,
     doc,
     getDoc,
-    setDoc
+    setDoc,
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    onSnapshot,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -22,9 +29,7 @@ const db = getFirestore(app);
 // STRATEGY
 // =======================
 window.loadStrategyLevels = async function(asset){
-
     try{
-
         const docRef = doc(db, "strategy", asset);
         const docSnap = await getDoc(docRef);
 
@@ -35,7 +40,6 @@ window.loadStrategyLevels = async function(asset){
         return docSnap.data();
 
     }catch(error){
-
         console.error(error);
         return null;
     }
@@ -45,9 +49,7 @@ window.loadStrategyLevels = async function(asset){
 // CHANNEL READ
 // =======================
 window.loadChannelMessage = async function(){
-
     try{
-
         const docRef = doc(db, "channel", "welcome");
         const docSnap = await getDoc(docRef);
 
@@ -58,7 +60,6 @@ window.loadChannelMessage = async function(){
         return docSnap.data();
 
     }catch(error){
-
         console.error(error);
         return null;
     }
@@ -68,9 +69,7 @@ window.loadChannelMessage = async function(){
 // CHANNEL SAVE
 // =======================
 window.saveChannelMessage = async function(title, message){
-
     try{
-
         await setDoc(
             doc(db, "channel", "welcome"),
             {
@@ -84,8 +83,52 @@ window.saveChannelMessage = async function(title, message){
         return true;
 
     }catch(error){
-
         console.error(error);
         return false;
     }
+};
+
+// =======================
+// CHAT SEND MESSAGE
+// =======================
+window.sendChatMessageFirebase = async function(message, user){
+    try{
+        await addDoc(collection(db, "chatMessages"), {
+            message: message,
+            name: user.name || "Client",
+            email: user.email || "",
+            photo: user.photo || "",
+            role: user.role || "Golden Trade Client",
+            createdAt: serverTimestamp()
+        });
+
+        return true;
+
+    }catch(error){
+        console.error(error);
+        return false;
+    }
+};
+
+// =======================
+// CHAT LIVE LISTEN
+// =======================
+window.listenChatMessagesFirebase = function(callback){
+    const q = query(
+        collection(db, "chatMessages"),
+        orderBy("createdAt", "asc")
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const messages = [];
+
+        snapshot.forEach(doc => {
+            messages.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        callback(messages);
+    });
 };
