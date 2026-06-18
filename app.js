@@ -10,6 +10,10 @@ let vwapOn = false;
 
 let lastPrice = null;
 
+let oandaChart = null;
+let candleSeries = null;
+let resizeTimer = null;
+
 // =======================
 // HELPERS
 // =======================
@@ -73,28 +77,108 @@ async function loadOandaPrice(){
 }
 
 // =======================
+// OANDA CANDLES
+// =======================
+async function loadOandaCandles(){
+    try{
+        const res = await fetch("/api/candles");
+        const data = await res.json();
+
+        if(!data.candles){
+            setText("signal", "OANDA candles error");
+            return [];
+        }
+
+        return data.candles
+            .filter(c => c.complete && c.mid)
+            .map(c => ({
+                time: Math.floor(new Date(c.time).getTime() / 1000),
+                open: Number(c.mid.o),
+                high: Number(c.mid.h),
+                low: Number(c.mid.l),
+                close: Number(c.mid.c)
+            }));
+
+    }catch(error){
+        console.error(error);
+        setText("signal", "OANDA candles disconnected");
+        return [];
+    }
+}
+
+// =======================
 // CHART
 // =======================
-function createChart(){
+async function createChart(){
 
     const container = document.getElementById("chart");
     if(!container) return;
 
-    container.innerHTML = "";
+    container.innerHTML = `<div id="oandaChart"></div>`;
 
-    const tvSymbol = encodeURIComponent(currentTVSymbol);
+    const chartBox = document.getElementById("oandaChart");
 
-    container.innerHTML = `
-        <iframe
-            src="https://www.tradingview.com/widgetembed/?symbol=${tvSymbol}&interval=1&theme=dark&style=1&timezone=Africa%2FCairo&hide_side_toolbar=false&allow_symbol_change=true&save_image=false&calendar=false"
-            style="width:100%;height:100%;border:0;"
-            scrolling="no"
-            allowfullscreen>
-        </iframe>
-    `;
+    if(typeof LightweightCharts === "undefined"){
+        setText("signal", "Lightweight Charts library not loaded");
+        return;
+    }
 
-    setText("priceBox", `${currentAsset} Live Chart`);
-    setText("signal", `✅ ${currentAsset} TradingView Chart Loaded`);
+    oandaChart = LightweightCharts.createChart(chartBox, {
+        width: chartBox.clientWidth,
+        height: chartBox.clientHeight,
+        layout: {
+            background: { color: "#0b0b0b" },
+            textColor: "#d1d4dc"
+        },
+        grid: {
+            vertLines: { color: "#1f1f1f" },
+            horzLines: { color: "#1f1f1f" }
+        },
+        crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal
+        },
+        rightPriceScale: {
+            borderColor: "#333"
+        },
+        timeScale: {
+            borderColor: "#333",
+            timeVisible: true,
+            secondsVisible: false
+        }
+    });
+
+    candleSeries = oandaChart.addCandlestickSeries({
+        upColor: "#00ff99",
+        downColor: "#ff4d4d",
+        borderUpColor: "#00ff99",
+        borderDownColor: "#ff4d4d",
+        wickUpColor: "#00ff99",
+        wickDownColor: "#ff4d4d"
+    });
+
+    const candles = await loadOandaCandles();
+
+    if(candles.length){
+        candleSeries.setData(candles);
+        oandaChart.timeScale().fitContent();
+
+        setText("priceBox", `${currentAsset} OANDA Chart`);
+        setText("signal", `✅ ${currentAsset} OANDA Candles Loaded`);
+    }else{
+        setText("signal", "No OANDA candles found");
+    }
+}
+
+// =======================
+// UPDATE LAST CANDLE
+// =======================
+async function updateLastCandle(){
+    if(currentAsset !== "GOLD" || !candleSeries) return;
+
+    const candles = await loadOandaCandles();
+    if(!candles.length) return;
+
+    candleSeries.update(candles[candles.length - 1]);
 }
 
 // =======================
@@ -125,12 +209,14 @@ window.changeAsset = function(a){
     setText("signal", "Loading " + a + " chart...");
     setText("priceBox", `${a} Live Chart`);
 
-    createChart();
-    updatePanel();
-
     if(a === "GOLD"){
+        createChart();
         loadOandaPrice();
+    }else{
+        setText("signal", "OANDA chart is active for GOLD only now");
     }
+
+    updatePanel();
 };
 
 window.service = function(type){
@@ -289,10 +375,10 @@ setInterval(() => {
 setInterval(() => {
     if(currentAsset === "GOLD"){
         loadOandaPrice();
+        updateLastCandle();
     }
 }, 3000);
 
-let resizeTimer = null;
 window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
