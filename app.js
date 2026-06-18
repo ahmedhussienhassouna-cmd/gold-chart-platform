@@ -6,6 +6,7 @@ let strategyOn = false;
 let liquidityOn = false;
 let ibOn = false;
 let vwapOn = false;
+let sessionProfileOn = false;
 
 let lastPrice = null;
 let currentLiveCandle = null;
@@ -19,12 +20,14 @@ let drawingMode = "cursor";
 let drawings = [];
 let priceLineDrawings = [];
 let strategyLines = [];
+let candlesData = [];
 
 let pendingPoint = null;
 let drawingsLocked = false;
 let drawingsVisible = true;
 let magnetMode = false;
 let drawingSvg = null;
+let sessionSvg = null;
 
 // =======================
 // HELPERS
@@ -78,6 +81,12 @@ function setActiveToolButton(){
 
     const eye = document.getElementById("tool-eye");
     if(eye) eye.classList.toggle("active", drawingsVisible);
+}
+
+function svgEl(type, attrs){
+    const el = document.createElementNS("http://www.w3.org/2000/svg", type);
+    Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+    return el;
 }
 
 // =======================
@@ -260,6 +269,9 @@ async function createChart(){
     strategyLines = [];
     priceLineDrawings = [];
     vwapSeries = null;
+    drawingSvg = null;
+    sessionSvg = null;
+    candlesData = [];
 
     if(typeof LightweightCharts === "undefined"){
         setText("signal", "Lightweight Charts library not loaded");
@@ -327,15 +339,20 @@ async function createChart(){
         lastValueVisible: true
     });
 
+    createSessionProfileLayer();
     createDrawingLayer();
 
     const candles = await loadOandaCandles();
 
     if(candles.length){
+        candlesData = candles;
+
         candleSeries.setData(candles);
 
         const vwapData = calculateVWAP(candles);
         vwapSeries.setData(vwapData);
+
+        renderSessionProfile();
 
         const lastCandle = candles[candles.length - 1];
 
@@ -360,9 +377,248 @@ async function createChart(){
     setActiveToolButton();
 
     oandaChart.timeScale().subscribeVisibleTimeRangeChange(() => {
+        renderSessionProfile();
         renderDrawings();
     });
 }
+
+// =======================
+// SESSION PROFILE
+// =======================
+function createSessionProfileLayer(){
+    const chartBox = document.getElementById("oandaChart");
+    if(!chartBox) return;
+
+    sessionSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    sessionSvg.setAttribute("id", "sessionSvg");
+    sessionSvg.style.position = "absolute";
+    sessionSvg.style.left = "0";
+    sessionSvg.style.top = "0";
+    sessionSvg.style.width = "100%";
+    sessionSvg.style.height = "100%";
+    sessionSvg.style.zIndex = "20";
+    sessionSvg.style.pointerEvents = "none";
+
+    chartBox.appendChild(sessionSvg);
+}
+
+function getCairoParts(unixTime){
+    const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Africa/Cairo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    });
+
+    const parts = formatter.formatToParts(new Date(unixTime * 1000));
+    const obj = {};
+
+    parts.forEach(p => {
+        obj[p.type] = p.value;
+    });
+
+    return {
+        year: obj.year,
+        month: obj.month,
+        day: obj.day,
+        hour: Number(obj.hour),
+        minute: Number(obj.minute)
+    };
+}
+
+function getSessionNameFromTime(unixTime){
+    const p = getCairoParts(unixTime);
+    const current = p.hour + p.minute / 60;
+
+    if(current >= 1 && current < 3) return "Sydney";
+    if(current >= 3 && current < 10) return "Asia";
+    if(current >= 10 && current < 15.5) return "London";
+    if(current >= 15.5 && current < 23) return "New York";
+
+    return "Closed";
+}
+
+function getSessionColor(name){
+    if(name === "Asia") return "rgba(33,150,243,0.12)";
+    if(name === "London") return "rgba(76,175,80,0.12)";
+    if(name === "New York") return "rgba(255,152,0,0.12)";
+    if(name === "Sydney") return "rgba(156,39,176,0.12)";
+    return "rgba(255,215,0,0.08)";
+}
+
+function getSessionLineColor(name){
+    if(name === "Asia") return "#2196f3";
+    if(name === "London") return "#4caf50";
+    if(name === "New York") return "#ff9800";
+    if(name === "Sydney") return "#9c27b0";
+    return "#ffd700";
+}
+
+function buildSessionGroups(candles){
+    const groups = [];
+    let current = null;
+
+    candles.forEach(c => {
+        const name = getSessionNameFromTime(c.time);
+        if(name === "Closed") return;
+
+        const p = getCairoParts(c.time);
+        const key = `${p.year}-${p.month}-${p.day}-${name}`;
+
+        if(!current || current.key !== key){
+            current = {
+                key,
+                name,
+                start: c.time,
+                end: c.time,
+                high: c.high,
+                low: c.low,
+                candles: []
+            };
+            groups.push(current);
+        }
+
+        current.end = c.time;
+        current.high = Math.max(current.high, c.high);
+        current.low = Math.min(current.low, c.low);
+        current.candles.push(c);
+    });
+
+    return groups;
+}
+
+function calculateSessionPOC(group){
+    const rows = 40;
+    const min = group.low;
+    const max = group.high;
+    const step = (max - min) / rows;
+
+    if(step <= 0) return null;
+
+    const dist = new Array(rows).fill(0);
+
+    group.candles.forEach(c => {
+        const volume = c.volume || 1;
+        let lowIndex = Math.floor((c.low - min) / step);
+        let highIndex = Math.floor((c.high - min) / step);
+
+        lowIndex = Math.max(0, Math.min(rows - 1, lowIndex));
+        highIndex = Math.max(0, Math.min(rows - 1, highIndex));
+
+        const count = highIndex - lowIndex + 1;
+        const part = volume / count;
+
+        for(let i = lowIndex; i <= highIndex; i++){
+            dist[i] += part;
+        }
+    });
+
+    let maxVol = -1;
+    let index = 0;
+
+    dist.forEach((v, i) => {
+        if(v > maxVol){
+            maxVol = v;
+            index = i;
+        }
+    });
+
+    return min + (index + 0.5) * step;
+}
+
+function renderSessionProfile(){
+    if(!sessionSvg || !oandaChart || !candleSeries) return;
+
+    sessionSvg.innerHTML = "";
+
+    if(!sessionProfileOn || !candlesData.length) return;
+
+    const groups = buildSessionGroups(candlesData).slice(-20);
+
+    groups.forEach(g => {
+        const x1 = oandaChart.timeScale().timeToCoordinate(g.start);
+        const x2 = oandaChart.timeScale().timeToCoordinate(g.end);
+        const yHigh = candleSeries.priceToCoordinate(g.high);
+        const yLow = candleSeries.priceToCoordinate(g.low);
+
+        if(x1 == null || x2 == null || yHigh == null || yLow == null) return;
+
+        const left = Math.min(x1, x2);
+        const width = Math.max(10, Math.abs(x2 - x1));
+        const top = Math.min(yHigh, yLow);
+        const height = Math.abs(yLow - yHigh);
+
+        const fillColor = getSessionColor(g.name);
+        const lineColor = getSessionLineColor(g.name);
+
+        sessionSvg.appendChild(svgEl("rect", {
+            x: left,
+            y: top,
+            width: width,
+            height: height,
+            fill: fillColor,
+            stroke: lineColor,
+            "stroke-width": 1
+        }));
+
+        sessionSvg.appendChild(svgEl("line", {
+            x1: left,
+            y1: yHigh,
+            x2: left + width,
+            y2: yHigh,
+            stroke: lineColor,
+            "stroke-width": 1
+        }));
+
+        sessionSvg.appendChild(svgEl("line", {
+            x1: left,
+            y1: yLow,
+            x2: left + width,
+            y2: yLow,
+            stroke: lineColor,
+            "stroke-width": 1
+        }));
+
+        const pocPrice = calculateSessionPOC(g);
+        const yPOC = pocPrice ? candleSeries.priceToCoordinate(pocPrice) : null;
+
+        if(yPOC != null){
+            sessionSvg.appendChild(svgEl("line", {
+                x1: left,
+                y1: yPOC,
+                x2: left + width,
+                y2: yPOC,
+                stroke: "#ffd700",
+                "stroke-width": 2,
+                "stroke-dasharray": "5 5"
+            }));
+        }
+
+        const text = svgEl("text", {
+            x: left + 5,
+            y: top + 16,
+            fill: lineColor,
+            "font-size": "12",
+            "font-weight": "bold"
+        });
+
+        text.textContent = g.name;
+        sessionSvg.appendChild(text);
+    });
+}
+
+window.toggleSessionProfile = function(){
+    sessionProfileOn = !sessionProfileOn;
+    renderSessionProfile();
+
+    setText(
+        "signal",
+        sessionProfileOn ? "📊 Session Profile ON" : "📊 Session Profile OFF"
+    );
+};
 
 // =======================
 // DRAWING LAYER
@@ -418,12 +674,6 @@ function coordinateFromPoint(point){
     return { x, y };
 }
 
-function svgEl(type, attrs){
-    const el = document.createElementNS("http://www.w3.org/2000/svg", type);
-    Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
-    return el;
-}
-
 function renderDrawings(){
     if(!drawingSvg) return;
 
@@ -437,36 +687,32 @@ function renderDrawings(){
             const p2 = coordinateFromPoint(d.points[1]);
             if(!p1 || !p2) return;
 
-            const line = svgEl("line", {
+            drawingSvg.appendChild(svgEl("line", {
                 x1:p1.x, y1:p1.y,
                 x2:p2.x, y2:p2.y,
                 stroke:d.color || "#ffd700",
                 "stroke-width":2,
                 "stroke-linecap":"round"
-            });
-
-            drawingSvg.appendChild(line);
+            }));
 
             if(d.type === "arrow"){
                 const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
                 const size = 10;
-
                 const a1 = angle - Math.PI / 6;
                 const a2 = angle + Math.PI / 6;
 
-                const x1 = p2.x - size * Math.cos(a1);
-                const y1 = p2.y - size * Math.sin(a1);
-                const x2 = p2.x - size * Math.cos(a2);
-                const y2 = p2.y - size * Math.sin(a2);
-
                 drawingSvg.appendChild(svgEl("line", {
-                    x1:p2.x, y1:p2.y, x2:x1, y2:y1,
+                    x1:p2.x, y1:p2.y,
+                    x2:p2.x - size * Math.cos(a1),
+                    y2:p2.y - size * Math.sin(a1),
                     stroke:d.color || "#ffd700",
                     "stroke-width":2
                 }));
 
                 drawingSvg.appendChild(svgEl("line", {
-                    x1:p2.x, y1:p2.y, x2:x2, y2:y2,
+                    x1:p2.x, y1:p2.y,
+                    x2:p2.x - size * Math.cos(a2),
+                    y2:p2.y - size * Math.sin(a2),
                     stroke:d.color || "#ffd700",
                     "stroke-width":2
                 }));
@@ -491,13 +737,11 @@ function renderDrawings(){
             const p2 = coordinateFromPoint(d.points[1]);
             if(!p1 || !p2) return;
 
-            const x = Math.min(p1.x, p2.x);
-            const y = Math.min(p1.y, p2.y);
-            const w = Math.abs(p2.x - p1.x);
-            const h = Math.abs(p2.y - p1.y);
-
             drawingSvg.appendChild(svgEl("rect", {
-                x, y, width:w, height:h,
+                x: Math.min(p1.x, p2.x),
+                y: Math.min(p1.y, p2.y),
+                width: Math.abs(p2.x - p1.x),
+                height: Math.abs(p2.y - p1.y),
                 fill:"rgba(255,215,0,.12)",
                 stroke:"#ffd700",
                 "stroke-width":2
@@ -534,11 +778,7 @@ window.setDrawingTool = function(tool){
     const menu = document.getElementById("chartContextMenu");
     if(menu) menu.style.display = "none";
 
-    if(tool === "cursor"){
-        setText("signal", "Cursor Mode");
-    }else{
-        setText("signal", `Tool Selected: ${tool}`);
-    }
+    setText("signal", tool === "cursor" ? "Cursor Mode" : `Tool Selected: ${tool}`);
 };
 
 window.enableHorizontalLine = function(){
