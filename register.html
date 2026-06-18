@@ -14,8 +14,21 @@
     <h2>Create Account</h2>
 
     <input type="text" id="registerName" placeholder="Full Name">
+
     <input type="email" id="registerEmail" placeholder="Email">
+
     <input type="password" id="registerPassword" placeholder="Password">
+
+    <label style="color:#ffd700;margin-top:10px;display:block;text-align:left;">
+        Profile Photo
+    </label>
+
+    <input 
+        type="file" 
+        id="registerPhoto" 
+        accept="image/*"
+        style="background:#111;color:white;border:1px solid #333;padding:10px;border-radius:8px;width:100%;margin-bottom:12px;"
+    >
 
     <button onclick="registerUser()">Create Account</button>
 
@@ -23,6 +36,8 @@
     <a href="login.html">Login</a>
 </div>
 
+<script type="module" src="firebase.js"></script>
 <script src="auth.js"></script>
+
 </body>
 </html>
