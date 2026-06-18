@@ -58,7 +58,13 @@ body{
     color:#aaa;
     font-size:13px;
 }
-
+.profileEmail{
+    margin-top:8px;
+    font-size:12px;
+    color:#ffd700;
+    opacity:.9;
+    word-break:break-all;
+}
 /* TOPBAR */
 .topbar{
     position:fixed;
