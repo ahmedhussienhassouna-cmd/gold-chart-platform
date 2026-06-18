@@ -97,7 +97,6 @@ window.sendChatMessageFirebase = async function(message, user){
             message: message,
             name: user.name || "Client",
             email: user.email || "",
-            photo: user.photo || "",
             role: user.role || "Golden Trade Client",
             createdAt: serverTimestamp()
         });
@@ -105,7 +104,7 @@ window.sendChatMessageFirebase = async function(message, user){
         return true;
 
     }catch(error){
-        console.error(error);
+        console.error("Firebase chat send error:", error);
         return false;
     }
 };
