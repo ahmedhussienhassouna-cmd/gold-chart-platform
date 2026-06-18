@@ -43,47 +43,73 @@
 
 <div id="chart">
 
-    <div id="chartToolbar" style="
-        position:absolute;
-        top:10px;
-        left:10px;
-        z-index:20;
-        display:flex;
-        gap:6px;
-        flex-wrap:wrap;
-        background:rgba(10,10,10,.85);
-        padding:8px;
-        border:1px solid #333;
-        border-radius:8px;
-    ">
-        <button onclick="changeTimeframe('M1')">1m</button>
-        <button onclick="changeTimeframe('M5')">5m</button>
-        <button onclick="changeTimeframe('M15')">15m</button>
-        <button onclick="changeTimeframe('H1')">1H</button>
-        <button onclick="changeTimeframe('H4')">4H</button>
-        <button onclick="changeTimeframe('D')">1D</button>
-        <button onclick="zoomIn()">+</button>
-        <button onclick="zoomOut()">-</button>
-        <button onclick="resetChart()">Reset</button>
-        <button onclick="enableHorizontalLine()">H-Line</button>
-        <button onclick="clearDrawings()">Clear</button>
+    <!-- TOP CHART TOOLBAR -->
+    <div id="chartToolbar" class="chartToolbar">
+        <div class="toolbarSymbol">XAUUSD</div>
+
+        <div class="toolbarGroup">
+            <button onclick="changeTimeframe('M1')" id="tf-M1">1m</button>
+            <button onclick="changeTimeframe('M5')" id="tf-M5">5m</button>
+            <button onclick="changeTimeframe('M15')" id="tf-M15">15m</button>
+            <button onclick="changeTimeframe('H1')" id="tf-H1">1H</button>
+            <button onclick="changeTimeframe('H4')" id="tf-H4">4H</button>
+            <button onclick="changeTimeframe('D')" id="tf-D">1D</button>
+        </div>
+
+        <div class="toolbarDivider"></div>
+
+        <div class="toolbarGroup">
+            <button onclick="zoomIn()">＋</button>
+            <button onclick="zoomOut()">－</button>
+            <button onclick="resetChart()">Reset</button>
+        </div>
+
+        <div class="toolbarDivider"></div>
+
+        <div class="toolbarGroup">
+            <button onclick="clearDrawings()">Clear</button>
+        </div>
+    </div>
+
+    <!-- LEFT DRAWING TOOLS -->
+    <div id="drawingToolbar" class="drawingToolbar">
+
+        <button title="Cursor / Crosshair" onclick="setDrawingTool('cursor')" id="tool-cursor">⌖</button>
+
+        <button title="Trend Line" onclick="setDrawingTool('trend')" id="tool-trend">╱</button>
+
+        <button title="Horizontal Line" onclick="setDrawingTool('horizontal')" id="tool-horizontal">━</button>
+
+        <button title="Vertical Line" onclick="setDrawingTool('vertical')" id="tool-vertical">┃</button>
+
+        <button title="Rectangle" onclick="setDrawingTool('rectangle')" id="tool-rectangle">▭</button>
+
+        <button title="Arrow" onclick="setDrawingTool('arrow')" id="tool-arrow">↗</button>
+
+        <button title="Text" onclick="setDrawingTool('text')" id="tool-text">T</button>
+
+        <div class="drawingDivider"></div>
+
+        <button title="Magnet Mode" onclick="toggleMagnet()" id="tool-magnet">🧲</button>
+
+        <button title="Lock Drawings" onclick="toggleLockDrawings()" id="tool-lock">🔒</button>
+
+        <button title="Show / Hide Drawings" onclick="toggleDrawingsVisibility()" id="tool-eye">👁</button>
+
+        <button title="Clear All Drawings" onclick="clearDrawings()" id="tool-delete">🗑</button>
+
     </div>
 
     <div id="oandaChart"></div>
 
-    <div id="chartContextMenu" style="
-        display:none;
-        position:absolute;
-        z-index:9999;
-        background:#111;
-        border:1px solid #333;
-        border-radius:8px;
-        overflow:hidden;
-        min-width:180px;
-    ">
-        <div onclick="enableHorizontalLine()" style="padding:10px;cursor:pointer;">➖ Horizontal Line</div>
-        <div onclick="resetChart()" style="padding:10px;cursor:pointer;">🔄 Reset Chart</div>
-        <div onclick="clearDrawings()" style="padding:10px;cursor:pointer;">🗑 Clear Drawings</div>
+    <!-- RIGHT CLICK MENU -->
+    <div id="chartContextMenu" class="chartContextMenu">
+        <div onclick="setDrawingTool('horizontal')">➖ Horizontal Line</div>
+        <div onclick="setDrawingTool('trend')">╱ Trend Line</div>
+        <div onclick="setDrawingTool('rectangle')">▭ Rectangle</div>
+        <div onclick="setDrawingTool('text')">T Text</div>
+        <div onclick="resetChart()">🔄 Reset Chart</div>
+        <div onclick="clearDrawings()">🗑 Clear Drawings</div>
     </div>
 
 </div>
@@ -111,7 +137,7 @@
 
 <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
 <script type="module" src="firebase.js"></script>
-<script src="app.js?v=70"></script>
+<script src="app.js?v=80"></script>
 <script src="auth.js"></script>
 
 <script>
