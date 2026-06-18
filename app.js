@@ -8,6 +8,7 @@ let ibOn = false;
 let vwapOn = false;
 
 let lastPrice = null;
+let currentLiveCandle = null;
 
 let oandaChart = null;
 let candleSeries = null;
@@ -47,7 +48,7 @@ function applyPageTheme(){
 }
 
 // =======================
-// OANDA LIVE PRICE
+// LIVE PRICE + LIVE CANDLE
 // =======================
 async function loadOandaPrice(){
     try{
@@ -62,11 +63,13 @@ async function loadOandaPrice(){
         const priceData = data.prices[0];
         const bid = Number(priceData.bids[0].price);
         const ask = Number(priceData.asks[0].price);
-        const mid = ((bid + ask) / 2).toFixed(2);
+        const mid = Number(((bid + ask) / 2).toFixed(2));
 
-        lastPrice = Number(mid);
+        lastPrice = mid;
 
         setText("priceBox", `🥇 XAUUSD Live: ${mid}`);
+
+        updateLiveCandle(mid);
 
     }catch(error){
         console.error(error);
@@ -74,8 +77,34 @@ async function loadOandaPrice(){
     }
 }
 
+function getCurrentMinuteTime(){
+    return Math.floor(Date.now() / 60000) * 60;
+}
+
+function updateLiveCandle(price){
+    if(!candleSeries) return;
+
+    const candleTime = getCurrentMinuteTime();
+
+    if(!currentLiveCandle || currentLiveCandle.time !== candleTime){
+        currentLiveCandle = {
+            time: candleTime,
+            open: price,
+            high: price,
+            low: price,
+            close: price
+        };
+    }else{
+        currentLiveCandle.high = Math.max(currentLiveCandle.high, price);
+        currentLiveCandle.low = Math.min(currentLiveCandle.low, price);
+        currentLiveCandle.close = price;
+    }
+
+    candleSeries.update(currentLiveCandle);
+}
+
 // =======================
-// OANDA CANDLES
+// OANDA CANDLES - LOAD ONCE
 // =======================
 async function loadOandaCandles(){
     try{
@@ -115,7 +144,6 @@ async function createChart(){
     container.innerHTML = `<div id="oandaChart"></div>`;
 
     const chartBox = document.getElementById("oandaChart");
-
     chartBox.style.width = "100%";
     chartBox.style.height = "100%";
 
@@ -158,31 +186,32 @@ async function createChart(){
         borderUpColor: "#00ff99",
         borderDownColor: "#ff4d4d",
         wickUpColor: "#00ff99",
-        wickDownColor: "#ff4d4d"
+        wickDownColor: "#ff4d4d",
+        priceLineVisible: true,
+        lastValueVisible: true
     });
 
     const candles = await loadOandaCandles();
 
     if(candles.length){
         candleSeries.setData(candles);
+
+        const lastCandle = candles[candles.length - 1];
+
+        currentLiveCandle = {
+            time: getCurrentMinuteTime(),
+            open: lastCandle.close,
+            high: lastCandle.close,
+            low: lastCandle.close,
+            close: lastCandle.close
+        };
+
         oandaChart.timeScale().fitContent();
 
-        setText("signal", `✅ GOLD OANDA Chart Loaded`);
+        setText("signal", "✅ GOLD OANDA Live Chart Loaded");
     }else{
         setText("signal", "No OANDA candles found");
     }
-}
-
-// =======================
-// UPDATE LAST CANDLE
-// =======================
-async function updateLastCandle(){
-    if(currentAsset !== "GOLD" || !candleSeries) return;
-
-    const candles = await loadOandaCandles();
-    if(!candles.length) return;
-
-    candleSeries.update(candles[candles.length - 1]);
 }
 
 // =======================
@@ -216,7 +245,6 @@ window.changeAsset = function(a){
 };
 
 window.service = function(type){
-
     const msg = {
         daily: "📊 Daily Analysis Selected",
         support: "📍 Support Selected",
@@ -372,12 +400,12 @@ setInterval(() => {
     loadChannel();
 }, 30000);
 
+// السعر كل ثانية = شمعة Live
 setInterval(() => {
     if(currentAsset === "GOLD"){
         loadOandaPrice();
-        updateLastCandle();
     }
-}, 3000);
+}, 1000);
 
 window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
