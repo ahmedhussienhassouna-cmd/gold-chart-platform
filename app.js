@@ -1,6 +1,6 @@
 let currentTheme = localStorage.getItem("theme") || "dark";
-
 let currentAsset = "GOLD";
+let currentGranularity = "M1";
 
 let strategyOn = false;
 let liquidityOn = false;
@@ -13,6 +13,9 @@ let currentLiveCandle = null;
 let oandaChart = null;
 let candleSeries = null;
 let resizeTimer = null;
+
+let drawingMode = null;
+let drawings = [];
 
 // =======================
 // HELPERS
@@ -36,9 +39,7 @@ function updatePanel(){
 
     const themeBtn = document.getElementById("themeBtn");
     if(themeBtn){
-        themeBtn.innerHTML = currentTheme === "dark"
-            ? "☀️ Light Mode"
-            : "🌙 Dark Mode";
+        themeBtn.innerHTML = currentTheme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
     }
 }
 
@@ -48,7 +49,7 @@ function applyPageTheme(){
 }
 
 // =======================
-// LIVE PRICE + LIVE CANDLE
+// LIVE PRICE
 // =======================
 async function loadOandaPrice(){
     try{
@@ -66,7 +67,6 @@ async function loadOandaPrice(){
         const mid = Number(((bid + ask) / 2).toFixed(2));
 
         lastPrice = mid;
-
         setText("priceBox", `🥇 XAUUSD Live: ${mid}`);
 
         updateLiveCandle(mid);
@@ -77,14 +77,26 @@ async function loadOandaPrice(){
     }
 }
 
-function getCurrentMinuteTime(){
-    return Math.floor(Date.now() / 60000) * 60;
+function getCurrentCandleTime(){
+    const now = Date.now();
+
+    const map = {
+        M1: 60 * 1000,
+        M5: 5 * 60 * 1000,
+        M15: 15 * 60 * 1000,
+        H1: 60 * 60 * 1000,
+        H4: 4 * 60 * 60 * 1000,
+        D: 24 * 60 * 60 * 1000
+    };
+
+    const frameMs = map[currentGranularity] || 60 * 1000;
+    return Math.floor(now / frameMs) * frameMs / 1000;
 }
 
 function updateLiveCandle(price){
     if(!candleSeries) return;
 
-    const candleTime = getCurrentMinuteTime();
+    const candleTime = getCurrentCandleTime();
 
     if(!currentLiveCandle || currentLiveCandle.time !== candleTime){
         currentLiveCandle = {
@@ -104,11 +116,12 @@ function updateLiveCandle(price){
 }
 
 // =======================
-// OANDA CANDLES - LOAD ONCE
+// CANDLES
 // =======================
 async function loadOandaCandles(){
     try{
-        const res = await fetch("/api/candles");
+        const url = `/api/candles?granularity=${currentGranularity}&count=5000`;
+        const res = await fetch(url);
         const data = await res.json();
 
         if(!data.candles){
@@ -138,12 +151,10 @@ async function loadOandaCandles(){
 // =======================
 async function createChart(){
 
-    const container = document.getElementById("chart");
-    if(!container) return;
-
-    container.innerHTML = `<div id="oandaChart"></div>`;
-
     const chartBox = document.getElementById("oandaChart");
+    if(!chartBox) return;
+
+    chartBox.innerHTML = "";
     chartBox.style.width = "100%";
     chartBox.style.height = "100%";
 
@@ -152,13 +163,12 @@ async function createChart(){
         return;
     }
 
+    const container = document.getElementById("chart");
     const rect = container.getBoundingClientRect();
-    const width = Math.max(rect.width, 600);
-    const height = Math.max(rect.height, 400);
 
     oandaChart = LightweightCharts.createChart(chartBox, {
-        width: width,
-        height: height,
+        width: Math.max(rect.width, 600),
+        height: Math.max(rect.height, 400),
         layout: {
             background: { color: "#0b0b0b" },
             textColor: "#d1d4dc"
@@ -171,12 +181,29 @@ async function createChart(){
             mode: LightweightCharts.CrosshairMode.Normal
         },
         rightPriceScale: {
-            borderColor: "#333"
+            borderColor: "#333",
+            autoScale: true
         },
         timeScale: {
             borderColor: "#333",
             timeVisible: true,
-            secondsVisible: false
+            secondsVisible: false,
+            rightOffset: 10,
+            barSpacing: 8,
+            fixLeftEdge: false,
+            fixRightEdge: false,
+            lockVisibleTimeRangeOnResize: false
+        },
+        handleScroll: {
+            mouseWheel: true,
+            pressedMouseMove: true,
+            horzTouchDrag: true,
+            vertTouchDrag: true
+        },
+        handleScale: {
+            axisPressedMouseMove: true,
+            mouseWheel: true,
+            pinch: true
         }
     });
 
@@ -199,7 +226,7 @@ async function createChart(){
         const lastCandle = candles[candles.length - 1];
 
         currentLiveCandle = {
-            time: getCurrentMinuteTime(),
+            time: getCurrentCandleTime(),
             open: lastCandle.close,
             high: lastCandle.close,
             low: lastCandle.close,
@@ -208,10 +235,143 @@ async function createChart(){
 
         oandaChart.timeScale().fitContent();
 
-        setText("signal", "✅ GOLD OANDA Live Chart Loaded");
+        setText("signal", `✅ GOLD OANDA Chart Loaded | TF: ${currentGranularity}`);
     }else{
         setText("signal", "No OANDA candles found");
     }
+
+    setupContextMenu();
+}
+
+// =======================
+// TIMEFRAMES
+// =======================
+window.changeTimeframe = async function(tf){
+    currentGranularity = tf;
+    currentLiveCandle = null;
+
+    setText("signal", `Loading timeframe ${tf}...`);
+
+    await createChart();
+    await loadOandaPrice();
+};
+
+// =======================
+// ZOOM
+// =======================
+window.zoomIn = function(){
+    if(!oandaChart) return;
+    const timeScale = oandaChart.timeScale();
+    const range = timeScale.getVisibleLogicalRange();
+    if(!range) return;
+
+    const center = (range.from + range.to) / 2;
+    const size = (range.to - range.from) * 0.7;
+
+    timeScale.setVisibleLogicalRange({
+        from: center - size / 2,
+        to: center + size / 2
+    });
+};
+
+window.zoomOut = function(){
+    if(!oandaChart) return;
+    const timeScale = oandaChart.timeScale();
+    const range = timeScale.getVisibleLogicalRange();
+    if(!range) return;
+
+    const center = (range.from + range.to) / 2;
+    const size = (range.to - range.from) * 1.4;
+
+    timeScale.setVisibleLogicalRange({
+        from: center - size / 2,
+        to: center + size / 2
+    });
+};
+
+window.resetChart = function(){
+    if(oandaChart){
+        oandaChart.timeScale().fitContent();
+    }
+
+    const menu = document.getElementById("chartContextMenu");
+    if(menu) menu.style.display = "none";
+};
+
+// =======================
+// SIMPLE DRAWING TOOLS
+// =======================
+window.enableHorizontalLine = function(){
+    drawingMode = "horizontal";
+    setText("signal", "Click on chart to add Horizontal Line");
+
+    const menu = document.getElementById("chartContextMenu");
+    if(menu) menu.style.display = "none";
+};
+
+function addHorizontalLine(price){
+    if(!candleSeries) return;
+
+    const line = candleSeries.createPriceLine({
+        price: price,
+        color: "#ffd700",
+        lineWidth: 2,
+        lineStyle: LightweightCharts.LineStyle.Solid,
+        axisLabelVisible: true,
+        title: "Golden Line"
+    });
+
+    drawings.push(line);
+    setText("signal", `Horizontal Line Added: ${price.toFixed(2)}`);
+}
+
+window.clearDrawings = function(){
+    if(!candleSeries) return;
+
+    drawings.forEach(line => {
+        candleSeries.removePriceLine(line);
+    });
+
+    drawings = [];
+
+    const menu = document.getElementById("chartContextMenu");
+    if(menu) menu.style.display = "none";
+
+    setText("signal", "Drawings Cleared");
+};
+
+function setupContextMenu(){
+    const chartContainer = document.getElementById("chart");
+    const chartBox = document.getElementById("oandaChart");
+    const menu = document.getElementById("chartContextMenu");
+
+    if(!chartContainer || !chartBox || !menu) return;
+
+    chartBox.addEventListener("contextmenu", function(e){
+        e.preventDefault();
+
+        menu.style.display = "block";
+        menu.style.left = e.offsetX + "px";
+        menu.style.top = e.offsetY + "px";
+    });
+
+    document.addEventListener("click", function(){
+        menu.style.display = "none";
+    });
+
+    chartBox.addEventListener("click", function(e){
+        if(drawingMode !== "horizontal" || !candleSeries) return;
+
+        const rect = chartBox.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        const price = candleSeries.coordinateToPrice(y);
+
+        if(price){
+            addHorizontalLine(price);
+        }
+
+        drawingMode = null;
+    });
 }
 
 // =======================
@@ -227,7 +387,6 @@ window.toggleTheme = function(){
 };
 
 window.changeAsset = function(a){
-
     currentAsset = a;
 
     setText("activeAsset", a);
@@ -255,7 +414,6 @@ window.service = function(type){
 };
 
 window.toggleStrategy = async function(){
-
     strategyOn = !strategyOn;
     updatePanel();
 
@@ -314,7 +472,6 @@ window.toggleVWAP = function(){
 // CHANNEL
 // =======================
 async function loadChannel(){
-
     const box = document.getElementById("channelBox");
     if(!box) return;
 
@@ -349,7 +506,6 @@ async function loadChannel(){
 // SESSION
 // =======================
 function getCurrentSession(){
-
     const now = new Date();
 
     const cairoTime = new Date(
@@ -358,7 +514,6 @@ function getCurrentSession(){
 
     const hour = cairoTime.getHours();
     const minute = cairoTime.getMinutes();
-
     const current = hour + minute / 60;
 
     if(current >= 1 && current < 3) return "Sydney";
@@ -400,7 +555,6 @@ setInterval(() => {
     loadChannel();
 }, 30000);
 
-// السعر كل ثانية = شمعة Live
 setInterval(() => {
     if(currentAsset === "GOLD"){
         loadOandaPrice();
