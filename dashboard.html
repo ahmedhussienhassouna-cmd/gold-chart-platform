@@ -14,9 +14,9 @@
     <h2>🟡 Golden Trade</h2>
 
     <div class="profileBox">
-        <img src="images/ahmed.jpg" class="profileImage">
-        <div class="profileName">Ahmed Hassouna</div>
-        <div class="profileTitle">Founder & CEO</div>
+        <img src="images/ahmed.jpg" id="dashboardPhoto" class="profileImage">
+        <div class="profileName" id="dashboardName">Ahmed Hassouna</div>
+        <div class="profileTitle" id="dashboardTitle">Golden Trade Client</div>
     </div>
 
     <div class="section-title">Assets</div>
@@ -28,8 +28,8 @@
     <button onclick="service('daily')">📊 Analysis</button>
     <button onclick="toggleStrategy()">💰 Strategy</button>
     <button onclick="toggleVWAP()">📈 VWAP</button>
-   <button onclick="toggleSessionProfile()">📊 Session Profile</button>
-     <button onclick="openAcademy()">🎓 Academy</button>
+    <button onclick="toggleSessionProfile()">📊 Session Profile</button>
+    <button onclick="openAcademy()">🎓 Academy</button>
     <button onclick="service('support')">📍 Support</button>
 
     <div style="margin-top:auto">
@@ -45,7 +45,6 @@
 
 <div id="chart">
 
-    <!-- TOP CHART TOOLBAR -->
     <div id="chartToolbar" class="chartToolbar">
         <div class="toolbarSymbol">XAUUSD</div>
 
@@ -73,38 +72,25 @@
         </div>
     </div>
 
-    <!-- LEFT DRAWING TOOLS -->
     <div id="drawingToolbar" class="drawingToolbar">
-
         <button title="Cursor / Crosshair" onclick="setDrawingTool('cursor')" id="tool-cursor">⌖</button>
-
         <button title="Trend Line" onclick="setDrawingTool('trend')" id="tool-trend">╱</button>
-
         <button title="Horizontal Line" onclick="setDrawingTool('horizontal')" id="tool-horizontal">━</button>
-
         <button title="Vertical Line" onclick="setDrawingTool('vertical')" id="tool-vertical">┃</button>
-
         <button title="Rectangle" onclick="setDrawingTool('rectangle')" id="tool-rectangle">▭</button>
-
         <button title="Arrow" onclick="setDrawingTool('arrow')" id="tool-arrow">↗</button>
-
         <button title="Text" onclick="setDrawingTool('text')" id="tool-text">T</button>
 
         <div class="drawingDivider"></div>
 
         <button title="Magnet Mode" onclick="toggleMagnet()" id="tool-magnet">🧲</button>
-
         <button title="Lock Drawings" onclick="toggleLockDrawings()" id="tool-lock">🔒</button>
-
         <button title="Show / Hide Drawings" onclick="toggleDrawingsVisibility()" id="tool-eye">👁</button>
-
         <button title="Clear All Drawings" onclick="clearDrawings()" id="tool-delete">🗑</button>
-
     </div>
 
     <div id="oandaChart"></div>
 
-    <!-- RIGHT CLICK MENU -->
     <div id="chartContextMenu" class="chartContextMenu">
         <div onclick="setDrawingTool('horizontal')">➖ Horizontal Line</div>
         <div onclick="setDrawingTool('trend')">╱ Trend Line</div>
@@ -139,14 +125,38 @@
 
 <script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
 <script type="module" src="firebase.js"></script>
-<script src="app.js?v=81"></script>
+<script src="app.js"></script>
 <script src="auth.js"></script>
 
 <script>
+function loadDashboardUser(){
+    const user = JSON.parse(localStorage.getItem("golden_user"));
+
+    if(!user) return;
+
+    const photo = document.getElementById("dashboardPhoto");
+    const name = document.getElementById("dashboardName");
+    const title = document.getElementById("dashboardTitle");
+
+    if(photo && user.photo){
+        photo.src = user.photo;
+    }
+
+    if(name && user.name){
+        name.innerHTML = user.name;
+    }
+
+    if(title){
+        title.innerHTML = user.role || "Golden Trade Client";
+    }
+}
+
 function logout(){
-    localStorage.removeItem("golden_user");
+    localStorage.removeItem("golden_logged");
     window.location.href = "login.html";
 }
+
+loadDashboardUser();
 </script>
 
 </body>
