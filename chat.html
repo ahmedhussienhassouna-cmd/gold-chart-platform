@@ -1,1 +1,44 @@
 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clients Chat - Golden Trade</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="chatBody">
+
+<div class="chatPage">
+
+    <div class="chatHeader">
+        <button onclick="window.location.href='dashboard.html'">← Back</button>
+        <h2>💬 Golden Trade Clients Chat</h2>
+        <div id="chatUserName">Client</div>
+    </div>
+
+    <div id="chatMessages" class="chatMessages">
+        <div class="chatLoading">Loading messages...</div>
+    </div>
+
+    <div class="chatInputBox">
+        <input 
+            type="text" 
+            id="chatInput" 
+            placeholder="Write your message..."
+            onkeydown="if(event.key === 'Enter'){sendChatMessage();}"
+        >
+
+        <button onclick="sendChatMessage()">Send</button>
+    </div>
+
+</div>
+
+<script type="module" src="firebase.js"></script>
+<script src="auth.js"></script>
+<script src="chat.js"></script>
+
+</body>
+</html>
