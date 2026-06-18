@@ -1,18 +1,10 @@
 let currentUser = null;
 
-// =======================
-// LOAD USER
-// =======================
 function loadChatUser(){
     const savedUser = localStorage.getItem("golden_user");
     const logged = localStorage.getItem("golden_logged");
 
-    if(logged !== "true"){
-        window.location.href = "login.html";
-        return;
-    }
-
-    if(!savedUser){
+    if(logged !== "true" || !savedUser){
         window.location.href = "login.html";
         return;
     }
@@ -25,43 +17,34 @@ function loadChatUser(){
     }
 }
 
-// =======================
-// FORMAT TIME
-// =======================
+function escapeHtml(text){
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function formatChatTime(createdAt){
-    if(!createdAt){
-        return "";
-    }
+    if(!createdAt) return "";
 
     try{
-        let date;
-
-        if(createdAt.toDate){
-            date = createdAt.toDate();
-        }else{
-            date = new Date(createdAt);
-        }
+        const date = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
 
         return date.toLocaleTimeString("en-US", {
             hour: "2-digit",
             minute: "2-digit"
         });
-
-    }catch(error){
+    }catch(e){
         return "";
     }
 }
 
-// =======================
-// RENDER MESSAGES
-// =======================
 function renderChatMessages(messages){
     const box = document.getElementById("chatMessages");
     if(!box) return;
 
     box.innerHTML = "";
 
-    if(!messages.length){
+    if(!messages || messages.length === 0){
         box.innerHTML = `<div class="chatLoading">No messages yet...</div>`;
         return;
     }
@@ -95,9 +78,6 @@ function renderChatMessages(messages){
     box.scrollTop = box.scrollHeight;
 }
 
-// =======================
-// SEND MESSAGE
-// =======================
 async function sendChatMessage(){
     const input = document.getElementById("chatInput");
     if(!input || !currentUser) return;
@@ -108,53 +88,49 @@ async function sendChatMessage(){
         return;
     }
 
-    input.value = "";
-
     if(typeof window.sendChatMessageFirebase !== "function"){
-        alert("Chat Firebase not loaded");
+        alert("Chat is still loading, try again in 2 seconds");
         return;
     }
 
     const ok = await window.sendChatMessageFirebase(message, currentUser);
 
-    if(!ok){
+    if(ok){
+        input.value = "";
+    }else{
         alert("Message not sent");
     }
 }
 
-// =======================
-// LISTEN MESSAGES
-// =======================
-function listenMessages(){
-    if(typeof window.listenChatMessagesFirebase !== "function"){
-        const box = document.getElementById("chatMessages");
-        if(box){
-            box.innerHTML = `<div class="chatLoading">Chat Firebase not loaded</div>`;
+function startChatWhenFirebaseReady(){
+    const box = document.getElementById("chatMessages");
+
+    let tries = 0;
+
+    const timer = setInterval(() => {
+        tries++;
+
+        if(typeof window.listenChatMessagesFirebase === "function"){
+            clearInterval(timer);
+
+            window.listenChatMessagesFirebase((messages) => {
+                renderChatMessages(messages);
+            });
+
+            return;
         }
-        return;
-    }
 
-    window.listenChatMessagesFirebase((messages) => {
-        renderChatMessages(messages);
-    });
+        if(tries > 20){
+            clearInterval(timer);
+
+            if(box){
+                box.innerHTML = `<div class="chatLoading">Firebase chat not loaded</div>`;
+            }
+        }
+    }, 300);
 }
 
-// =======================
-// SECURITY ESCAPE
-// =======================
-function escapeHtml(text){
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// =======================
-// LOAD
-// =======================
 window.addEventListener("load", () => {
     loadChatUser();
-
-    setTimeout(() => {
-        listenMessages();
-    }, 500);
+    startChatWhenFirebaseReady();
 });
