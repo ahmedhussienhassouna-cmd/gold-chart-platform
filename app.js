@@ -12,6 +12,7 @@ let currentLiveCandle = null;
 
 let oandaChart = null;
 let candleSeries = null;
+let vwapSeries = null;
 let resizeTimer = null;
 
 let drawingMode = "cursor";
@@ -64,10 +65,7 @@ function setActiveTimeframeButton(){
 }
 
 function setActiveToolButton(){
-    [
-        "cursor","trend","horizontal","vertical",
-        "rectangle","arrow","text"
-    ].forEach(tool => {
+    ["cursor","trend","horizontal","vertical","rectangle","arrow","text"].forEach(tool => {
         const btn = document.getElementById("tool-" + tool);
         if(btn) btn.classList.toggle("active", tool === drawingMode);
     });
@@ -80,6 +78,30 @@ function setActiveToolButton(){
 
     const eye = document.getElementById("tool-eye");
     if(eye) eye.classList.toggle("active", drawingsVisible);
+}
+
+// =======================
+// VWAP
+// =======================
+function calculateVWAP(candles){
+    let cumulativePV = 0;
+    let cumulativeVolume = 0;
+    const vwapData = [];
+
+    candles.forEach(c => {
+        const typicalPrice = (c.high + c.low + c.close) / 3;
+        const volume = c.volume || 1;
+
+        cumulativePV += typicalPrice * volume;
+        cumulativeVolume += volume;
+
+        vwapData.push({
+            time: c.time,
+            value: cumulativePV / cumulativeVolume
+        });
+    });
+
+    return vwapData;
 }
 
 // =======================
@@ -211,7 +233,8 @@ async function loadOandaCandles(){
                 open: Number(c.mid.o),
                 high: Number(c.mid.h),
                 low: Number(c.mid.l),
-                close: Number(c.mid.c)
+                close: Number(c.mid.c),
+                volume: Number(c.volume || 1)
             }));
 
     }catch(error){
@@ -236,6 +259,7 @@ async function createChart(){
 
     strategyLines = [];
     priceLineDrawings = [];
+    vwapSeries = null;
 
     if(typeof LightweightCharts === "undefined"){
         setText("signal", "Lightweight Charts library not loaded");
@@ -294,12 +318,24 @@ async function createChart(){
         lastValueVisible: true
     });
 
+    vwapSeries = oandaChart.addLineSeries({
+        color: "#ffd700",
+        lineWidth: 2,
+        title: "VWAP",
+        visible: vwapOn,
+        priceLineVisible: false,
+        lastValueVisible: true
+    });
+
     createDrawingLayer();
 
     const candles = await loadOandaCandles();
 
     if(candles.length){
         candleSeries.setData(candles);
+
+        const vwapData = calculateVWAP(candles);
+        vwapSeries.setData(vwapData);
 
         const lastCandle = candles[candles.length - 1];
 
@@ -809,6 +845,13 @@ window.toggleIB = function(){
 
 window.toggleVWAP = function(){
     vwapOn = !vwapOn;
+
+    if(vwapSeries){
+        vwapSeries.applyOptions({
+            visible: vwapOn
+        });
+    }
+
     updatePanel();
     setText("signal", vwapOn ? "📈 VWAP ON" : "📈 VWAP OFF");
 };
