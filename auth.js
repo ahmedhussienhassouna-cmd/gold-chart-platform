@@ -8,11 +8,6 @@ function registerUser() {
     const passwordInput = document.getElementById("registerPassword");
     const photoInput = document.getElementById("registerPhoto");
 
-    if (!nameInput || !emailInput || !passwordInput) {
-        alert("Register inputs not found");
-        return;
-    }
-
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
@@ -22,7 +17,7 @@ function registerUser() {
         return;
     }
 
-    if (!photoInput || !photoInput.files || !photoInput.files[0]) {
+    if (!photoInput || !photoInput.files[0]) {
         alert("Please select profile photo");
         return;
     }
@@ -30,22 +25,28 @@ function registerUser() {
     const file = photoInput.files[0];
     const reader = new FileReader();
 
-    reader.onload = function () {
+    reader.onload = async function () {
 
         const user = {
             name: name,
             email: email,
             password: password,
             photo: reader.result,
-            role: "Golden Trade Client",
+            role: "Free",
+            subscription: "free",
+            status: "active",
+            vipUntil: "",
             createdAt: new Date().toISOString()
         };
 
         localStorage.setItem("golden_user", JSON.stringify(user));
         localStorage.removeItem("golden_logged");
 
-        alert("Account Created Successfully");
+        if (window.saveUserToFirebase) {
+            await window.saveUserToFirebase(user);
+        }
 
+        alert("Account Created Successfully");
         window.location.href = "login.html";
     };
 
@@ -55,15 +56,10 @@ function registerUser() {
 // =======================
 // LOGIN
 // =======================
-function loginUser() {
+async function loginUser() {
 
     const emailInput = document.getElementById("loginEmail");
     const passwordInput = document.getElementById("loginPassword");
-
-    if (!emailInput || !passwordInput) {
-        alert("Login inputs not found");
-        return;
-    }
 
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
@@ -83,8 +79,19 @@ function loginUser() {
     const saved = JSON.parse(savedUser);
 
     if (email === saved.email && password === saved.password) {
+
         localStorage.setItem("golden_logged", "true");
+
+        if (window.updateUserLoginFirebase) {
+            await window.updateUserLoginFirebase(email);
+        }
+
+        if (window.trackSiteVisitFirebase) {
+            await window.trackSiteVisitFirebase();
+        }
+
         window.location.href = "dashboard.html";
+
     } else {
         alert("Wrong Email or Password");
     }
@@ -103,7 +110,6 @@ function logout() {
 // =======================
 function loadDashboardUser(){
     const savedUser = localStorage.getItem("golden_user");
-
     if(!savedUser) return;
 
     const user = JSON.parse(savedUser);
@@ -121,7 +127,10 @@ function loadDashboardUser(){
     }
 
     if(title){
-        title.innerHTML = user.role || "Golden Trade Client";
+        title.innerHTML =
+            user.subscription === "vip"
+            ? "VIP Member"
+            : "Free Member";
     }
 }
 
