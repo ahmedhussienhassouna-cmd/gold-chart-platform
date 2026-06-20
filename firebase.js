@@ -34,16 +34,23 @@ window.saveUserToFirebase = async function(user){
     try{
         if(!user || !user.email) return false;
 
-        await setDoc(doc(db, "users", user.email), {
-            name: user.name || "Client",
-            email: user.email,
-            role: user.role || "Free",
-            subscription: user.subscription || "free",
-            status: user.status || "active",
-            vipUntil: user.vipUntil || "",
-            createdAt: serverTimestamp(),
-            lastLogin: serverTimestamp()
-        }, { merge: true });
+      await setDoc(doc(db, "users", user.email), {
+    name: user.name || "Client",
+    email: user.email,
+
+    role: user.role || "Trial Member",
+    subscription: user.subscription || "trial",
+    status: user.status || "active",
+
+    trialDays: user.trialDays || 14,
+    trialStart: user.trialStart || new Date().toISOString(),
+    trialEnd: user.trialEnd || "",
+
+    vipUntil: user.vipUntil || "",
+
+    createdAt: serverTimestamp(),
+    lastLogin: serverTimestamp()
+}, { merge: true });
 
         return true;
 
