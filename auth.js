@@ -1,4 +1,52 @@
 // =======================
+// HELPERS
+// =======================
+function addDays(date, days){
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function getDaysRemaining(endDate){
+    if(!endDate) return 0;
+
+    const now = new Date();
+    const end = new Date(endDate);
+
+    const diff = end - now;
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function updateLocalUserStatus(user){
+    if(!user) return user;
+
+    const today = new Date();
+
+    if(user.subscription === "trial"){
+        const trialEnd = new Date(user.trialEnd);
+
+        if(today > trialEnd){
+            user.subscription = "expired";
+            user.status = "expired";
+            user.role = "Expired Member";
+        }
+    }
+
+    if(user.subscription === "vip" && user.vipUntil){
+        const vipEnd = new Date(user.vipUntil);
+
+        if(today > vipEnd){
+            user.subscription = "expired";
+            user.status = "expired";
+            user.role = "Expired Member";
+        }
+    }
+
+    localStorage.setItem("golden_user", JSON.stringify(user));
+    return user;
+}
+
+// =======================
 // REGISTER
 // =======================
 function registerUser() {
@@ -22,6 +70,9 @@ function registerUser() {
         return;
     }
 
+    const now = new Date();
+    const trialEnd = addDays(now, 14);
+
     const file = photoInput.files[0];
     const reader = new FileReader();
 
@@ -32,11 +83,17 @@ function registerUser() {
             email: email,
             password: password,
             photo: reader.result,
-            role: "Free",
-            subscription: "free",
+
+            role: "Trial Member",
+            subscription: "trial",
             status: "active",
+
+            trialDays: 14,
+            trialStart: now.toISOString(),
+            trialEnd: trialEnd.toISOString(),
+
             vipUntil: "",
-            createdAt: new Date().toISOString()
+            createdAt: now.toISOString()
         };
 
         localStorage.setItem("golden_user", JSON.stringify(user));
@@ -46,7 +103,7 @@ function registerUser() {
             await window.saveUserToFirebase(user);
         }
 
-        alert("Account Created Successfully");
+        alert("Account Created Successfully - 14 Days Free Trial Started");
         window.location.href = "login.html";
     };
 
@@ -76,9 +133,17 @@ async function loginUser() {
         return;
     }
 
-    const saved = JSON.parse(savedUser);
+    let saved = JSON.parse(savedUser);
+    saved = updateLocalUserStatus(saved);
 
     if (email === saved.email && password === saved.password) {
+
+        if(saved.status === "expired"){
+            localStorage.setItem("golden_logged", "true");
+            alert("Your trial or subscription has expired. Please renew your membership.");
+            window.location.href = "dashboard.html";
+            return;
+        }
 
         localStorage.setItem("golden_logged", "true");
 
@@ -112,7 +177,8 @@ function loadDashboardUser(){
     const savedUser = localStorage.getItem("golden_user");
     if(!savedUser) return;
 
-    const user = JSON.parse(savedUser);
+    let user = JSON.parse(savedUser);
+    user = updateLocalUserStatus(user);
 
     const photo = document.getElementById("dashboardPhoto");
     const name = document.getElementById("dashboardName");
@@ -127,10 +193,14 @@ function loadDashboardUser(){
     }
 
     if(title){
-        title.innerHTML =
-            user.subscription === "vip"
-            ? "VIP Member"
-            : "Free Member";
+        if(user.subscription === "trial"){
+            const days = getDaysRemaining(user.trialEnd);
+            title.innerHTML = `Trial Member - ${days} Days Left`;
+        }else if(user.subscription === "vip"){
+            title.innerHTML = "VIP Member";
+        }else{
+            title.innerHTML = "Expired Member";
+        }
     }
 }
 
