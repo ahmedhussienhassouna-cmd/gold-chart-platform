@@ -25,12 +25,41 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // =======================
+// HELPERS
+// =======================
+function addDays(date, days){
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function getDaysRemaining(endDate){
+    if(!endDate) return 0;
+
+    const now = new Date();
+    const end = new Date(endDate);
+    const diff = end - now;
+
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
+function calcVipDate(plan){
+    const now = new Date();
+
+    if(plan === "month") return addDays(now, 30).toISOString();
+    if(plan === "3months") return addDays(now, 90).toISOString();
+    if(plan === "year") return addDays(now, 365).toISOString();
+    if(plan === "lifetime") return "lifetime";
+
+    return "";
+}
+
+// =======================
 // SAVE LEVELS
 // =======================
 window.saveLevels = async function(){
 
     try{
-
         await setDoc(doc(db, "strategy", "GOLD"), {
             high: Number(document.getElementById("goldHigh").value),
             low: Number(document.getElementById("goldLow").value),
@@ -63,7 +92,6 @@ window.saveLevels = async function(){
 window.sendChannelMessage = async function(){
 
     try{
-
         const title = document.getElementById("channelTitle").value;
         const message = document.getElementById("channelMessage").value;
 
@@ -81,23 +109,6 @@ window.sendChannelMessage = async function(){
         alert("❌ Channel Error");
     }
 };
-
-// =======================
-// DATE FORMAT
-// =======================
-function formatDate(value){
-    if(!value) return "-";
-
-    try{
-        if(value.toDate){
-            return value.toDate().toLocaleString();
-        }
-
-        return value;
-    }catch(error){
-        return "-";
-    }
-}
 
 // =======================
 // LOAD USERS TABLE
@@ -121,39 +132,63 @@ function loadUsersTable(){
         let html = "";
         let totalUsers = 0;
         let vipUsers = 0;
-        let freeUsers = 0;
+        let trialUsers = 0;
+        let expiredUsers = 0;
 
         snapshot.forEach((docSnap) => {
 
             const user = docSnap.data();
-
             totalUsers++;
 
-            const subscription = user.subscription || "free";
+            let subscription = user.subscription || "trial";
+            let status = user.status || "active";
+            let remainingDays = "-";
 
-            if(subscription === "vip"){
-                vipUsers++;
-            }else{
-                freeUsers++;
+            if(subscription === "trial"){
+                remainingDays = getDaysRemaining(user.trialEnd);
+
+                if(remainingDays <= 0){
+                    subscription = "expired";
+                    status = "expired";
+                }
             }
 
-            const statusClass = subscription === "vip" ? "vip" : "free";
+            if(subscription === "vip"){
+                if(user.vipUntil === "lifetime"){
+                    remainingDays = "Lifetime";
+                }else{
+                    remainingDays = getDaysRemaining(user.vipUntil);
 
-            const nextSubscription = subscription === "vip" ? "free" : "vip";
-            const buttonText = subscription === "vip" ? "Make Free" : "Make VIP";
+                    if(remainingDays <= 0){
+                        subscription = "expired";
+                        status = "expired";
+                    }
+                }
+            }
+
+            if(subscription === "vip") vipUsers++;
+            else if(subscription === "trial") trialUsers++;
+            else expiredUsers++;
+
+            const statusClass =
+                subscription === "vip" ? "vip" :
+                subscription === "trial" ? "free" :
+                "expired";
 
             html += `
                 <tr>
                     <td>${user.name || "-"}</td>
                     <td>${user.email || docSnap.id}</td>
                     <td class="${statusClass}">${subscription.toUpperCase()}</td>
-                    <td>${user.status || "active"}</td>
-                    <td>${user.vipUntil || "-"}</td>
+                    <td>${status}</td>
+                    <td>${remainingDays}</td>
                     <td>${user.visits || 0}</td>
                     <td>
-                        <button onclick="changeUserSubscription('${docSnap.id}', '${nextSubscription}')">
-                            ${buttonText}
-                        </button>
+                        <button onclick="makeVip('${docSnap.id}', 'month')">1 Month</button>
+                        <button onclick="makeVip('${docSnap.id}', '3months')">3 Months</button>
+                        <button onclick="makeVip('${docSnap.id}', 'year')">1 Year</button>
+                        <button onclick="makeVip('${docSnap.id}', 'lifetime')">Lifetime</button>
+                        <button onclick="makeExpired('${docSnap.id}')">Stop</button>
                     </td>
                 </tr>
             `;
@@ -171,34 +206,54 @@ function loadUsersTable(){
 
         if(totalUsersBox) totalUsersBox.innerHTML = totalUsers;
         if(vipUsersBox) vipUsersBox.innerHTML = vipUsers;
-        if(freeUsersBox) freeUsersBox.innerHTML = freeUsers;
+        if(freeUsersBox) freeUsersBox.innerHTML = trialUsers + expiredUsers;
     });
 }
 
 // =======================
-// CHANGE USER SUBSCRIPTION
+// MAKE VIP
 // =======================
-window.changeUserSubscription = async function(email, subscription){
+window.makeVip = async function(email, plan){
 
     try{
-
-        const vipUntil = subscription === "vip"
-            ? prompt("Enter VIP end date, example: 2026-07-21")
-            : "";
+        const vipUntil = calcVipDate(plan);
 
         await updateDoc(doc(db, "users", email), {
-            subscription: subscription,
-            role: subscription === "vip" ? "VIP Member" : "Free Member",
+            subscription: "vip",
+            role: "VIP Member",
             status: "active",
-            vipUntil: vipUntil || "",
+            vipPlan: plan,
+            vipUntil: vipUntil,
             updatedAt: serverTimestamp()
         });
 
-        alert("✅ Subscription Updated");
+        alert("✅ User upgraded to VIP");
 
     }catch(error){
         console.error(error);
-        alert("❌ Subscription Update Error");
+        alert("❌ VIP Update Error");
+    }
+};
+
+// =======================
+// MAKE EXPIRED
+// =======================
+window.makeExpired = async function(email){
+
+    try{
+        await updateDoc(doc(db, "users", email), {
+            subscription: "expired",
+            role: "Expired Member",
+            status: "expired",
+            vipUntil: "",
+            updatedAt: serverTimestamp()
+        });
+
+        alert("✅ User stopped");
+
+    }catch(error){
+        console.error(error);
+        alert("❌ Stop Error");
     }
 };
 
