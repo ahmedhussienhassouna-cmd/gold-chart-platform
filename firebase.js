@@ -5,12 +5,14 @@ import {
     doc,
     getDoc,
     setDoc,
+    updateDoc,
     collection,
     addDoc,
     query,
     orderBy,
     onSnapshot,
-    serverTimestamp
+    serverTimestamp,
+    increment
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -26,19 +28,129 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // =======================
+// USERS / REGISTRATION
+// =======================
+window.saveUserToFirebase = async function(user){
+    try{
+        if(!user || !user.email) return false;
+
+        await setDoc(doc(db, "users", user.email), {
+            name: user.name || "Client",
+            email: user.email,
+            role: user.role || "Free",
+            subscription: user.subscription || "free",
+            status: user.status || "active",
+            vipUntil: user.vipUntil || "",
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp()
+        }, { merge: true });
+
+        return true;
+
+    }catch(error){
+        console.error("Save user error:", error);
+        return false;
+    }
+};
+
+window.updateUserLoginFirebase = async function(email){
+    try{
+        if(!email) return false;
+
+        await setDoc(doc(db, "users", email), {
+            lastLogin: serverTimestamp(),
+            visits: increment(1)
+        }, { merge: true });
+
+        return true;
+
+    }catch(error){
+        console.error("Update login error:", error);
+        return false;
+    }
+};
+
+// =======================
+// SITE VISITS
+// =======================
+window.trackSiteVisitFirebase = async function(){
+    try{
+        const today = new Date().toISOString().split("T")[0];
+
+        await setDoc(doc(db, "analytics", "site"), {
+            totalVisits: increment(1),
+            lastVisit: serverTimestamp()
+        }, { merge: true });
+
+        await setDoc(doc(db, "analytics_daily", today), {
+            date: today,
+            visits: increment(1),
+            lastVisit: serverTimestamp()
+        }, { merge: true });
+
+        return true;
+
+    }catch(error){
+        console.error("Track visit error:", error);
+        return false;
+    }
+};
+
+// =======================
+// ADMIN USERS LIST
+// =======================
+window.listenUsersFirebase = function(callback){
+    const q = query(
+        collection(db, "users"),
+        orderBy("createdAt", "desc")
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const users = [];
+
+        snapshot.forEach(docSnap => {
+            users.push({
+                id: docSnap.id,
+                ...docSnap.data()
+            });
+        });
+
+        callback(users);
+    });
+};
+
+// =======================
+// ADMIN UPDATE SUBSCRIPTION
+// =======================
+window.updateUserSubscriptionFirebase = async function(email, data){
+    try{
+        if(!email) return false;
+
+        await updateDoc(doc(db, "users", email), {
+            subscription: data.subscription || "free",
+            role: data.role || "Free",
+            status: data.status || "active",
+            vipUntil: data.vipUntil || "",
+            updatedAt: serverTimestamp()
+        });
+
+        return true;
+
+    }catch(error){
+        console.error("Update subscription error:", error);
+        return false;
+    }
+};
+
+// =======================
 // STRATEGY
 // =======================
 window.loadStrategyLevels = async function(asset){
     try{
         const docRef = doc(db, "strategy", asset);
         const docSnap = await getDoc(docRef);
-
-        if(!docSnap.exists()){
-            return null;
-        }
-
+        if(!docSnap.exists()) return null;
         return docSnap.data();
-
     }catch(error){
         console.error(error);
         return null;
@@ -52,13 +164,8 @@ window.loadChannelMessage = async function(){
     try{
         const docRef = doc(db, "channel", "welcome");
         const docSnap = await getDoc(docRef);
-
-        if(!docSnap.exists()){
-            return null;
-        }
-
+        if(!docSnap.exists()) return null;
         return docSnap.data();
-
     }catch(error){
         console.error(error);
         return null;
@@ -70,18 +177,14 @@ window.loadChannelMessage = async function(){
 // =======================
 window.saveChannelMessage = async function(title, message){
     try{
-        await setDoc(
-            doc(db, "channel", "welcome"),
-            {
-                title: title,
-                message: message,
-                createdAt: new Date().toLocaleString(),
-                type: "public"
-            }
-        );
+        await setDoc(doc(db, "channel", "welcome"), {
+            title: title,
+            message: message,
+            createdAt: new Date().toLocaleString(),
+            type: "public"
+        });
 
         return true;
-
     }catch(error){
         console.error(error);
         return false;
@@ -102,7 +205,6 @@ window.sendChatMessageFirebase = async function(message, user){
         });
 
         return true;
-
     }catch(error){
         console.error("Firebase chat send error:", error);
         return false;
@@ -121,10 +223,10 @@ window.listenChatMessagesFirebase = function(callback){
     return onSnapshot(q, (snapshot) => {
         const messages = [];
 
-        snapshot.forEach(doc => {
+        snapshot.forEach(docSnap => {
             messages.push({
-                id: doc.id,
-                ...doc.data()
+                id: docSnap.id,
+                ...docSnap.data()
             });
         });
 
