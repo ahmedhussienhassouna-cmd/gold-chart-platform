@@ -1489,3 +1489,19 @@ window.addEventListener("load",()=>{
 
 });
 
+
+// =======================
+// RIGHT PANEL TOGGLE
+// =======================
+window.toggleRightPanel = function(){
+    document.body.classList.toggle("rightPanelClosed");
+
+    setTimeout(() => {
+        if(oandaChart){
+            oandaChart.resize(
+                document.getElementById("oandaChart").clientWidth,
+                document.getElementById("oandaChart").clientHeight
+            );
+        }
+    }, 300);
+};
