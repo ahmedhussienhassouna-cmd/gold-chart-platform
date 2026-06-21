@@ -45,7 +45,7 @@ if(savedUser){
     <button id="strategyBtn" onclick="toggleStrategy()">💰 Strategy</button>
     <button onclick="toggleVWAP()">📈 VWAP</button>
     <button onclick="toggleSessionProfile()">📊 Session Profile</button>
-<button onclick="openFloatingChat()">💬 Clients Chat</button>
+<button onclick="document.getElementById('floatingChat').style.display='flex';document.getElementById('floatingChat').classList.add('chatOpen');document.getElementById('floatingChat').classList.remove('closed','minimized');document.body.classList.add('bottomCardsOpen');">💬 Clients Chat</button>
     <button onclick="openAcademy()">🎓 Academy</button>
     <button onclick="service('support')">📍 Support</button>
 
