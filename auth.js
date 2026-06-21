@@ -14,7 +14,7 @@ function getDaysRemaining(endDate){
     const end = new Date(endDate);
 
     const diff = end - now;
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
 function updateLocalUserStatus(user){
@@ -32,7 +32,7 @@ function updateLocalUserStatus(user){
         }
     }
 
-    if(user.subscription === "vip" && user.vipUntil){
+    if(user.subscription === "vip" && user.vipUntil && user.vipUntil !== "lifetime"){
         const vipEnd = new Date(user.vipUntil);
 
         if(today > vipEnd){
@@ -138,13 +138,6 @@ async function loginUser() {
 
     if (email === saved.email && password === saved.password) {
 
-        if(saved.status === "expired"){
-            localStorage.setItem("golden_logged", "true");
-            alert("Your trial or subscription has expired. Please renew your membership.");
-            window.location.href = "dashboard.html";
-            return;
-        }
-
         localStorage.setItem("golden_logged", "true");
 
         if (window.updateUserLoginFirebase) {
@@ -153,6 +146,12 @@ async function loginUser() {
 
         if (window.trackSiteVisitFirebase) {
             await window.trackSiteVisitFirebase();
+        }
+
+        if(saved.status === "expired"){
+            alert("Your trial or subscription has expired. Please renew your membership.");
+            window.location.href = "upgrade.html";
+            return;
         }
 
         window.location.href = "dashboard.html";
@@ -180,9 +179,15 @@ function loadDashboardUser(){
     let user = JSON.parse(savedUser);
     user = updateLocalUserStatus(user);
 
+    if(user.status === "expired"){
+        window.location.href = "upgrade.html";
+        return;
+    }
+
     const photo = document.getElementById("dashboardPhoto");
     const name = document.getElementById("dashboardName");
     const title = document.getElementById("dashboardTitle");
+    const email = document.getElementById("dashboardEmail");
 
     if(photo && user.photo){
         photo.src = user.photo;
@@ -192,8 +197,14 @@ function loadDashboardUser(){
         name.innerHTML = user.name;
     }
 
+    if(email && user.email){
+        email.innerHTML = user.email;
+    }
+
     if(title){
-        if(user.subscription === "trial"){
+        if(user.email === "ahmedhussienhassouna@gmail.com"){
+            title.innerHTML = "Founder & CEO";
+        }else if(user.subscription === "trial"){
             const days = getDaysRemaining(user.trialEnd);
             title.innerHTML = `Trial Member - ${days} Days Left`;
         }else if(user.subscription === "vip"){
