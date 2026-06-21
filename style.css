@@ -1150,3 +1150,78 @@ html{
     color:#ffd700 !important;
     text-shadow:0 0 15px rgba(255,215,0,.2);
 }
+
+/* =======================
+   SIDEBAR FIX - DARK FULL HEIGHT + BIGGER TEXT
+======================= */
+
+.sidebar{
+    background:#050505 !important;
+    border-right:1px solid rgba(255,215,0,.35) !important;
+    height:100vh !important;
+    bottom:0 !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+}
+
+.sidebar::after{
+    content:"";
+    flex:1;
+    min-height:20px;
+    background:#050505;
+}
+
+.sidebar h2{
+    color:#ffd700 !important;
+    font-size:27px !important;
+    font-weight:900 !important;
+    margin-bottom:18px !important;
+}
+
+.section-title{
+    color:#ffd700 !important;
+    font-size:15px !important;
+    font-weight:900 !important;
+    margin:14px 0 8px !important;
+}
+
+.sidebar button{
+    background:#111 !important;
+    color:#fff !important;
+    border:1px solid rgba(255,215,0,.35) !important;
+    font-size:16px !important;
+    font-weight:900 !important;
+    padding:13px 15px !important;
+    border-radius:14px !important;
+}
+
+.sidebar button:hover{
+    background:#ffd700 !important;
+    color:#000 !important;
+}
+
+.profileName{
+    font-size:20px !important;
+    color:#ffd700 !important;
+}
+
+.profileTitle,
+.profileEmail{
+    font-size:14px !important;
+    color:#fff !important;
+}
+
+.subscriptionMini{
+    background:#0b0b0b !important;
+    border:1px solid #ffd700 !important;
+    color:white !important;
+}
+
+.subscriptionMini h4{
+    font-size:18px !important;
+}
+
+.subscriptionMini p{
+    font-size:15px !important;
+    color:white !important;
+}
