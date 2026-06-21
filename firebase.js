@@ -28,29 +28,57 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // =======================
+// GET USER BY EMAIL
+// =======================
+window.getUserFromFirebase = async function(email){
+    try{
+        if(!email) return null;
+
+        const docRef = doc(db, "users", email);
+        const docSnap = await getDoc(docRef);
+
+        if(!docSnap.exists()){
+            return null;
+        }
+
+        return {
+            id: docSnap.id,
+            ...docSnap.data()
+        };
+
+    }catch(error){
+        console.error("Get user error:", error);
+        return null;
+    }
+};
+
+// =======================
 // USERS / REGISTRATION
 // =======================
 window.saveUserToFirebase = async function(user){
     try{
         if(!user || !user.email) return false;
 
-      await setDoc(doc(db, "users", user.email), {
-    name: user.name || "Client",
-    email: user.email,
+        await setDoc(doc(db, "users", user.email), {
+            name: user.name || "Client",
+            email: user.email,
+            password: user.password || "",
+            photo: user.photo || "",
 
-    role: user.role || "Trial Member",
-    subscription: user.subscription || "trial",
-    status: user.status || "active",
+            role: user.role || "Trial Member",
+            subscription: user.subscription || "trial",
+            status: user.status || "active",
 
-    trialDays: user.trialDays || 14,
-    trialStart: user.trialStart || new Date().toISOString(),
-    trialEnd: user.trialEnd || "",
+            trialDays: user.trialDays || 14,
+            trialStart: user.trialStart || new Date().toISOString(),
+            trialEnd: user.trialEnd || "",
 
-    vipUntil: user.vipUntil || "",
+            vipPlan: user.vipPlan || "",
+            vipUntil: user.vipUntil || "",
 
-    createdAt: serverTimestamp(),
-    lastLogin: serverTimestamp()
-}, { merge: true });
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp()
+        }, { merge: true });
 
         return true;
 
@@ -60,6 +88,9 @@ window.saveUserToFirebase = async function(user){
     }
 };
 
+// =======================
+// UPDATE LOGIN
+// =======================
 window.updateUserLoginFirebase = async function(email){
     try{
         if(!email) return false;
@@ -73,6 +104,28 @@ window.updateUserLoginFirebase = async function(email){
 
     }catch(error){
         console.error("Update login error:", error);
+        return false;
+    }
+};
+
+// =======================
+// UPDATE USER STATUS
+// =======================
+window.updateUserStatusFirebase = async function(email, data){
+    try{
+        if(!email) return false;
+
+        await updateDoc(doc(db, "users", email), {
+            subscription: data.subscription || "expired",
+            role: data.role || "Expired Member",
+            status: data.status || "expired",
+            updatedAt: serverTimestamp()
+        });
+
+        return true;
+
+    }catch(error){
+        console.error("Update user status error:", error);
         return false;
     }
 };
@@ -134,9 +187,10 @@ window.updateUserSubscriptionFirebase = async function(email, data){
         if(!email) return false;
 
         await updateDoc(doc(db, "users", email), {
-            subscription: data.subscription || "free",
-            role: data.role || "Free",
+            subscription: data.subscription || "trial",
+            role: data.role || "Trial Member",
             status: data.status || "active",
+            vipPlan: data.vipPlan || "",
             vipUntil: data.vipUntil || "",
             updatedAt: serverTimestamp()
         });
@@ -171,8 +225,13 @@ window.loadChannelMessage = async function(){
     try{
         const docRef = doc(db, "channel", "welcome");
         const docSnap = await getDoc(docRef);
-        if(!docSnap.exists()) return null;
+
+        if(!docSnap.exists()){
+            return null;
+        }
+
         return docSnap.data();
+
     }catch(error){
         console.error(error);
         return null;
@@ -192,6 +251,7 @@ window.saveChannelMessage = async function(title, message){
         });
 
         return true;
+
     }catch(error){
         console.error(error);
         return false;
@@ -212,6 +272,7 @@ window.sendChatMessageFirebase = async function(message, user){
         });
 
         return true;
+
     }catch(error){
         console.error("Firebase chat send error:", error);
         return false;
