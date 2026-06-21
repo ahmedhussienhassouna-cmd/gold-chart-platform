@@ -1225,3 +1225,225 @@ html{
     font-size:15px !important;
     color:white !important;
 }
+
+
+/* =======================
+   SIDEBAR + CHAT BLACK GOLD FIX
+======================= */
+
+/* FIX WHITE GAP ON LEFT */
+html,
+body{
+    background:#050505 !important;
+}
+
+body{
+    overflow:hidden !important;
+}
+
+/* SIDEBAR FULL BLACK */
+.sidebar{
+    background:linear-gradient(180deg,#020202,#070707,#0b0b0b) !important;
+    border-right:1px solid rgba(255,215,0,.28) !important;
+    box-shadow:8px 0 35px rgba(0,0,0,.65) !important;
+    color:#fff !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+}
+
+/* HIDE ANY WHITE EMPTY AREA INSIDE SIDEBAR */
+.sidebar::after{
+    content:"";
+    display:block;
+    min-height:20px;
+    background:#050505;
+}
+
+/* LOGO */
+.sidebar h2{
+    color:#ffd700 !important;
+    font-size:26px !important;
+    font-weight:900 !important;
+    margin-bottom:18px !important;
+}
+
+/* PROFILE CARD */
+.profileBox{
+    background:#080808 !important;
+    border:1px solid rgba(255,215,0,.25) !important;
+    box-shadow:0 0 22px rgba(255,215,0,.08) !important;
+}
+
+.profileName{
+    color:#ffd700 !important;
+    font-size:19px !important;
+    font-weight:900 !important;
+}
+
+.profileTitle{
+    color:#fff !important;
+    font-size:13px !important;
+    font-weight:bold !important;
+}
+
+.profileEmail{
+    color:#ffd700 !important;
+    font-size:12px !important;
+}
+
+/* SECTION TITLES */
+.section-title{
+    color:#ffd700 !important;
+    font-size:13px !important;
+    font-weight:900 !important;
+    margin-top:16px !important;
+}
+
+/* SIDEBAR BUTTONS BLACK + GOLD */
+.sidebar button{
+    background:linear-gradient(180deg,#111,#070707) !important;
+    color:#fff !important;
+    border:1px solid rgba(255,215,0,.30) !important;
+    box-shadow:0 6px 18px rgba(0,0,0,.35) !important;
+    font-size:15px !important;
+    font-weight:900 !important;
+    min-height:44px !important;
+}
+
+.sidebar button:hover{
+    background:#ffd700 !important;
+    color:#000 !important;
+    border-color:#ffd700 !important;
+}
+
+/* MAKE IMPORTANT BUTTONS GOLD TEXT */
+.sidebar button:nth-of-type(1),
+.sidebar button:nth-of-type(4){
+    color:#ffd700 !important;
+}
+
+/* MEMBERSHIP */
+.subscriptionMini{
+    background:linear-gradient(180deg,#090909,#050505) !important;
+    border:1px solid #ffd700 !important;
+    color:white !important;
+}
+
+.subscriptionMini h4{
+    color:#ffd700 !important;
+    font-size:17px !important;
+}
+
+.subscriptionMini p{
+    color:white !important;
+    font-size:14px !important;
+    font-weight:bold !important;
+}
+
+.subscriptionMini button{
+    background:#ffd700 !important;
+    color:#000 !important;
+    border:none !important;
+    justify-content:center !important;
+}
+
+/* FIX WHITE AREA BELOW LOGOUT */
+.sidebar > div:last-child{
+    background:#050505 !important;
+}
+
+/* CHAT PAGE BLACK GOLD */
+.chatBody,
+body.chatBody{
+    background:#050505 !important;
+    color:white !important;
+}
+
+.chatPage{
+    background:
+        radial-gradient(circle at top left, rgba(255,215,0,.10), transparent 30%),
+        linear-gradient(180deg,#050505,#090909) !important;
+}
+
+.chatHeader{
+    background:#080808 !important;
+    border-bottom:1px solid rgba(255,215,0,.30) !important;
+}
+
+.chatHeader h2{
+    color:#ffd700 !important;
+}
+
+.chatMessages{
+    background:#050505 !important;
+}
+
+.chatBubble{
+    background:#111 !important;
+    border:1px solid rgba(255,215,0,.22) !important;
+    color:white !important;
+}
+
+.chatMessageRow.me .chatBubble{
+    background:linear-gradient(135deg,#ffd700,#caa200) !important;
+    color:#000 !important;
+}
+
+.chatInputBox{
+    background:#080808 !important;
+    border-top:1px solid rgba(255,215,0,.25) !important;
+}
+
+.chatInputBox input{
+    background:#111 !important;
+    border:1px solid rgba(255,215,0,.25) !important;
+    color:white !important;
+}
+
+.chatInputBox button{
+    background:#ffd700 !important;
+    color:#000 !important;
+}
+
+/* FLOATING CHAT BLACK GOLD */
+.floatingChat{
+    background:#050505 !important;
+    border:1px solid #ffd700 !important;
+}
+
+.floatingChatHeader{
+    background:#090909 !important;
+    border-bottom:1px solid rgba(255,215,0,.35) !important;
+}
+
+.floatingChatHeader b{
+    color:#ffd700 !important;
+}
+
+.floatingChatBody{
+    background:#050505 !important;
+}
+
+.floatingMsg{
+    background:#111 !important;
+    border:1px solid rgba(255,215,0,.25) !important;
+}
+
+.userMsg{
+    background:#ffd700 !important;
+}
+
+.floatingChatInput{
+    background:#080808 !important;
+}
+
+.floatingChatInput input{
+    background:#111 !important;
+    color:#fff !important;
+    border:1px solid rgba(255,215,0,.35) !important;
+}
+
+/* DARK BACKGROUND BEHIND EVERYTHING */
+.dashboardMain{
+    background:#050505 !important;
+}
