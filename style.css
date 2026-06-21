@@ -2550,3 +2550,215 @@ body.lightTheme .sidebar button{
     background:#ffd700 !important;
     color:#000 !important;
 }
+
+/* =======================
+   TRADING GOAL PLANNER PRO
+======================= */
+
+.goalModal{
+    display:none !important;
+    position:fixed !important;
+    inset:0 !important;
+    background:rgba(0,0,0,.78) !important;
+    backdrop-filter:blur(12px) !important;
+    z-index:9999999 !important;
+    align-items:center !important;
+    justify-content:center !important;
+    padding:25px !important;
+}
+
+.goalModal.goalOpen{
+    display:flex !important;
+}
+
+.goalBox{
+    width:min(1100px,96vw) !important;
+    max-height:92vh !important;
+    overflow-y:auto !important;
+    background:
+        radial-gradient(circle at top left,rgba(255,215,0,.14),transparent 35%),
+        linear-gradient(180deg,#101010,#040404) !important;
+    border:1px solid rgba(255,215,0,.55) !important;
+    border-radius:28px !important;
+    box-shadow:0 30px 90px rgba(0,0,0,.85),0 0 40px rgba(255,215,0,.18) !important;
+    padding:24px !important;
+}
+
+.goalHeader{
+    display:flex !important;
+    justify-content:space-between !important;
+    align-items:center !important;
+    margin-bottom:20px !important;
+}
+
+.goalHeader h2{
+    color:#ffd700 !important;
+    font-size:28px !important;
+    font-weight:900 !important;
+    margin:0 !important;
+}
+
+.goalHeader button{
+    width:42px !important;
+    height:42px !important;
+    border-radius:50% !important;
+    border:1px solid #ffd700 !important;
+    background:#111 !important;
+    color:#ffd700 !important;
+    font-size:24px !important;
+    font-weight:900 !important;
+    cursor:pointer !important;
+}
+
+.goalGrid{
+    display:grid !important;
+    grid-template-columns:380px 1fr !important;
+    gap:20px !important;
+}
+
+.goalForm,
+.goalResult{
+    background:rgba(8,8,8,.92) !important;
+    border:1px solid rgba(255,215,0,.35) !important;
+    border-radius:22px !important;
+    padding:20px !important;
+}
+
+.goalForm label{
+    color:#ffd700 !important;
+    font-size:13px !important;
+    font-weight:900 !important;
+    margin:12px 0 7px !important;
+    display:block !important;
+}
+
+.goalForm input{
+    width:100% !important;
+    height:48px !important;
+    background:#111 !important;
+    color:#fff !important;
+    border:1px solid rgba(255,215,0,.35) !important;
+    border-radius:14px !important;
+    padding:0 14px !important;
+    font-size:15px !important;
+    font-weight:800 !important;
+    outline:none !important;
+    box-sizing:border-box !important;
+}
+
+.goalForm input:focus{
+    border-color:#ffd700 !important;
+    box-shadow:0 0 20px rgba(255,215,0,.20) !important;
+}
+
+.goalSaveBtn{
+    width:100% !important;
+    height:54px !important;
+    margin-top:18px !important;
+    border:none !important;
+    border-radius:18px !important;
+    background:linear-gradient(135deg,#ffd700,#b8860b) !important;
+    color:#000 !important;
+    font-size:17px !important;
+    font-weight:900 !important;
+    cursor:pointer !important;
+}
+
+.goalStats{
+    display:grid !important;
+    grid-template-columns:repeat(4,1fr) !important;
+    gap:12px !important;
+    margin-bottom:20px !important;
+}
+
+.goalStat{
+    background:#111 !important;
+    border:1px solid rgba(255,215,0,.28) !important;
+    border-radius:16px !important;
+    padding:14px !important;
+}
+
+.goalStat span{
+    color:#aaa !important;
+    font-size:12px !important;
+    font-weight:800 !important;
+}
+
+.goalStat b{
+    display:block !important;
+    color:#ffd700 !important;
+    font-size:20px !important;
+    margin-top:7px !important;
+}
+
+.goalProgressWrap{
+    display:flex !important;
+    align-items:center !important;
+    gap:22px !important;
+    margin:18px 0 !important;
+}
+
+.goalProgressCircle{
+    width:150px !important;
+    height:150px !important;
+    border-radius:50% !important;
+    background:conic-gradient(#ffd700 0deg,#151515 0deg) !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    box-shadow:0 0 30px rgba(255,215,0,.20) !important;
+}
+
+.goalProgressCircle::before{
+    content:"" !important;
+    position:absolute !important;
+}
+
+.goalProgressCircle span{
+    width:110px !important;
+    height:110px !important;
+    border-radius:50% !important;
+    background:#050505 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    color:#ffd700 !important;
+    font-size:26px !important;
+    font-weight:900 !important;
+}
+
+.goalPlan{
+    flex:1 !important;
+    background:#0d0d0d !important;
+    border:1px solid rgba(255,215,0,.28) !important;
+    border-radius:18px !important;
+    padding:18px !important;
+}
+
+.goalPlan h3{
+    color:#ffd700 !important;
+    margin:0 0 10px !important;
+    font-size:20px !important;
+}
+
+.goalPlan p{
+    color:#fff !important;
+    font-size:15px !important;
+    line-height:1.8 !important;
+    font-weight:700 !important;
+}
+
+@media(max-width:900px){
+    .goalGrid{
+        grid-template-columns:1fr !important;
+    }
+
+    .goalStats{
+        grid-template-columns:1fr 1fr !important;
+    }
+
+    .goalProgressWrap{
+        flex-direction:column !important;
+        align-items:stretch !important;
+    }
+}
