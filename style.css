@@ -1910,4 +1910,76 @@ body.lightTheme .sidebar button{
     min-height:48px !important;
     gap:12px !important;
 }
+/* =======================
+   FINAL SIDEBAR POLISH V2
+======================= */
 
+.sidebar{
+    width:250px !important;
+    padding:14px !important;
+}
+
+.dashboardMain{
+    left:250px !important;
+}
+
+.profileImage{
+    width:120px !important;
+    height:120px !important;
+    border:4px solid #ffd700 !important;
+    padding:4px !important;
+    box-shadow:
+        0 0 0 5px rgba(255,215,0,.14),
+        0 0 38px rgba(255,215,0,.45) !important;
+}
+
+.profileName{
+    font-size:22px !important;
+}
+
+.profileTitle{
+    font-size:14px !important;
+}
+
+.profileEmail{
+    font-size:11px !important;
+    word-break:break-word !important;
+}
+
+.section-title{
+    font-size:20px !important;
+    margin:18px 0 10px !important;
+    letter-spacing:1px !important;
+}
+
+.sidebar button{
+    min-height:54px !important;
+    font-size:17px !important;
+    padding:12px 15px !important;
+    border-radius:16px !important;
+    gap:14px !important;
+}
+
+.sidebar button::first-letter{
+    font-size:22px !important;
+}
+
+.subscriptionMini h4{
+    font-size:18px !important;
+}
+
+.subscriptionMini p{
+    font-size:14px !important;
+}
+
+/* موبايل يفضل زي ما هو */
+@media(max-width:900px){
+    .sidebar{
+        width:88px !important;
+        padding:10px !important;
+    }
+
+    .dashboardMain{
+        left:88px !important;
+    }
+}
