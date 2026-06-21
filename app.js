@@ -1673,3 +1673,50 @@ window.minimizeFloatingChat = function(){
 
     chat.classList.toggle("minimized");
 };
+
+// =======================
+// FORCE CHART RESIZE FIX
+// =======================
+function forceChartResize(){
+    setTimeout(() => {
+        const box = document.getElementById("oandaChart");
+
+        if(oandaChart && box){
+            oandaChart.resize(
+                box.clientWidth,
+                box.clientHeight
+            );
+
+            oandaChart.applyOptions({
+                rightPriceScale:{
+                    visible:true,
+                    borderVisible:true,
+                    borderColor:"#ffd700"
+                }
+            });
+        }
+
+        if(typeof renderSessionProfile === "function") renderSessionProfile();
+        if(typeof renderDrawings === "function") renderDrawings();
+
+    }, 250);
+}
+
+window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        forceChartResize();
+    }, 300);
+});
+
+window.addEventListener("orientationchange", () => {
+    forceChartResize();
+});
+
+document.addEventListener("fullscreenchange", () => {
+    forceChartResize();
+});
+
+setInterval(() => {
+    forceChartResize();
+}, 3000);
