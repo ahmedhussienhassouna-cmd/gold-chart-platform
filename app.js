@@ -1568,3 +1568,70 @@ window.minimizeFloatingChat = function(){
 
     chat.classList.toggle("minimized");
 };
+
+
+// =======================
+// FINAL CHAT + BOTTOM DRAWER FIX
+// =======================
+
+function resizeGoldenChartFinal(){
+    setTimeout(() => {
+        const box = document.getElementById("oandaChart");
+
+        if(oandaChart && box){
+            oandaChart.resize(box.clientWidth, box.clientHeight);
+        }
+
+        if(typeof renderSessionProfile === "function") renderSessionProfile();
+        if(typeof renderDrawings === "function") renderDrawings();
+
+    }, 350);
+}
+
+window.toggleBottomCards = function(){
+    document.body.classList.toggle("bottomCardsOpen");
+    resizeGoldenChartFinal();
+};
+
+window.toggleFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    document.body.classList.add("bottomCardsOpen");
+    chat.classList.remove("closed");
+    chat.classList.remove("minimized");
+    chat.classList.add("chatOpen");
+
+    resizeGoldenChartFinal();
+};
+
+window.openFloatingChat = function(){
+    window.toggleFloatingChat();
+};
+
+window.closeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.remove("chatOpen");
+    chat.classList.add("closed");
+};
+
+window.minimizeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.toggle("minimized");
+};
+
+window.addEventListener("load", () => {
+    document.body.classList.remove("bottomCardsOpen");
+
+    const chat = document.getElementById("floatingChat");
+    if(chat){
+        chat.classList.remove("chatOpen");
+    }
+
+    resizeGoldenChartFinal();
+});
+
