@@ -137,56 +137,13 @@
 <script src="app.js"></script>
 <script src="auth.js"></script>
 
-<script>
-function loadDashboardUser(){
+<script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
+<script type="module" src="firebase.js"></script>
+<script src="app.js"></script>
+<script src="auth.js"></script>
 
-    const user = JSON.parse(localStorage.getItem("golden_user"));
-
-    if(!user) return;
-
-    const photo = document.getElementById("dashboardPhoto");
-    const name = document.getElementById("dashboardName");
-    const title = document.getElementById("dashboardTitle");
-    const email = document.getElementById("dashboardEmail");
-
-    if(photo && user.photo){
-        photo.src = user.photo;
-    }
-
-    if(name){
-        name.innerHTML = user.name || "Client";
-    }
-
-    if(user.email === "ahmedhussienhassouna@gmail.com"){
-
-        if(title){
-            title.innerHTML = "Founder & CEO";
-        }
-
-        if(email){
-            email.innerHTML = "ahmedhussienhassouna@gmail.com";
-        }
-
-    }else{
-
-        if(title){
-            title.innerHTML = "Golden Trade Client";
-        }
-
-        if(email){
-            email.innerHTML = "";
-        }
-
-    }
-}
-
-function logout(){
-    localStorage.removeItem("golden_logged");
-    window.location.href = "login.html";
-}
-
-loadDashboardUser();
-</script>
+</body>
+</html>
 
 </body>
 </html>
