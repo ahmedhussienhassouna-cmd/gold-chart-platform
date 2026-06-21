@@ -1821,3 +1821,119 @@ window.addEventListener("load", () => {
         });
     }
 });
+
+// =======================
+// SAFE THEME FIX FINAL
+// Dark = Black/Gold
+// Light = Blue Mode
+// =======================
+
+function getChartThemeOptions(){
+    if(currentTheme === "light"){
+        return {
+            layout: {
+                background: { color: "#eaf4ff" },
+                textColor: "#003b8f"
+            },
+            grid: {
+                vertLines: { color: "#c9def5" },
+                horzLines: { color: "#c9def5" }
+            },
+            rightPriceScale: {
+                borderColor: "#0b63ce"
+            },
+            timeScale: {
+                borderColor: "#0b63ce"
+            }
+        };
+    }
+
+    return {
+        layout: {
+            background: { color: "#0b0b0b" },
+            textColor: "#d1d4dc"
+        },
+        grid: {
+            vertLines: { color: "#1f1f1f" },
+            horzLines: { color: "#1f1f1f" }
+        },
+        rightPriceScale: {
+            borderColor: "#333"
+        },
+        timeScale: {
+            borderColor: "#333"
+        }
+    };
+}
+
+function applyChartTheme(){
+    if(!oandaChart) return;
+
+    oandaChart.applyOptions(getChartThemeOptions());
+
+    if(candleSeries){
+        candleSeries.applyOptions({
+            upColor: "#00ff99",
+            downColor: "#ff4d4d",
+            borderUpColor: "#00ff99",
+            borderDownColor: "#ff4d4d",
+            wickUpColor: "#00ff99",
+            wickDownColor: "#ff4d4d"
+        });
+    }
+
+    if(vwapSeries){
+        vwapSeries.applyOptions({
+            color: currentTheme === "light" ? "#005bd8" : "#ffd700"
+        });
+    }
+}
+
+applyPageTheme = function(){
+    document.body.classList.remove("darkTheme", "lightTheme");
+
+    if(currentTheme === "light"){
+        document.body.classList.add("lightTheme");
+    }else{
+        document.body.classList.add("darkTheme");
+    }
+
+    applyChartTheme();
+};
+
+const oldCreateChartThemeFix = createChart;
+
+createChart = async function(){
+    await oldCreateChartThemeFix();
+
+    setTimeout(() => {
+        applyChartTheme();
+    }, 100);
+};
+
+window.toggleTheme = function(){
+    currentTheme = currentTheme === "dark" ? "light" : "dark";
+
+    localStorage.setItem("theme", currentTheme);
+
+    applyPageTheme();
+    updatePanel();
+
+    setText(
+        "signal",
+        currentTheme === "dark"
+            ? "🌙 Dark Mode ON"
+            : "☀️ Blue Light Mode ON"
+    );
+
+    if(typeof forceChartResize === "function"){
+        forceChartResize();
+    }
+};
+
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        applyPageTheme();
+        updatePanel();
+    }, 700);
+});
