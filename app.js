@@ -920,26 +920,44 @@ function setupDrawingEvents(){
 }
 
 function setupContextMenu(){
+    const chartArea = document.getElementById("chart");
     const chartBox = document.getElementById("oandaChart");
     const menu = document.getElementById("chartContextMenu");
 
-    if(!chartBox || !menu) return;
+    if(!chartArea || !chartBox || !menu) return;
 
-    chartBox.oncontextmenu = function(e){
+    menu.style.display = "none";
+
+    chartArea.oncontextmenu = function(e){
         e.preventDefault();
+        e.stopPropagation();
 
-        const rect = chartBox.getBoundingClientRect();
+        const rect = chartArea.getBoundingClientRect();
 
         menu.style.display = "block";
+        menu.style.position = "absolute";
         menu.style.left = (e.clientX - rect.left) + "px";
         menu.style.top = (e.clientY - rect.top) + "px";
+        menu.style.zIndex = "999999";
+
+        return false;
     };
 
-    document.onclick = function(e){
-        if(!menu.contains(e.target)){
+    menu.onclick = function(e){
+        e.stopPropagation();
+    };
+
+    document.addEventListener("click", function(e){
+        if(menu.style.display === "block" && !menu.contains(e.target)){
             menu.style.display = "none";
         }
-    };
+    });
+
+    document.addEventListener("keydown", function(e){
+        if(e.key === "Escape"){
+            menu.style.display = "none";
+        }
+    });
 }
 
 // =======================
