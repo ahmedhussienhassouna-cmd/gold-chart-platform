@@ -22,7 +22,9 @@ if(savedUser){
 }
 </script>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
+
     <h2>🟡 Golden Trade</h2>
 
     <div class="profileBox">
@@ -40,95 +42,285 @@ if(savedUser){
 
     <div class="section-title">Services</div>
     <button onclick="service('daily')">📊 Analysis</button>
-    <button onclick="toggleStrategy()">💰 Strategy</button>
+    <button id="strategyBtn" onclick="toggleStrategy()">💰 Strategy</button>
     <button onclick="toggleVWAP()">📈 VWAP</button>
     <button onclick="toggleSessionProfile()">📊 Session Profile</button>
-    <button onclick="window.location.href='chat.html'">💬 Clients Chat</button>
+    <button onclick="toggleFloatingChat()">💬 Clients Chat</button>
     <button onclick="openAcademy()">🎓 Academy</button>
     <button onclick="service('support')">📍 Support</button>
+
+    <div class="subscriptionMini">
+        <h4>👑 Membership</h4>
+        <p id="sideSubscription">Loading...</p>
+        <button onclick="window.location.href='upgrade.html'">Upgrade</button>
+    </div>
 
     <div style="margin-top:auto">
         <button onclick="logout()">🚪 Logout</button>
     </div>
+
 </div>
 
-<div class="topbar">
-    <div id="activeAsset">GOLD</div>
-    <div id="priceBox">Golden Trade Live</div>
-    <button onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
-</div>
+<!-- MAIN DASHBOARD -->
+<div class="dashboardMain">
 
-<div id="chart">
-    <div id="chartToolbar" class="chartToolbar">
-        <div class="toolbarSymbol">XAUUSD</div>
-
-        <div class="toolbarGroup">
-            <button onclick="changeTimeframe('M1')" id="tf-M1">1m</button>
-            <button onclick="changeTimeframe('M5')" id="tf-M5">5m</button>
-            <button onclick="changeTimeframe('M15')" id="tf-M15">15m</button>
-            <button onclick="changeTimeframe('H1')" id="tf-H1">1H</button>
-            <button onclick="changeTimeframe('H4')" id="tf-H4">4H</button>
-            <button onclick="changeTimeframe('D')" id="tf-D">1D</button>
+    <!-- TOP HEADER -->
+    <div class="topbar newTopbar">
+        <div>
+            <span class="welcomeText">Welcome back</span>
+            <div class="userHeader">
+                <b id="topUserName">Golden Trade Client</b>
+                <span id="topUserBadge">VIP</span>
+            </div>
         </div>
 
-        <div class="toolbarDivider"></div>
-
-        <div class="toolbarGroup">
-            <button onclick="zoomIn()">＋</button>
-            <button onclick="zoomOut()">－</button>
-            <button onclick="resetChart()">Reset</button>
+        <div class="topCenter">
+            <div id="activeAsset">GOLD</div>
+            <div id="priceBox">Golden Trade Live</div>
         </div>
 
-        <div class="toolbarDivider"></div>
-
-        <div class="toolbarGroup">
-            <button onclick="clearDrawings()">Clear</button>
+        <div class="topActions">
+            <button onclick="window.location.href='upgrade.html'" class="upgradeBtn">👑 Upgrade</button>
+            <button onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
         </div>
     </div>
 
-    <div id="drawingToolbar" class="drawingToolbar">
-        <button title="Cursor / Crosshair" onclick="setDrawingTool('cursor')" id="tool-cursor">⌖</button>
-        <button title="Trend Line" onclick="setDrawingTool('trend')" id="tool-trend">╱</button>
-        <button title="Horizontal Line" onclick="setDrawingTool('horizontal')" id="tool-horizontal">━</button>
-        <button title="Vertical Line" onclick="setDrawingTool('vertical')" id="tool-vertical">┃</button>
-        <button title="Rectangle" onclick="setDrawingTool('rectangle')" id="tool-rectangle">▭</button>
-        <button title="Arrow" onclick="setDrawingTool('arrow')" id="tool-arrow">↗</button>
-        <button title="Text" onclick="setDrawingTool('text')" id="tool-text">T</button>
+    <!-- MARKET STRIP -->
+    <div class="marketStrip">
+        <div class="marketItem">
+            <b>EUR/USD</b>
+            <span>1.07854</span>
+            <em class="green">+0.15%</em>
+        </div>
 
-        <div class="drawingDivider"></div>
+        <div class="marketItem">
+            <b>GBP/USD</b>
+            <span>1.25864</span>
+            <em class="red">-0.10%</em>
+        </div>
 
-        <button title="Magnet Mode" onclick="toggleMagnet()" id="tool-magnet">🧲</button>
-        <button title="Lock Drawings" onclick="toggleLockDrawings()" id="tool-lock">🔒</button>
-        <button title="Show / Hide Drawings" onclick="toggleDrawingsVisibility()" id="tool-eye">👁</button>
-        <button title="Clear All Drawings" onclick="clearDrawings()" id="tool-delete">🗑</button>
+        <div class="marketItem active">
+            <b>XAU/USD</b>
+            <span id="stripGold">Loading...</span>
+            <em class="green">Live</em>
+        </div>
+
+        <div class="marketItem">
+            <b>USD/JPY</b>
+            <span>155.684</span>
+            <em class="green">+0.22%</em>
+        </div>
+
+        <div class="marketItem">
+            <b>BTC/USD</b>
+            <span>67123.45</span>
+            <em class="red">-0.45%</em>
+        </div>
+
+        <div class="marketItem">
+            <b>USOIL</b>
+            <span>78.34</span>
+            <em class="green">+1.10%</em>
+        </div>
     </div>
 
-    <div id="oandaChart"></div>
+    <!-- CONTENT AREA -->
+    <div class="dashboardContent">
 
-    <div id="chartContextMenu" class="chartContextMenu">
-        <div onclick="setDrawingTool('horizontal')">➖ Horizontal Line</div>
-        <div onclick="setDrawingTool('trend')">╱ Trend Line</div>
-        <div onclick="setDrawingTool('rectangle')">▭ Rectangle</div>
-        <div onclick="setDrawingTool('text')">T Text</div>
-        <div onclick="resetChart()">🔄 Reset Chart</div>
-        <div onclick="clearDrawings()">🗑 Clear Drawings</div>
+        <!-- CHART AREA -->
+        <div class="chartCard">
+
+            <div class="chartTitleBar">
+                <div>
+                    <h3>Gold Spot / U.S. Dollar · OANDA</h3>
+                    <span id="chartInfo">Live Golden Trade Chart</span>
+                </div>
+
+                <div class="chartMiniActions">
+                    <button onclick="resetChart()">Reset</button>
+                    <button onclick="clearDrawings()">Clear</button>
+                    <button onclick="window.location.reload()">Reload</button>
+                </div>
+            </div>
+
+            <div id="chart">
+
+                <div id="chartToolbar" class="chartToolbar">
+                    <div class="toolbarSymbol">XAUUSD</div>
+
+                    <div class="toolbarGroup">
+                        <button onclick="changeTimeframe('M1')" id="tf-M1">1m</button>
+                        <button onclick="changeTimeframe('M5')" id="tf-M5">5m</button>
+                        <button onclick="changeTimeframe('M15')" id="tf-M15">15m</button>
+                        <button onclick="changeTimeframe('H1')" id="tf-H1">1H</button>
+                        <button onclick="changeTimeframe('H4')" id="tf-H4">4H</button>
+                        <button onclick="changeTimeframe('D')" id="tf-D">1D</button>
+                    </div>
+
+                    <div class="toolbarDivider"></div>
+
+                    <div class="toolbarGroup">
+                        <button onclick="zoomIn()">＋</button>
+                        <button onclick="zoomOut()">－</button>
+                        <button onclick="resetChart()">Reset</button>
+                    </div>
+
+                    <div class="toolbarDivider"></div>
+
+                    <div class="toolbarGroup">
+                        <button onclick="clearDrawings()">Clear</button>
+                    </div>
+                </div>
+
+                <div id="drawingToolbar" class="drawingToolbar">
+                    <button title="Cursor / Crosshair" onclick="setDrawingTool('cursor')" id="tool-cursor">⌖</button>
+                    <button title="Trend Line" onclick="setDrawingTool('trend')" id="tool-trend">╱</button>
+                    <button title="Horizontal Line" onclick="setDrawingTool('horizontal')" id="tool-horizontal">━</button>
+                    <button title="Vertical Line" onclick="setDrawingTool('vertical')" id="tool-vertical">┃</button>
+                    <button title="Rectangle" onclick="setDrawingTool('rectangle')" id="tool-rectangle">▭</button>
+                    <button title="Arrow" onclick="setDrawingTool('arrow')" id="tool-arrow">↗</button>
+                    <button title="Text" onclick="setDrawingTool('text')" id="tool-text">T</button>
+
+                    <div class="drawingDivider"></div>
+
+                    <button title="Magnet Mode" onclick="toggleMagnet()" id="tool-magnet">🧲</button>
+                    <button title="Lock Drawings" onclick="toggleLockDrawings()" id="tool-lock">🔒</button>
+                    <button title="Show / Hide Drawings" onclick="toggleDrawingsVisibility()" id="tool-eye">👁</button>
+                    <button title="Clear All Drawings" onclick="clearDrawings()" id="tool-delete">🗑</button>
+                </div>
+
+                <div id="oandaChart"></div>
+
+                <div id="chartContextMenu" class="chartContextMenu">
+                    <div onclick="setDrawingTool('horizontal')">➖ Horizontal Line</div>
+                    <div onclick="setDrawingTool('trend')">╱ Trend Line</div>
+                    <div onclick="setDrawingTool('rectangle')">▭ Rectangle</div>
+                    <div onclick="setDrawingTool('text')">T Text</div>
+                    <div onclick="resetChart()">🔄 Reset Chart</div>
+                    <div onclick="clearDrawings()">🗑 Clear Drawings</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="signalBox newSignalBox">
+            <h3>Golden Trade Panel</h3>
+
+            <div class="panelSignal">
+                <span>Signal</span>
+                <p id="signal">Waiting...</p>
+            </div>
+
+            <div class="miniStats">
+                <div>
+                    <span>Asset</span>
+                    <b id="panelAsset">GOLD</b>
+                </div>
+                <div>
+                    <span>Session</span>
+                    <b id="panelSession">Loading</b>
+                </div>
+                <div>
+                    <span>Strategy</span>
+                    <b id="panelStrategy">OFF</b>
+                </div>
+                <div>
+                    <span>VWAP</span>
+                    <b id="panelVWAP">OFF</b>
+                </div>
+                <div>
+                    <span>Liquidity</span>
+                    <b id="panelLiquidity">OFF</b>
+                </div>
+                <div>
+                    <span>IB</span>
+                    <b id="panelIB">OFF</b>
+                </div>
+            </div>
+
+            <hr style="margin:15px 0;border-color:#222;">
+
+            <h3>📢 Golden Trade Channel</h3>
+            <div id="channelBox">Loading channel...</div>
+        </div>
+
+    </div>
+
+    <!-- BOTTOM CARDS -->
+    <div class="bottomCards">
+
+        <div class="dashCard">
+            <h3>💰 Account Overview</h3>
+            <p>Status <b id="accountStatus">Loading...</b></p>
+            <p>Membership <b id="accountMembership">Loading...</b></p>
+            <p>Remaining <b id="accountDays">Loading...</b></p>
+            <button onclick="window.location.href='upgrade.html'">Upgrade Now</button>
+        </div>
+
+        <div class="dashCard">
+            <h3>📡 Today's Signals</h3>
+            <p><b>XAU/USD</b> <span class="green">Waiting</span></p>
+            <p>Entry: --</p>
+            <p>TP: --</p>
+            <p>SL: --</p>
+            <a onclick="toggleStrategy()">View Strategy</a>
+        </div>
+
+        <div class="dashCard">
+            <h3>📅 Economic Calendar</h3>
+            <p>USD CPI m/m <span class="redTag">High</span></p>
+            <p>Fed Chair Powell <span class="redTag">High</span></p>
+            <p>GDP q/q <span class="yellowTag">Medium</span></p>
+            <a onclick="service('calendar')">View Calendar</a>
+        </div>
+
+        <div class="dashCard">
+            <h3>📰 Market News</h3>
+            <p>Gold prices react to USD movement<br><small>Live update</small></p>
+            <p>Market waiting for US data<br><small>Today</small></p>
+            <p>Liquidity zones active<br><small>Golden Trade</small></p>
+            <a onclick="service('news')">View All News</a>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- FLOATING CHAT -->
+<div class="floatingChat" id="floatingChat">
+    <div class="floatingChatHeader">
+        <div>
+            <b>💬 Clients Chat</b>
+            <span>Online</span>
+        </div>
+
+        <div>
+            <button onclick="minimizeFloatingChat()">−</button>
+            <button onclick="window.location.href='chat.html'">⛶</button>
+            <button onclick="closeFloatingChat()">×</button>
+        </div>
+    </div>
+
+    <div class="floatingChatBody" id="floatingChatBody">
+        <div class="floatingMsg adminMsg">
+            <b>Golden Trade</b>
+            <p>Welcome to Golden Trade Chat 👋</p>
+        </div>
+
+        <div class="floatingMsg userMsg">
+            <b>You</b>
+            <p>Open full chat for live messages.</p>
+        </div>
+    </div>
+
+    <div class="floatingChatInput">
+        <input id="floatingChatInput" placeholder="Type message...">
+        <button onclick="sendFloatingChatMessage()">➤</button>
     </div>
 </div>
 
-<div class="signalBox">
-    <h3>Golden Trade Panel</h3>
-
-    <div class="panelSignal">
-        <span>Signal</span>
-        <p id="signal">Waiting...</p>
-    </div>
-
-    <hr style="margin:15px 0;border-color:#222;">
-
-    <h3>📢 Golden Trade Channel</h3>
-    <div id="channelBox">Loading channel...</div>
-</div>
-
+<!-- ACADEMY -->
 <div id="academyModal" class="academyModal">
     <div class="academyContent">
         <span class="closeAcademy" onclick="closeAcademy()">✖</span>
