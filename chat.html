@@ -1,236 +1,45 @@
-/* =======================
-   FULL CHAT PAGE PRO
-======================= */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Golden Trade Group Chat</title>
 
-.chatBody{
-    margin:0 !important;
-    background:#050505 !important;
-    color:white !important;
-    height:100vh !important;
-    overflow:hidden !important;
-}
+<link rel="stylesheet" href="style.css">
+</head>
 
-.chatProPage{
-    height:100vh;
-    display:flex;
-    flex-direction:column;
-    background:
-        radial-gradient(circle at top left,rgba(255,215,0,.10),transparent 28%),
-        linear-gradient(180deg,#050505,#090909);
-}
+<body class="chatBody">
 
-.chatFullHeader{
-    height:76px;
-    min-height:76px;
-    background:rgba(8,8,8,.96);
-    border-bottom:1px solid rgba(255,215,0,.35);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 22px;
-    box-shadow:0 10px 30px rgba(0,0,0,.55);
-}
+<div class="chatProPage">
 
-.chatBackBtn{
-    background:#111;
-    color:#ffd700;
-    border:1px solid rgba(255,215,0,.35);
-    padding:11px 16px;
-    border-radius:14px;
-    font-weight:900;
-    cursor:pointer;
-}
+    <div class="chatFullHeader">
+        <button class="chatBackBtn" onclick="window.location.href='index.html'">← Dashboard</button>
 
-.chatBackBtn:hover{
-    background:#ffd700;
-    color:#000;
-}
+        <div class="chatFullTitle">
+            <div class="chatFullAvatar">GT</div>
+            <div>
+                <h2>Golden Trade Group Chat</h2>
+                <span>● Live Group Chat</span>
+            </div>
+        </div>
 
-.chatFullTitle{
-    display:flex;
-    align-items:center;
-    gap:12px;
-}
+        <div class="chatUserBadge" id="chatUserBadge">Client</div>
+    </div>
 
-.chatFullAvatar{
-    width:48px;
-    height:48px;
-    border-radius:50%;
-    background:linear-gradient(135deg,#ffd700,#b8860b);
-    color:#000;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:900;
-}
+    <div class="chatFullMessages" id="chatFullMessages">
+        <div class="chatLoading">Loading chat...</div>
+    </div>
 
-.chatFullTitle h2{
-    color:#ffd700;
-    font-size:22px;
-    margin:0;
-}
+    <div class="chatFullInput">
+        <button class="chatPlusBtn">＋</button>
+        <input id="chatFullInput" placeholder="Write a message...">
+        <button class="chatSendBtn" onclick="sendFullChatMessage()">➤</button>
+    </div>
 
-.chatFullTitle span{
-    color:#00ff99;
-    font-size:12px;
-    font-weight:bold;
-}
+</div>
 
-.chatUserBadge{
-    background:#111;
-    color:#ffd700;
-    border:1px solid rgba(255,215,0,.35);
-    padding:10px 14px;
-    border-radius:20px;
-    font-weight:900;
-}
+<script type="module" src="firebase.js"></script>
+<script src="chat.js"></script>
 
-.chatFullMessages{
-    flex:1;
-    overflow-y:auto;
-    padding:24px 34px;
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-    background:
-        radial-gradient(circle at bottom right,rgba(255,215,0,.06),transparent 30%),
-        #060606;
-}
-
-.chatLoading{
-    text-align:center;
-    color:#777;
-    margin-top:30px;
-}
-
-.chatMessageRow{
-    display:flex;
-    align-items:flex-end;
-    gap:10px;
-    max-width:72%;
-}
-
-.chatMessageRow.me{
-    align-self:flex-end;
-    flex-direction:row-reverse;
-}
-
-.chatAvatarText{
-    width:42px;
-    height:42px;
-    min-width:42px;
-    border-radius:50%;
-    background:linear-gradient(135deg,#ffd700,#b8860b);
-    color:#000;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:900;
-    font-size:12px;
-}
-
-.chatBubble{
-    background:#111;
-    border:1px solid rgba(255,215,0,.25);
-    border-radius:18px 18px 18px 5px;
-    padding:12px 14px;
-    color:white;
-    box-shadow:0 8px 25px rgba(0,0,0,.35);
-}
-
-.chatMessageRow.me .chatBubble{
-    background:linear-gradient(135deg,#ffd700,#b8860b);
-    color:#000;
-    border-radius:18px 18px 5px 18px;
-}
-
-.chatMeta{
-    display:flex;
-    justify-content:space-between;
-    gap:20px;
-    margin-bottom:6px;
-    font-size:12px;
-    font-weight:900;
-}
-
-.chatMeta span{
-    color:#ffd700;
-}
-
-.chatMessageRow.me .chatMeta span{
-    color:#000;
-}
-
-.chatMeta small{
-    color:#888;
-    font-weight:normal;
-}
-
-.chatMessageRow.me .chatMeta small{
-    color:#333;
-}
-
-.chatText{
-    font-size:15px;
-    line-height:1.6;
-    white-space:pre-wrap;
-    word-break:break-word;
-}
-
-.chatFullInput{
-    height:78px;
-    min-height:78px;
-    background:#080808;
-    border-top:1px solid rgba(255,215,0,.35);
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:14px 24px;
-}
-
-.chatFullInput input{
-    flex:1;
-    height:50px;
-    border-radius:26px;
-    border:1px solid rgba(255,215,0,.30);
-    background:#111;
-    color:white;
-    outline:none;
-    padding:0 20px;
-    font-size:15px;
-}
-
-.chatPlusBtn,
-.chatSendBtn{
-    width:50px;
-    height:50px;
-    border-radius:50%;
-    border:none;
-    background:#ffd700;
-    color:#000;
-    font-weight:900;
-    font-size:18px;
-    cursor:pointer;
-}
-
-@media(max-width:700px){
-    .chatFullHeader{
-        padding:0 10px;
-    }
-
-    .chatFullTitle h2{
-        font-size:15px;
-    }
-
-    .chatUserBadge{
-        display:none;
-    }
-
-    .chatFullMessages{
-        padding:16px 12px;
-    }
-
-    .chatMessageRow{
-        max-width:92%;
-    }
-}
+</body>
+</html>
