@@ -2097,3 +2097,131 @@ window.addEventListener("load", () => {
         }
     }, 1200);
 });
+// =======================
+// TRADING GOAL PLANNER
+// =======================
+
+function getGoalUserKey(){
+    const user = getLoggedUser();
+    return user && user.email ? `trading_goal_${user.email}` : "trading_goal_guest";
+}
+
+function money(value){
+    return "$" + Number(value || 0).toLocaleString();
+}
+
+function getGoalValue(id){
+    const el = document.getElementById(id);
+    return el ? Number(el.value || 0) : 0;
+}
+
+function setGoalValue(id, value){
+    const el = document.getElementById(id);
+    if(el) el.value = value || "";
+}
+
+window.openTradingGoal = function(){
+    const modal = document.getElementById("goalModal");
+    if(!modal) return;
+
+    modal.classList.add("goalOpen");
+    loadTradingGoal();
+};
+
+window.closeTradingGoal = function(){
+    const modal = document.getElementById("goalModal");
+    if(!modal) return;
+
+    modal.classList.remove("goalOpen");
+};
+
+function updateTradingGoalView(data){
+    const capital = Number(data.capital || 0);
+    const target = Number(data.target || 0);
+    const current = Number(data.current || 0);
+    const profit = Number(data.profit || 0);
+    const loss = Number(data.loss || 0);
+    const risk = Number(data.risk || 0);
+
+    const net = profit - loss;
+
+    let progress = 0;
+    if(target > capital){
+        progress = ((current - capital) / (target - capital)) * 100;
+    }
+
+    progress = Math.max(0, Math.min(100, Math.round(progress)));
+
+    setText("goalViewCapital", money(capital));
+    setText("goalViewTarget", money(target));
+    setText("goalViewCurrent", money(current));
+    setText("goalViewNet", money(net));
+    setText("goalProgressText", progress + "%");
+
+    const circle = document.querySelector(".goalProgressCircle");
+    if(circle){
+        circle.style.background = `conic-gradient(#ffd700 ${progress * 3.6}deg, #151515 0deg)`;
+    }
+
+    let planText = "Add your capital and target to generate your plan.";
+
+    if(capital > 0 && target > capital){
+        const needed = target - current;
+        const dailyLoss = capital * (risk / 100);
+
+        planText = `
+            Your capital is ${money(capital)} and your target is ${money(target)}.<br>
+            Current balance: ${money(current)}.<br>
+            Remaining to target: ${money(Math.max(0, needed))}.<br>
+            Recommended max daily loss: ${money(dailyLoss)} (${risk || 0}%).<br>
+            Net result now: ${money(net)}.
+        `;
+    }
+
+    setText("goalPlanText", planText);
+}
+
+window.saveTradingGoal = function(){
+    const data = {
+        capital: getGoalValue("goalCapital"),
+        target: getGoalValue("goalTarget"),
+        current: getGoalValue("goalCurrent"),
+        profit: getGoalValue("goalProfit"),
+        loss: getGoalValue("goalLoss"),
+        risk: getGoalValue("goalRisk"),
+        updatedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(getGoalUserKey(), JSON.stringify(data));
+    updateTradingGoalView(data);
+
+    setText("signal", "🎯 Trading Goal Saved Successfully");
+};
+
+function loadTradingGoal(){
+    try{
+        const saved = localStorage.getItem(getGoalUserKey());
+        if(!saved){
+            updateTradingGoalView({});
+            return;
+        }
+
+        const data = JSON.parse(saved);
+
+        setGoalValue("goalCapital", data.capital);
+        setGoalValue("goalTarget", data.target);
+        setGoalValue("goalCurrent", data.current);
+        setGoalValue("goalProfit", data.profit);
+        setGoalValue("goalLoss", data.loss);
+        setGoalValue("goalRisk", data.risk);
+
+        updateTradingGoalView(data);
+
+    }catch(e){
+        console.error(e);
+    }
+}
+
+window.addEventListener("load", () => {
+    setTimeout(loadTradingGoal, 1000);
+});
