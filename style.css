@@ -735,3 +735,143 @@ html{
 .newSignalBox{
     animation:fadeUp .3s ease;
 }
+
+
+/* =======================
+   FINAL UI POLISH
+======================= */
+
+.sidebar{
+    width:280px !important;
+    padding:18px 16px !important;
+}
+
+.dashboardMain{
+    left:280px !important;
+}
+
+.profileImage{
+    width:96px !important;
+    height:96px !important;
+}
+
+.profileBox{
+    margin:10px 0 18px !important;
+    padding:12px 8px !important;
+}
+
+.sidebar button{
+    padding:11px 13px !important;
+    margin:4px 0 !important;
+    font-size:14px !important;
+    border-radius:12px !important;
+}
+
+.subscriptionMini{
+    margin-top:12px !important;
+    padding:12px !important;
+}
+
+.newTopbar{
+    height:64px !important;
+}
+
+.marketStrip{
+    margin:14px 18px 0 !important;
+    gap:10px !important;
+}
+
+.marketItem{
+    min-height:66px !important;
+    padding:10px 12px !important;
+}
+
+.dashboardContent{
+    grid-template-columns:1fr 300px !important;
+    gap:14px !important;
+    margin:14px 18px 0 !important;
+}
+
+.chartCard{
+    min-height:585px !important;
+}
+
+.chartCard #chart{
+    height:515px !important;
+}
+
+.chartTitleBar{
+    height:58px !important;
+}
+
+.newSignalBox{
+    min-height:585px !important;
+    padding:14px !important;
+}
+
+.bottomCards{
+    margin:14px 18px 0 !important;
+    gap:12px !important;
+}
+
+.dashCard{
+    min-height:155px !important;
+    padding:14px !important;
+}
+
+.dashCard h3{
+    font-size:15px !important;
+    margin-bottom:10px !important;
+}
+
+.dashCard p{
+    font-size:13px !important;
+    line-height:1.55 !important;
+}
+
+.floatingChat{
+    left:300px !important;
+    bottom:16px !important;
+    width:330px !important;
+    height:350px !important;
+    border-radius:16px !important;
+}
+
+.floatingChat.minimized{
+    height:56px !important;
+}
+
+.floatingChatHeader{
+    height:54px !important;
+    min-height:54px !important;
+}
+
+.floatingChatBody{
+    padding:11px !important;
+}
+
+.floatingMsg{
+    padding:8px 10px !important;
+    margin-bottom:9px !important;
+}
+
+.floatingMsg p{
+    font-size:12px !important;
+}
+
+.floatingChatInput{
+    height:54px !important;
+    min-height:54px !important;
+}
+
+.chartToolbar{
+    top:10px !important;
+    left:62px !important;
+    padding:7px 9px !important;
+}
+
+.drawingToolbar{
+    top:10px !important;
+    left:10px !important;
+    bottom:10px !important;
+}
