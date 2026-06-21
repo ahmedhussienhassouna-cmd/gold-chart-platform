@@ -1592,3 +1592,89 @@ body.rightPanelClosed .chartCard{
 body.rightPanelClosed .chartCard #chart{
     height:650px !important;
 }
+
+/* =======================
+   CHART TOOLS VERTICAL + BIG CHART
+======================= */
+
+/* الشارت ياخد مساحة أكبر */
+.chartCard{
+    min-height:760px !important;
+}
+
+.chartCard #chart{
+    height:710px !important;
+}
+
+/* نقل فريمات الشارت والأزرار فوق داخل بار عمودي */
+.chartToolbar{
+    top:70px !important;
+    left:12px !important;
+    width:48px !important;
+    max-width:48px !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    padding:8px 5px !important;
+    gap:6px !important;
+    border-radius:16px !important;
+    transform:none !important;
+}
+
+.toolbarSymbol{
+    writing-mode:vertical-rl;
+    transform:rotate(180deg);
+    border-right:none !important;
+    border-bottom:1px solid #333 !important;
+    padding:6px 0 !important;
+    font-size:11px !important;
+}
+
+.toolbarGroup{
+    flex-direction:column !important;
+    gap:5px !important;
+}
+
+.toolbarDivider{
+    width:28px !important;
+    height:1px !important;
+}
+
+.chartToolbar button{
+    width:34px !important;
+    min-width:34px !important;
+    height:28px !important;
+    padding:0 !important;
+    font-size:10px !important;
+}
+
+/* أدوات الرسم تحت الفريمات */
+.drawingToolbar{
+    top:280px !important;
+    left:12px !important;
+    width:48px !important;
+    bottom:auto !important;
+    height:auto !important;
+    transform:none !important;
+}
+
+/* نخلي الشارت نفسه يبدأ بعد البار */
+#oandaChart{
+    padding-left:58px !important;
+}
+
+/* تصغير الشات عشان ما يغطيش الشارت والكروت */
+.floatingChat{
+    width:280px !important;
+    height:250px !important;
+    bottom:18px !important;
+}
+
+/* الكروت تحت تصغر شوية */
+.dashCard{
+    min-height:120px !important;
+    padding:11px !important;
+}
+
+.bottomCards{
+    margin-top:8px !important;
+}
