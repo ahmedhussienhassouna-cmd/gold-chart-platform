@@ -566,3 +566,172 @@
 .floatingChatBody::-webkit-scrollbar-thumb:hover{
     background:#ffd700;
 }
+/* =======================
+   DASHBOARD UI UPGRADE - PART 3
+======================= */
+
+/* CARD EFFECTS */
+.dashCard{
+    transition:.25s;
+}
+
+.dashCard:hover{
+    transform:translateY(-4px);
+    border-color:rgba(255,215,0,.35);
+    box-shadow:0 15px 40px rgba(255,215,0,.08);
+}
+
+.marketItem{
+    transition:.2s;
+}
+
+.marketItem:hover{
+    transform:translateY(-3px);
+}
+
+/* CHANNEL BOX */
+#channelBox{
+    background:#181818;
+    border:1px solid #2a2a2a;
+    border-radius:14px;
+    padding:12px;
+}
+
+/* SIGNAL PANEL */
+.panelSignal{
+    background:linear-gradient(180deg,#1a1a1a,#111);
+    border-radius:14px;
+}
+
+/* CHART CARD */
+.chartCard{
+    transition:.2s;
+}
+
+.chartCard:hover{
+    border-color:rgba(255,215,0,.20);
+}
+
+/* FOOTER */
+.dashboardFooter{
+    text-align:center;
+    color:#666;
+    font-size:12px;
+    padding:20px;
+}
+
+/* BUTTON EFFECT */
+button{
+    transition:.18s;
+}
+
+button:active{
+    transform:scale(.97);
+}
+
+/* RESPONSIVE */
+@media(max-width:1400px){
+
+    .marketStrip{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .bottomCards{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:1100px){
+
+    .dashboardContent{
+        grid-template-columns:1fr;
+    }
+
+    .newSignalBox{
+        min-height:auto;
+    }
+
+}
+
+@media(max-width:900px){
+
+    .sidebar{
+        width:90px;
+        overflow-x:hidden;
+    }
+
+    .sidebar h2,
+    .profileName,
+    .profileTitle,
+    .profileEmail,
+    .section-title,
+    .subscriptionMini{
+        display:none;
+    }
+
+    .dashboardMain{
+        left:90px;
+    }
+
+    .floatingChat{
+        left:105px;
+    }
+
+}
+
+@media(max-width:700px){
+
+    .marketStrip{
+        grid-template-columns:1fr;
+    }
+
+    .bottomCards{
+        grid-template-columns:1fr;
+    }
+
+    .newTopbar{
+        padding:0 10px;
+    }
+
+    .topCenter{
+        display:none;
+    }
+
+    .floatingChat{
+        left:10px;
+        right:10px;
+        width:auto;
+        bottom:10px;
+        height:360px;
+    }
+
+    .chartCard #chart{
+        height:450px;
+    }
+
+}
+
+/* SMOOTH SCROLL */
+html{
+    scroll-behavior:smooth;
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.marketItem,
+.dashCard,
+.chartCard,
+.newSignalBox{
+    animation:fadeUp .3s ease;
+}
