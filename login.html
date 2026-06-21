@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,18 +11,41 @@
 <body class="authBody">
 
 <div class="authBox">
+
     <h1>🟡 Golden Trade</h1>
     <h2>Login</h2>
 
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPassword" placeholder="Password">
+    <input
+        type="email"
+        id="loginEmail"
+        placeholder="Email"
+    >
 
-    <button onclick="loginUser()">Login</button>
+    <input
+        type="password"
+        id="loginPassword"
+        placeholder="Password"
+    >
 
-    <p>Don't have an account?</p>
-    <a href="register.html">Create Account</a>
+    <button onclick="loginUser()">
+        Login
+    </button>
+
+    <p>
+        Don't have an account?
+    </p>
+
+    <a href="register.html">
+        Create Account
+    </a>
+
 </div>
 
+<!-- FIREBASE -->
+<script type="module" src="firebase.js"></script>
+
+<!-- APP -->
 <script src="auth.js"></script>
+
 </body>
 </html>
