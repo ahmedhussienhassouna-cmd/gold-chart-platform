@@ -1678,3 +1678,55 @@ body.rightPanelClosed .chartCard #chart{
 .bottomCards{
     margin-top:8px !important;
 }
+
+/* =======================
+   FIX CHART AFTER VERTICAL TOOLS
+======================= */
+
+#oandaChart{
+    padding-left:0 !important;
+    margin-left:58px !important;
+    width:calc(100% - 58px) !important;
+    height:100% !important;
+}
+
+.chartCard{
+    min-height:680px !important;
+}
+
+.chartCard #chart{
+    height:630px !important;
+}
+
+.chartToolbar{
+    top:60px !important;
+    left:8px !important;
+    width:42px !important;
+    max-width:42px !important;
+}
+
+.drawingToolbar{
+    top:245px !important;
+    left:8px !important;
+    width:42px !important;
+}
+
+.chartToolbar button,
+.drawingToolbar button{
+    width:30px !important;
+    min-width:30px !important;
+    height:26px !important;
+    font-size:10px !important;
+}
+
+.toolbarSymbol{
+    font-size:10px !important;
+}
+
+.bottomCards{
+    margin-top:6px !important;
+}
+
+.floatingChat{
+    height:235px !important;
+}
