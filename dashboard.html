@@ -43,6 +43,7 @@ if(savedUser){
     <div class="section-title">Services</div>
     <button onclick="service('daily')">📊 Analysis</button>
     <button id="strategyBtn" onclick="toggleStrategy()">💰 Strategy</button>
+    <button onclick="openTradingGoal()">🎯 Trading Goal</button>
     <button onclick="toggleVWAP()">📈 VWAP</button>
     <button onclick="toggleSessionProfile()">📊 Session Profile</button>
 <button onclick="openFloatingChat()">💬 Clients Chat</button>
@@ -290,7 +291,80 @@ if(savedUser){
     </div>
 
 </div>
+<!-- TRADING GOAL MODAL -->
+<div class="goalModal" id="goalModal">
+    <div class="goalBox">
 
+        <button class="goalClose" onclick="closeTradingGoal()">×</button>
+
+        <div class="goalHeader">
+            <span>🎯</span>
+            <div>
+                <h2>Trading Goal Planner</h2>
+                <p>Build your trading plan, track profit, loss and progress.</p>
+            </div>
+        </div>
+
+        <div class="goalGrid">
+
+            <div class="goalForm">
+                <label>Account Capital ($)</label>
+                <input type="number" id="goalCapital" placeholder="Example: 1000">
+
+                <label>Target Balance ($)</label>
+                <input type="number" id="goalTarget" placeholder="Example: 5000">
+
+                <label>Current Balance ($)</label>
+                <input type="number" id="goalCurrent" placeholder="Example: 1200">
+
+                <label>Total Profit ($)</label>
+                <input type="number" id="goalProfit" placeholder="Example: 300">
+
+                <label>Total Loss ($)</label>
+                <input type="number" id="goalLoss" placeholder="Example: 100">
+
+                <label>Max Daily Loss (%)</label>
+                <input type="number" id="goalRisk" placeholder="Example: 2">
+
+                <button class="goalSaveBtn" onclick="saveTradingGoal()">Save Goal</button>
+            </div>
+
+            <div class="goalResult">
+                <h3>Client Trading Profile</h3>
+
+                <div class="goalProgressCircle">
+                    <span id="goalProgressText">0%</span>
+                </div>
+
+                <div class="goalStats">
+                    <div>
+                        <span>Capital</span>
+                        <b id="goalViewCapital">$0</b>
+                    </div>
+                    <div>
+                        <span>Target</span>
+                        <b id="goalViewTarget">$0</b>
+                    </div>
+                    <div>
+                        <span>Current</span>
+                        <b id="goalViewCurrent">$0</b>
+                    </div>
+                    <div>
+                        <span>Net P/L</span>
+                        <b id="goalViewNet">$0</b>
+                    </div>
+                </div>
+
+                <div class="goalPlanBox">
+                    <h4>📌 Your Plan</h4>
+                    <p id="goalPlanText">Add your capital and target to generate your plan.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
 <!-- FLOATING CHAT PRO -->
 <div class="floatingChat" id="floatingChat">
 
