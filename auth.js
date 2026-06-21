@@ -12,8 +12,8 @@ function getDaysRemaining(endDate){
 
     const now = new Date();
     const end = new Date(endDate);
-
     const diff = end - now;
+
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
@@ -111,7 +111,7 @@ function registerUser() {
 }
 
 // =======================
-// LOGIN
+// LOGIN FROM FIREBASE
 // =======================
 async function loginUser() {
 
@@ -126,39 +126,42 @@ async function loginUser() {
         return;
     }
 
-    const savedUser = localStorage.getItem("golden_user");
+    let user = null;
 
-    if (!savedUser) {
+    if(window.getUserFromFirebase){
+        user = await window.getUserFromFirebase(email);
+    }
+
+    if(!user){
         alert("No account found. Please create account first.");
         return;
     }
 
-    let saved = JSON.parse(savedUser);
-    saved = updateLocalUserStatus(saved);
-
-    if (email === saved.email && password === saved.password) {
-
-        localStorage.setItem("golden_logged", "true");
-
-        if (window.updateUserLoginFirebase) {
-            await window.updateUserLoginFirebase(email);
-        }
-
-        if (window.trackSiteVisitFirebase) {
-            await window.trackSiteVisitFirebase();
-        }
-
-        if(saved.status === "expired"){
-            alert("Your trial or subscription has expired. Please renew your membership.");
-            window.location.href = "upgrade.html";
-            return;
-        }
-
-        window.location.href = "dashboard.html";
-
-    } else {
+    if(user.password !== password){
         alert("Wrong Email or Password");
+        return;
     }
+
+    user = updateLocalUserStatus(user);
+
+    localStorage.setItem("golden_user", JSON.stringify(user));
+    localStorage.setItem("golden_logged", "true");
+
+    if (window.updateUserLoginFirebase) {
+        await window.updateUserLoginFirebase(email);
+    }
+
+    if (window.trackSiteVisitFirebase) {
+        await window.trackSiteVisitFirebase();
+    }
+
+    if(user.subscription === "expired" || user.status === "expired"){
+        alert("Your trial or subscription has expired. Please renew your membership.");
+        window.location.href = "upgrade.html";
+        return;
+    }
+
+    window.location.href = "dashboard.html";
 }
 
 // =======================
@@ -174,12 +177,16 @@ function logout() {
 // =======================
 function loadDashboardUser(){
     const savedUser = localStorage.getItem("golden_user");
-    if(!savedUser) return;
+
+    if(!savedUser){
+        window.location.href = "login.html";
+        return;
+    }
 
     let user = JSON.parse(savedUser);
     user = updateLocalUserStatus(user);
 
-    if(user.status === "expired"){
+    if(user.subscription === "expired" || user.status === "expired"){
         window.location.href = "upgrade.html";
         return;
     }
@@ -233,16 +240,7 @@ if (
 // AUTO LOAD USER
 // =======================
 window.addEventListener("load", () => {
-    const savedUser = localStorage.getItem("golden_user");
-
-    if(savedUser && window.location.pathname.includes("dashboard.html")){
-        const user = JSON.parse(savedUser);
-
-        if(user.subscription === "expired" || user.status === "expired"){
-            window.location.href = "upgrade.html";
-            return;
-        }
+    if(window.location.pathname.includes("dashboard.html")){
+        loadDashboardUser();
     }
-
-    loadDashboardUser();
 });
