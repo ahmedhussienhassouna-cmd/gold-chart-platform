@@ -2516,3 +2516,37 @@ body.lightTheme .sidebar button{
         padding:26px 20px !important;
     }
 }
+/* =======================
+   CHART RIGHT CLICK MENU FIX
+======================= */
+
+#chart{
+    position:relative !important;
+}
+
+.chartContextMenu{
+    display:none;
+    position:absolute !important;
+    min-width:190px !important;
+    background:#070707 !important;
+    border:1px solid #ffd700 !important;
+    border-radius:14px !important;
+    padding:7px !important;
+    z-index:999999 !important;
+    box-shadow:0 0 30px rgba(0,0,0,.75),0 0 20px rgba(255,215,0,.22) !important;
+}
+
+.chartContextMenu div{
+    padding:10px 12px !important;
+    color:#fff !important;
+    font-size:13px !important;
+    font-weight:900 !important;
+    border-radius:10px !important;
+    cursor:pointer !important;
+    white-space:nowrap !important;
+}
+
+.chartContextMenu div:hover{
+    background:#ffd700 !important;
+    color:#000 !important;
+}
