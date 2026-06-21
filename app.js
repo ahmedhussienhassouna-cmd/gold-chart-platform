@@ -1635,3 +1635,41 @@ window.addEventListener("load", () => {
     resizeGoldenChartFinal();
 });
 
+// =======================
+// FINAL FORCE CHAT OPEN FIX
+// =======================
+window.toggleFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.remove("closed");
+    chat.classList.remove("minimized");
+    chat.classList.add("chatOpen");
+    chat.style.display = "flex";
+
+    document.body.classList.add("bottomCardsOpen");
+
+    if(typeof resizeGoldenChartFinal === "function"){
+        resizeGoldenChartFinal();
+    }
+};
+
+window.openFloatingChat = function(){
+    window.toggleFloatingChat();
+};
+
+window.closeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.remove("chatOpen");
+    chat.classList.add("closed");
+    chat.style.display = "none";
+};
+
+window.minimizeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.toggle("minimized");
+};
