@@ -987,3 +987,190 @@ body.rightPanelClosed.bottomCardsOpen .newSignalBox{
 #floatingChat.closed{
     display:none !important;
 }
+
+/* CHAT PRO FINAL */
+#floatingChat{
+    display:none !important;
+    position:fixed !important;
+    left:235px !important;
+    bottom:16px !important;
+    width:360px !important;
+    height:470px !important;
+    background:#050505 !important;
+    border:1px solid #ffd700 !important;
+    border-radius:22px !important;
+    overflow:hidden !important;
+    z-index:999999 !important;
+    box-shadow:0 0 40px rgba(0,0,0,.8),0 0 25px rgba(255,215,0,.2) !important;
+    flex-direction:column !important;
+}
+
+#floatingChat.chatOpen{
+    display:flex !important;
+}
+
+#floatingChat.closed{
+    display:none !important;
+}
+
+#floatingChat.minimized{
+    height:64px !important;
+}
+
+#floatingChat.minimized .chatProBody,
+#floatingChat.minimized .chatProInput{
+    display:none !important;
+}
+
+.chatProHeader{
+    height:64px;
+    min-height:64px;
+    background:linear-gradient(90deg,#070707,#111);
+    border-bottom:1px solid rgba(255,215,0,.35);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 12px;
+}
+
+.chatProLeft{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.chatProAvatar,
+.chatMiniAvatar{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#ffd700,#b8860b);
+    color:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:900;
+    font-size:13px;
+}
+
+.chatProLeft b{
+    color:#ffd700;
+    font-size:15px;
+}
+
+.chatProLeft span{
+    display:block;
+    color:#00ff99;
+    font-size:11px;
+    margin-top:3px;
+}
+
+.chatProActions button{
+    width:30px;
+    height:30px;
+    border-radius:9px;
+    border:1px solid rgba(255,215,0,.35);
+    background:#111;
+    color:#ffd700;
+    font-weight:900;
+    cursor:pointer;
+}
+
+.chatProActions button:hover{
+    background:#ffd700;
+    color:#000;
+}
+
+.chatProBody{
+    flex:1;
+    overflow-y:auto;
+    padding:15px;
+    background:radial-gradient(circle at top left,rgba(255,215,0,.08),transparent 35%),#060606;
+}
+
+.chatBubbleRow{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+    max-width:88%;
+}
+
+.chatBubbleRow.userBubble{
+    margin-left:auto;
+    flex-direction:row-reverse;
+}
+
+.chatBubbleText{
+    background:#111;
+    border:1px solid rgba(255,215,0,.25);
+    border-radius:16px 16px 16px 4px;
+    padding:10px 12px;
+    color:#fff;
+}
+
+.userBubble .chatBubbleText{
+    background:linear-gradient(135deg,#ffd700,#b8860b);
+    color:#000;
+    border-radius:16px 16px 4px 16px;
+}
+
+.chatBubbleText b{
+    color:#ffd700;
+    font-size:12px;
+}
+
+.userBubble .chatBubbleText b{
+    color:#000;
+}
+
+.chatBubbleText p{
+    margin-top:5px;
+    font-size:13px;
+    line-height:1.5;
+}
+
+.chatBubbleText small{
+    display:block;
+    margin-top:6px;
+    color:#888;
+    font-size:10px;
+}
+
+.userBubble .chatBubbleText small{
+    color:#333;
+}
+
+.chatProInput{
+    height:58px;
+    min-height:58px;
+    background:#090909;
+    border-top:1px solid rgba(255,215,0,.25);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:9px;
+}
+
+.chatProInput input{
+    flex:1;
+    height:40px;
+    border-radius:22px;
+    border:1px solid rgba(255,215,0,.3);
+    background:#111;
+    color:#fff;
+    padding:0 14px;
+    outline:none;
+}
+
+.emojiBtn,
+.sendBtn{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    border:none;
+    background:#ffd700;
+    color:#000;
+    font-weight:900;
+    cursor:pointer;
+}
+
