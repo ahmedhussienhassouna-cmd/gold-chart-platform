@@ -1,4 +1,5 @@
 let currentUser = null;
+let unsubscribeChat = null;
 
 function loadChatUser(){
     const savedUser = localStorage.getItem("golden_user");
@@ -11,15 +12,15 @@ function loadChatUser(){
 
     currentUser = JSON.parse(savedUser);
 
-    const userNameBox = document.getElementById("chatUserName");
-    if(userNameBox){
-        userNameBox.innerHTML = currentUser.name || "Client";
+    const badge = document.getElementById("chatUserBadge");
+    if(badge){
+        badge.innerHTML = currentUser.name || "Client";
     }
 }
 
 function escapeHtml(text){
     const div = document.createElement("div");
-    div.textContent = text;
+    div.textContent = text || "";
     return div.innerHTML;
 }
 
@@ -35,7 +36,7 @@ function getInitials(name){
 }
 
 function formatChatTime(createdAt){
-    if(!createdAt) return "";
+    if(!createdAt) return "Now";
 
     try{
         const date = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
@@ -45,12 +46,12 @@ function formatChatTime(createdAt){
             minute: "2-digit"
         });
     }catch(e){
-        return "";
+        return "Now";
     }
 }
 
 function renderChatMessages(messages){
-    const box = document.getElementById("chatMessages");
+    const box = document.getElementById("chatFullMessages");
     if(!box) return;
 
     box.innerHTML = "";
@@ -87,32 +88,29 @@ function renderChatMessages(messages){
     box.scrollTop = box.scrollHeight;
 }
 
-async function sendChatMessage(){
-    const input = document.getElementById("chatInput");
+window.sendFullChatMessage = async function(){
+    const input = document.getElementById("chatFullInput");
     if(!input || !currentUser) return;
 
     const message = input.value.trim();
-
-    if(message === ""){
-        return;
-    }
+    if(message === "") return;
 
     if(typeof window.sendChatMessageFirebase !== "function"){
-        alert("Chat is still loading, try again in 2 seconds");
+        alert("Chat is still loading, try again");
         return;
     }
+
+    input.value = "";
 
     const ok = await window.sendChatMessageFirebase(message, currentUser);
 
-    if(ok){
-        input.value = "";
-    }else{
+    if(!ok){
         alert("Message not sent");
     }
-}
+};
 
 function startChatWhenFirebaseReady(){
-    const box = document.getElementById("chatMessages");
+    const box = document.getElementById("chatFullMessages");
 
     let tries = 0;
 
@@ -122,7 +120,9 @@ function startChatWhenFirebaseReady(){
         if(typeof window.listenChatMessagesFirebase === "function"){
             clearInterval(timer);
 
-            window.listenChatMessagesFirebase((messages) => {
+            if(unsubscribeChat) unsubscribeChat();
+
+            unsubscribeChat = window.listenChatMessagesFirebase((messages) => {
                 renderChatMessages(messages);
             });
 
@@ -142,4 +142,13 @@ function startChatWhenFirebaseReady(){
 window.addEventListener("load", () => {
     loadChatUser();
     startChatWhenFirebaseReady();
+
+    const input = document.getElementById("chatFullInput");
+    if(input){
+        input.addEventListener("keydown", e => {
+            if(e.key === "Enter"){
+                window.sendFullChatMessage();
+            }
+        });
+    }
 });
