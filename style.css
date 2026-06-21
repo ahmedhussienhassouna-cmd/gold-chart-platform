@@ -317,3 +317,252 @@
     border-radius:10px;
     font-size:11px;
 }
+
+/* =======================
+   DASHBOARD UI UPGRADE - PART 2
+======================= */
+
+/* SIDEBAR UPGRADE */
+.sidebar{
+    z-index:300;
+}
+
+.sidebar h2{
+    font-size:24px;
+    line-height:1.2;
+    text-shadow:0 0 18px rgba(255,215,0,.25);
+}
+
+.sidebar button{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.subscriptionMini{
+    margin-top:16px;
+    background:linear-gradient(180deg,#1b1b1b,#101010);
+    border:1px solid rgba(255,215,0,.35);
+    border-radius:16px;
+    padding:14px;
+    box-shadow:0 0 18px rgba(255,215,0,.08);
+}
+
+.subscriptionMini h4{
+    color:#ffd700;
+    margin-bottom:8px;
+}
+
+.subscriptionMini p{
+    color:#ccc;
+    font-size:13px;
+    line-height:1.5;
+}
+
+.subscriptionMini button{
+    margin-top:10px;
+    background:#ffd700;
+    color:#000;
+    border:none;
+    text-align:center;
+    justify-content:center;
+}
+
+/* FLOATING CHAT */
+.floatingChat{
+    position:fixed;
+    left:282px;
+    bottom:20px;
+    width:380px;
+    height:430px;
+    background:#0f0f0f;
+    border:1px solid rgba(255,215,0,.35);
+    border-radius:18px;
+    overflow:hidden;
+    z-index:9999;
+    box-shadow:0 18px 45px rgba(0,0,0,.65);
+    display:flex;
+    flex-direction:column;
+}
+
+.floatingChat.minimized{
+    height:58px;
+}
+
+.floatingChat.minimized .floatingChatBody,
+.floatingChat.minimized .floatingChatInput{
+    display:none;
+}
+
+.floatingChatHeader{
+    height:58px;
+    min-height:58px;
+    background:linear-gradient(90deg,#111,#1a1a1a);
+    border-bottom:1px solid rgba(255,215,0,.22);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 14px;
+}
+
+.floatingChatHeader b{
+    color:#ffd700;
+    font-size:15px;
+}
+
+.floatingChatHeader span{
+    display:block;
+    color:#00ff99;
+    font-size:11px;
+    margin-top:3px;
+}
+
+.floatingChatHeader button{
+    width:30px;
+    height:30px;
+    border-radius:9px;
+    border:1px solid #333;
+    background:#191919;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+    margin-left:4px;
+}
+
+.floatingChatHeader button:hover{
+    background:#ffd700;
+    color:#000;
+}
+
+.floatingChatBody{
+    flex:1;
+    padding:14px;
+    overflow-y:auto;
+    background:
+        radial-gradient(circle at top left, rgba(255,215,0,.08), transparent 35%),
+        #0b0b0b;
+}
+
+.floatingMsg{
+    max-width:85%;
+    margin-bottom:12px;
+    background:#181818;
+    border:1px solid #2d2d2d;
+    border-radius:14px;
+    padding:10px 12px;
+}
+
+.floatingMsg b{
+    color:#ffd700;
+    font-size:12px;
+}
+
+.floatingMsg p{
+    color:#ddd;
+    font-size:13px;
+    line-height:1.45;
+    margin-top:5px;
+}
+
+.userMsg{
+    margin-left:auto;
+    background:linear-gradient(135deg,#ffd700,#caa200);
+}
+
+.userMsg b,
+.userMsg p{
+    color:#111;
+}
+
+.floatingChatInput{
+    height:58px;
+    min-height:58px;
+    border-top:1px solid #252525;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px;
+    background:#111;
+}
+
+.floatingChatInput input{
+    flex:1;
+    height:38px;
+    border-radius:20px;
+    border:1px solid #333;
+    background:#1b1b1b;
+    color:white;
+    outline:none;
+    padding:0 13px;
+}
+
+.floatingChatInput input:focus{
+    border-color:#ffd700;
+}
+
+.floatingChatInput button{
+    width:40px;
+    height:38px;
+    border-radius:50%;
+    border:none;
+    background:#ffd700;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* FLOATING CHAT HIDDEN */
+.floatingChat.closed{
+    display:none;
+}
+
+/* MAKE OLD CHAT PAGE STILL SAFE */
+.chatPage{
+    position:relative;
+    z-index:1;
+}
+
+/* SMALL IMPROVEMENTS */
+.profileBox{
+    background:rgba(255,255,255,.02);
+    border:1px solid #1f1f1f;
+    border-radius:18px;
+    padding:14px 8px;
+}
+
+.profileImage{
+    width:110px;
+    height:110px;
+}
+
+.profileName{
+    font-size:18px;
+}
+
+.profileTitle{
+    color:#ddd;
+}
+
+.profileEmail{
+    color:#aaa;
+}
+
+/* SCROLLBARS */
+.dashboardMain::-webkit-scrollbar,
+.signalBox::-webkit-scrollbar,
+.floatingChatBody::-webkit-scrollbar{
+    width:8px;
+}
+
+.dashboardMain::-webkit-scrollbar-thumb,
+.signalBox::-webkit-scrollbar-thumb,
+.floatingChatBody::-webkit-scrollbar-thumb{
+    background:#333;
+    border-radius:20px;
+}
+
+.dashboardMain::-webkit-scrollbar-thumb:hover,
+.signalBox::-webkit-scrollbar-thumb:hover,
+.floatingChatBody::-webkit-scrollbar-thumb:hover{
+    background:#ffd700;
+}
