@@ -233,5 +233,16 @@ if (
 // AUTO LOAD USER
 // =======================
 window.addEventListener("load", () => {
+    const savedUser = localStorage.getItem("golden_user");
+
+    if(savedUser && window.location.pathname.includes("dashboard.html")){
+        const user = JSON.parse(savedUser);
+
+        if(user.subscription === "expired" || user.status === "expired"){
+            window.location.href = "upgrade.html";
+            return;
+        }
+    }
+
     loadDashboardUser();
 });
