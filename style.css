@@ -1005,3 +1005,88 @@ html{
         transform-origin:top left;
     }
 }
+
+
+/* =======================
+   FINAL UI POLISH V3
+======================= */
+
+@media(min-width:901px){
+
+    .dashboardMain{
+        background:#03070b !important;
+    }
+
+    .sidebar{
+        background:linear-gradient(180deg,#050b12,#071018) !important;
+        border-right:1px solid rgba(255,215,0,.18) !important;
+    }
+
+    .chartCard{
+        min-height:690px !important;
+    }
+
+    .chartCard #chart{
+        height:642px !important;
+    }
+
+    .newSignalBox{
+        min-height:690px !important;
+    }
+
+    .bottomCards{
+        margin-top:8px !important;
+    }
+
+    .dashCard{
+        min-height:125px !important;
+    }
+
+    .floatingChat{
+        width:285px !important;
+        height:285px !important;
+        left:274px !important;
+        bottom:18px !important;
+    }
+
+    .floatingChatHeader{
+        height:48px !important;
+        min-height:48px !important;
+    }
+
+    .floatingChatInput{
+        height:48px !important;
+        min-height:48px !important;
+    }
+
+    .floatingChatInput input{
+        height:34px !important;
+        font-size:12px !important;
+    }
+
+    .floatingChatInput button{
+        width:34px !important;
+        height:34px !important;
+    }
+
+    .floatingMsg{
+        max-width:92% !important;
+    }
+
+    .floatingMsg p{
+        font-size:11px !important;
+    }
+
+    .chartToolbar{
+        max-width:calc(100% - 80px) !important;
+        flex-wrap:wrap !important;
+    }
+
+    .toolbarGroup button,
+    .chartToolbar button{
+        min-width:30px !important;
+        height:26px !important;
+        padding:0 7px !important;
+        font-size:11px !important;
+    }
+}
