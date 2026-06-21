@@ -1538,3 +1538,57 @@ body.chatBody{
 .subscriptionMini{
     flex:none !important;
 }
+
+/* =======================
+   RIGHT PANEL COLLAPSE
+======================= */
+
+.dashboardContent{
+    grid-template-columns:1fr 290px !important;
+}
+
+.newSignalBox{
+    position:sticky !important;
+    top:84px !important;
+    height:calc(100vh - 100px) !important;
+    min-height:auto !important;
+    overflow-y:auto !important;
+}
+
+.panelToggleBtn{
+    position:fixed;
+    right:292px;
+    top:92px;
+    width:34px;
+    height:56px;
+    border-radius:14px 0 0 14px;
+    border:1px solid rgba(255,215,0,.45);
+    background:#ffd700;
+    color:#000;
+    font-size:28px;
+    font-weight:bold;
+    cursor:pointer;
+    z-index:9999;
+    box-shadow:0 0 20px rgba(255,215,0,.25);
+}
+
+body.rightPanelClosed .dashboardContent{
+    grid-template-columns:1fr 0px !important;
+}
+
+body.rightPanelClosed .newSignalBox{
+    display:none !important;
+}
+
+body.rightPanelClosed .panelToggleBtn{
+    right:0;
+    transform:rotate(180deg);
+}
+
+body.rightPanelClosed .chartCard{
+    min-height:700px !important;
+}
+
+body.rightPanelClosed .chartCard #chart{
+    height:650px !important;
+}
