@@ -1485,3 +1485,203 @@ body.lightTheme .chatInputBox button{
     background:#005bd8 !important;
     color:#ffffff !important;
 }
+/* =======================
+   TOPBAR + MARKET STRIP FIX FINAL
+   Safe Add-on
+======================= */
+
+/* TOPBAR GRID FIX */
+.newTopbar{
+    height:72px !important;
+    min-height:72px !important;
+    display:grid !important;
+    grid-template-columns:260px 1fr 250px !important;
+    align-items:center !important;
+    gap:14px !important;
+    padding:0 18px !important;
+    overflow:hidden !important;
+}
+
+.userHeader{
+    display:flex !important;
+    align-items:center !important;
+    gap:8px !important;
+    min-width:0 !important;
+    white-space:nowrap !important;
+}
+
+.welcomeText{
+    display:block !important;
+    line-height:1.1 !important;
+    margin-bottom:2px !important;
+}
+
+.userHeader b{
+    display:inline-block !important;
+    max-width:105px !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    vertical-align:middle !important;
+}
+
+#topUserBadge{
+    flex-shrink:0 !important;
+}
+
+.topActions{
+    display:flex !important;
+    align-items:center !important;
+    gap:10px !important;
+    flex-wrap:nowrap !important;
+    justify-content:flex-start !important;
+}
+
+.upgradeBtn,
+#themeBtn{
+    height:38px !important;
+    min-width:116px !important;
+    padding:0 14px !important;
+    border-radius:12px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    white-space:nowrap !important;
+    font-size:13px !important;
+    line-height:1 !important;
+}
+
+.topCenter{
+    min-width:0 !important;
+    text-align:center !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:3px !important;
+    overflow:hidden !important;
+}
+
+.topCenter #activeAsset{
+    line-height:1 !important;
+    white-space:nowrap !important;
+}
+
+.topCenter #priceBox{
+    max-width:100% !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+    line-height:1.2 !important;
+}
+
+/* MARKET STRIP MOVES BELOW TOPBAR CLEAN */
+.marketStrip{
+    margin:10px 12px 0 !important;
+    display:grid !important;
+    grid-template-columns:repeat(5,minmax(130px,1fr)) !important;
+    gap:10px !important;
+    align-items:stretch !important;
+}
+
+.marketItem{
+    min-height:62px !important;
+    padding:9px 12px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+    gap:4px !important;
+    overflow:hidden !important;
+}
+
+.marketItem b,
+.marketItem span{
+    display:block !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    line-height:1.2 !important;
+}
+
+.marketItem b{
+    font-size:12px !important;
+}
+
+.marketItem span{
+    font-size:15px !important;
+}
+
+/* GIVE CHART MORE CORRECT SPACE AFTER BIGGER TOPBAR */
+.dashboardContent{
+    margin-top:10px !important;
+}
+
+.chartCard{
+    min-height:calc(100vh - 165px) !important;
+}
+
+.chartCard #chart{
+    height:calc(100vh - 215px) !important;
+}
+
+/* LIGHT MODE SAME FIX */
+body.lightTheme .newTopbar{
+    height:72px !important;
+    min-height:72px !important;
+}
+
+body.lightTheme .marketStrip{
+    grid-template-columns:repeat(5,minmax(130px,1fr)) !important;
+}
+
+/* SMALL LAPTOP FIX */
+@media(max-width:1200px){
+    .newTopbar{
+        grid-template-columns:230px 1fr 230px !important;
+        gap:8px !important;
+        padding:0 12px !important;
+    }
+
+    .upgradeBtn,
+    #themeBtn{
+        min-width:100px !important;
+        font-size:12px !important;
+        padding:0 10px !important;
+    }
+
+    .marketStrip{
+        grid-template-columns:repeat(5,minmax(110px,1fr)) !important;
+        gap:7px !important;
+    }
+
+    .marketItem{
+        min-height:56px !important;
+        padding:7px 8px !important;
+    }
+
+    .marketItem b{
+        font-size:10px !important;
+    }
+
+    .marketItem span{
+        font-size:12px !important;
+    }
+}
+
+/* VERY SMALL SCREEN FIX */
+@media(max-width:900px){
+    .newTopbar{
+        height:78px !important;
+        min-height:78px !important;
+        grid-template-columns:1fr !important;
+        gap:4px !important;
+        padding:6px 10px !important;
+    }
+
+    .topActions{
+        justify-content:center !important;
+    }
+
+    .marketStrip{
+        grid-template-columns:repeat(2,1fr) !important;
+    }
+}
