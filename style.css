@@ -937,3 +937,20 @@ body.rightPanelClosed.bottomCardsOpen .newSignalBox{
 .floatingChat.closed{
     display:none !important;
 }
+
+/* =======================
+   PRICE SCALE VISIBILITY FIX
+======================= */
+
+#oandaChart{
+    overflow:visible !important;
+}
+
+.chartCard #chart{
+    overflow:visible !important;
+}
+
+.tv-lightweight-charts,
+#oandaChart canvas{
+    overflow:visible !important;
+}
