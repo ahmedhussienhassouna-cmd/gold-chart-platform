@@ -1447,3 +1447,94 @@ body.chatBody{
 .dashboardMain{
     background:#050505 !important;
 }
+
+
+/* ===== FINAL SIDEBAR FIX ===== */
+
+.sidebar{
+    width:240px !important;
+    background:#060606 !important;
+}
+
+.dashboardMain{
+    left:240px !important;
+}
+
+/* PROFILE */
+.profileBox{
+    padding:15px !important;
+}
+
+.profileImage{
+    width:90px !important;
+    height:90px !important;
+}
+
+.profileName{
+    font-size:18px !important;
+}
+
+.profileTitle{
+    font-size:13px !important;
+}
+
+.profileEmail{
+    font-size:12px !important;
+}
+
+/* BUTTONS */
+.sidebar button{
+    min-height:48px !important;
+    font-size:16px !important;
+    font-weight:700 !important;
+}
+
+/* SECTION */
+.section-title{
+    font-size:15px !important;
+    color:#ffd700 !important;
+}
+
+/* MEMBERSHIP */
+.subscriptionMini{
+    margin-top:15px !important;
+    padding:15px !important;
+}
+
+.subscriptionMini h4{
+    font-size:18px !important;
+}
+
+.subscriptionMini p{
+    font-size:14px !important;
+}
+
+/* LOGOUT */
+.sidebar div:last-child button{
+    margin-top:15px !important;
+}
+
+/* FLOAT CHAT SMALL */
+.floatingChat{
+    width:290px !important;
+    height:280px !important;
+    left:255px !important;
+}
+
+.floatingChatBody{
+    font-size:13px !important;
+}
+
+/* BIGGER ICONS */
+.sidebar button{
+    gap:10px !important;
+}
+
+/* REMOVE EXTRA SPACE */
+.sidebar{
+    justify-content:flex-start !important;
+}
+
+.subscriptionMini{
+    flex:none !important;
+}
