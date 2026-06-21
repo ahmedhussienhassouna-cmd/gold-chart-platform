@@ -1937,3 +1937,145 @@ window.addEventListener("load", () => {
         updatePanel();
     }, 700);
 });
+// =======================
+// GROUP CLIENTS CHAT - FIREBASE LIVE
+// =======================
+
+let unsubscribeGroupChat = null;
+
+function getChatUser(){
+    try{
+        return JSON.parse(localStorage.getItem("golden_user")) || {
+            name: "Golden Trade Client",
+            email: "",
+            role: "Client"
+        };
+    }catch(e){
+        return {
+            name: "Golden Trade Client",
+            email: "",
+            role: "Client"
+        };
+    }
+}
+
+function formatChatTime(value){
+    try{
+        if(value && value.toDate){
+            return value.toDate().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        }
+    }catch(e){}
+
+    return "Now";
+}
+
+function renderGroupChatMessages(messages){
+    const body = document.getElementById("floatingChatBody");
+    if(!body) return;
+
+    const currentUser = getChatUser();
+
+    body.innerHTML = "";
+
+    messages.forEach(msg => {
+        const isMe = msg.email && currentUser.email && msg.email === currentUser.email;
+
+        const row = document.createElement("div");
+        row.className = isMe ? "chatBubbleRow userBubble" : "chatBubbleRow adminBubble";
+
+        const initials = (msg.name || "GT")
+            .split(" ")
+            .map(x => x[0])
+            .join("")
+            .substring(0,2)
+            .toUpperCase();
+
+        row.innerHTML = `
+            <div class="chatMiniAvatar">${isMe ? "YOU" : initials}</div>
+            <div class="chatBubbleText">
+                <b>${msg.name || "Golden Trade Client"}</b>
+                <p>${msg.message || ""}</p>
+                <small>${formatChatTime(msg.createdAt)}</small>
+            </div>
+        `;
+
+        body.appendChild(row);
+    });
+
+    body.scrollTop = body.scrollHeight;
+}
+
+function startGroupChat(){
+    if(typeof window.listenChatMessagesFirebase !== "function"){
+        console.log("Firebase chat listener not ready");
+        return;
+    }
+
+    if(unsubscribeGroupChat) return;
+
+    unsubscribeGroupChat = window.listenChatMessagesFirebase((messages) => {
+        renderGroupChatMessages(messages);
+    });
+}
+
+window.openFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.remove("closed");
+    chat.classList.remove("minimized");
+    chat.classList.add("chatOpen");
+    chat.style.display = "flex";
+
+    startGroupChat();
+};
+
+window.toggleFloatingChat = function(){
+    window.openFloatingChat();
+};
+
+window.closeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.remove("chatOpen");
+    chat.classList.add("closed");
+    chat.style.display = "none";
+};
+
+window.sendFloatingChatMessage = async function(){
+    const input = document.getElementById("floatingChatInput");
+    if(!input) return;
+
+    const message = input.value.trim();
+    if(message === "") return;
+
+    const user = getChatUser();
+
+    input.value = "";
+
+    if(typeof window.sendChatMessageFirebase !== "function"){
+        alert("Chat Firebase not loaded");
+        return;
+    }
+
+    await window.sendChatMessageFirebase(message, user);
+};
+
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        startGroupChat();
+
+        const input = document.getElementById("floatingChatInput");
+        if(input){
+            input.addEventListener("keydown", e => {
+                if(e.key === "Enter"){
+                    window.sendFloatingChatMessage();
+                }
+            });
+        }
+    }, 1200);
+});
