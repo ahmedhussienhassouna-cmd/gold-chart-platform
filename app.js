@@ -1753,3 +1753,71 @@ window.closeFloatingChat = function(){
     chat.classList.add("closed");
     chat.style.display = "none";
 };
+
+// CHAT PRO FINAL
+window.openFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.remove("closed");
+    chat.classList.remove("minimized");
+    chat.classList.add("chatOpen");
+    chat.style.display = "flex";
+};
+
+window.toggleFloatingChat = function(){
+    window.openFloatingChat();
+};
+
+window.closeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.remove("chatOpen");
+    chat.classList.add("closed");
+    chat.style.display = "none";
+};
+
+window.minimizeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.toggle("minimized");
+};
+
+window.sendFloatingChatMessage = function(){
+    const input = document.getElementById("floatingChatInput");
+    const body = document.getElementById("floatingChatBody");
+
+    if(!input || !body) return;
+
+    const msg = input.value.trim();
+    if(msg === "") return;
+
+    const row = document.createElement("div");
+    row.className = "chatBubbleRow userBubble";
+
+    row.innerHTML = `
+        <div class="chatMiniAvatar">YOU</div>
+        <div class="chatBubbleText">
+            <b>You</b>
+            <p>${msg}</p>
+            <small>Now</small>
+        </div>
+    `;
+
+    body.appendChild(row);
+    input.value = "";
+    body.scrollTop = body.scrollHeight;
+};
+
+window.addEventListener("load", () => {
+    const input = document.getElementById("floatingChatInput");
+    if(input){
+        input.addEventListener("keydown", e => {
+            if(e.key === "Enter"){
+                sendFloatingChatMessage();
+            }
+        });
+    }
+});
