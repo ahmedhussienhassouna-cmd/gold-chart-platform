@@ -695,3 +695,94 @@ body.chatBody{
         display:none !important;
     }
 }
+
+
+/* =======================
+   FINAL DRAWERS + CHAT FIX
+======================= */
+
+/* Bottom drawer button */
+.bottomToggleBtn{
+    position:fixed !important;
+    left:50% !important;
+    bottom:8px !important;
+    transform:translateX(-50%) !important;
+    width:120px !important;
+    height:42px !important;
+    border-radius:22px 22px 0 0 !important;
+    border:1px solid #ffd700 !important;
+    background:linear-gradient(180deg,#ffd700,#b8860b) !important;
+    color:#000 !important;
+    font-size:25px !important;
+    font-weight:900 !important;
+    cursor:pointer !important;
+    z-index:99999 !important;
+    box-shadow:0 0 30px rgba(255,215,0,.45) !important;
+}
+
+/* Bottom cards closed by default */
+.bottomCards{
+    display:none !important;
+}
+
+body.bottomCardsOpen .bottomCards{
+    display:grid !important;
+}
+
+/* لما الكروت مقفولة الشارت ياخد الشاشة */
+.chartCard{
+    min-height:calc(100vh - 135px) !important;
+}
+
+.chartCard #chart{
+    height:calc(100vh - 185px) !important;
+}
+
+/* لما الكروت تفتح */
+body.bottomCardsOpen .chartCard{
+    min-height:620px !important;
+}
+
+body.bottomCardsOpen .chartCard #chart{
+    height:570px !important;
+}
+
+body.bottomCardsOpen .bottomToggleBtn{
+    transform:translateX(-50%) rotate(180deg) !important;
+}
+
+/* Chat hidden by default */
+.floatingChat{
+    display:none !important;
+}
+
+.floatingChat.chatOpen{
+    display:flex !important;
+}
+
+/* Right panel text clearer */
+.newSignalBox h3{
+    color:#ffd700 !important;
+    font-size:20px !important;
+    font-weight:900 !important;
+}
+
+.panelSignal span,
+.panelSignal p{
+    color:#fff !important;
+    font-size:16px !important;
+    font-weight:800 !important;
+    line-height:1.7 !important;
+}
+
+#channelBox b{
+    color:#ffd700 !important;
+    font-size:17px !important;
+}
+
+#channelBox p,
+#channelBox small{
+    color:#fff !important;
+    font-size:15px !important;
+    line-height:1.8 !important;
+}
