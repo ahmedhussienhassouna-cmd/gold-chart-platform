@@ -1685,3 +1685,60 @@ body.lightTheme .marketStrip{
         grid-template-columns:repeat(2,1fr) !important;
     }
 }
+
+/* =======================
+   HIDE MARKET STRIP + EXPAND CHART UP
+   Final Safe Fix
+======================= */
+
+.marketStrip{
+    display:none !important;
+    height:0 !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+}
+
+.dashboardContent{
+    margin:6px 12px 0 !important;
+}
+
+.chartCard{
+    min-height:calc(100vh - 88px) !important;
+}
+
+.chartCard #chart{
+    height:calc(100vh - 136px) !important;
+}
+
+/* لو الكروت تحت مقفولة */
+body:not(.bottomCardsOpen) .chartCard{
+    min-height:calc(100vh - 86px) !important;
+}
+
+body:not(.bottomCardsOpen) .chartCard #chart{
+    height:calc(100vh - 132px) !important;
+}
+
+/* لو الكروت تحت مفتوحة */
+body.bottomCardsOpen .chartCard{
+    min-height:620px !important;
+}
+
+body.bottomCardsOpen .chartCard #chart{
+    height:570px !important;
+}
+
+/* Light mode */
+body.lightTheme .marketStrip{
+    display:none !important;
+}
+
+body.lightTheme .chartCard{
+    min-height:calc(100vh - 88px) !important;
+}
+
+body.lightTheme .chartCard #chart{
+    height:calc(100vh - 136px) !important;
+}
