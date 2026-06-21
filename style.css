@@ -954,3 +954,16 @@ body.rightPanelClosed.bottomCardsOpen .newSignalBox{
 #oandaChart canvas{
     overflow:visible !important;
 }
+
+/* FORCE CHAT SHOW */
+.floatingChat{
+    display:none !important;
+}
+
+.floatingChat.chatOpen{
+    display:flex !important;
+}
+
+.floatingChat.closed{
+    display:none !important;
+}
