@@ -1527,7 +1527,7 @@ window.toggleBottomCards = function(){
 };
 
 window.addEventListener("load", () => {
-    document.body.classList.add("rightPanelClosed");
+document.body.classList.remove("rightPanelClosed");
     document.body.classList.remove("bottomCardsOpen");
 
     resizeGoldenChart();
