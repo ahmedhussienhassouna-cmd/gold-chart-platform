@@ -967,3 +967,23 @@ body.rightPanelClosed.bottomCardsOpen .newSignalBox{
 .floatingChat.closed{
     display:none !important;
 }
+
+
+/* ABSOLUTE CHAT FIX */
+#floatingChat{
+    display:none !important;
+    position:fixed !important;
+    left:235px !important;
+    bottom:16px !important;
+    width:310px !important;
+    height:290px !important;
+    z-index:999999 !important;
+}
+
+#floatingChat.chatOpen{
+    display:flex !important;
+}
+
+#floatingChat.closed{
+    display:none !important;
+}
