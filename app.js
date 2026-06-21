@@ -1532,3 +1532,39 @@ window.addEventListener("load", () => {
 
     resizeGoldenChart();
 });
+
+// =======================
+// FIX FLOATING CHAT BUTTON
+// =======================
+
+window.toggleFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    document.body.classList.add("bottomCardsOpen");
+
+    chat.classList.remove("closed");
+    chat.classList.remove("minimized");
+    chat.style.display = "flex";
+
+    resizeGoldenChart();
+};
+
+window.openFloatingChat = function(){
+    window.toggleFloatingChat();
+};
+
+window.closeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.add("closed");
+    chat.style.display = "none";
+};
+
+window.minimizeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.toggle("minimized");
+};
