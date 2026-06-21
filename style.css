@@ -1,10 +1,10 @@
 /* =======================
-   GOLDEN TRADE PRO UI CLEAN FINAL
+   GOLDEN TRADE PRO UI - IMAGE 1 STYLE FINAL
 ======================= */
 
 html,
 body{
-    background:#050505 !important;
+    background:#030303 !important;
     color:#fff !important;
     overflow:hidden !important;
 }
@@ -12,23 +12,25 @@ body{
 /* MAIN */
 .dashboardMain{
     position:fixed !important;
-    left:240px !important;
+    left:220px !important;
     top:0 !important;
     right:0 !important;
     bottom:0 !important;
-    background:#050505 !important;
+    background:
+        radial-gradient(circle at top right, rgba(255,215,0,.07), transparent 28%),
+        linear-gradient(180deg,#030303,#070707) !important;
     overflow-y:auto !important;
-    padding-bottom:14px !important;
+    padding-bottom:12px !important;
 }
 
 /* SIDEBAR */
 .sidebar{
-    width:240px !important;
+    width:220px !important;
     height:100vh !important;
-    background:linear-gradient(180deg,#030303,#070707,#0b0b0b) !important;
-    border-right:1px solid rgba(255,215,0,.35) !important;
+    background:linear-gradient(180deg,#020202,#060606,#0b0b0b) !important;
+    border-right:1px solid rgba(255,215,0,.30) !important;
     box-shadow:8px 0 35px rgba(0,0,0,.75) !important;
-    padding:14px !important;
+    padding:12px !important;
     overflow-y:auto !important;
     overflow-x:hidden !important;
     z-index:300 !important;
@@ -36,86 +38,89 @@ body{
 
 .sidebar h2{
     color:#ffd700 !important;
-    font-size:25px !important;
+    font-size:22px !important;
     font-weight:900 !important;
-    margin-bottom:14px !important;
-    text-shadow:0 0 18px rgba(255,215,0,.25) !important;
+    margin-bottom:12px !important;
+    text-shadow:0 0 18px rgba(255,215,0,.35) !important;
 }
 
 .profileBox{
-    background:#080808 !important;
-    border:1px solid rgba(255,215,0,.25) !important;
-    border-radius:18px !important;
-    padding:12px 8px !important;
-    margin:8px 0 14px !important;
+    background:#070707 !important;
+    border:1px solid rgba(255,215,0,.22) !important;
+    border-radius:16px !important;
+    padding:10px 7px !important;
+    margin:6px 0 12px !important;
+    box-shadow:inset 0 0 18px rgba(255,215,0,.04) !important;
 }
 
 .profileImage{
-    width:82px !important;
-    height:82px !important;
+    width:76px !important;
+    height:76px !important;
     border:2px solid #ffd700 !important;
 }
 
 .profileName{
-    font-size:17px !important;
+    font-size:16px !important;
     color:#ffd700 !important;
     font-weight:900 !important;
 }
 
 .profileTitle{
     color:#fff !important;
-    font-size:12px !important;
+    font-size:11px !important;
     font-weight:bold !important;
 }
 
 .profileEmail{
     color:#ffd700 !important;
-    font-size:11px !important;
+    font-size:10px !important;
 }
 
 .section-title{
     color:#ffd700 !important;
-    font-size:13px !important;
+    font-size:12px !important;
     font-weight:900 !important;
-    margin:12px 0 7px !important;
+    margin:10px 0 6px !important;
 }
 
 .sidebar button{
-    background:linear-gradient(180deg,#111,#070707) !important;
+    background:linear-gradient(180deg,#121212,#070707) !important;
     color:#fff !important;
-    border:1px solid rgba(255,215,0,.35) !important;
-    border-radius:13px !important;
-    min-height:42px !important;
-    padding:10px 12px !important;
+    border:1px solid rgba(255,215,0,.28) !important;
+    border-radius:12px !important;
+    min-height:38px !important;
+    padding:8px 10px !important;
     margin:4px 0 !important;
-    font-size:14px !important;
+    font-size:13px !important;
     font-weight:900 !important;
     display:flex !important;
     align-items:center !important;
-    gap:9px !important;
+    gap:8px !important;
+    box-shadow:0 8px 20px rgba(0,0,0,.35) !important;
 }
 
 .sidebar button:hover{
     background:#ffd700 !important;
     color:#000 !important;
+    border-color:#ffd700 !important;
 }
 
 .subscriptionMini{
     background:#080808 !important;
     border:1px solid #ffd700 !important;
-    border-radius:16px !important;
-    padding:12px !important;
-    margin-top:12px !important;
+    border-radius:15px !important;
+    padding:10px !important;
+    margin-top:10px !important;
 }
 
 .subscriptionMini h4{
     color:#ffd700 !important;
-    font-size:16px !important;
+    font-size:15px !important;
 }
 
 .subscriptionMini p{
     color:#fff !important;
-    font-size:13px !important;
+    font-size:12px !important;
     font-weight:bold !important;
 }
 
@@ -129,21 +134,22 @@ body{
 .newTopbar{
     position:sticky !important;
     top:0 !important;
-    height:56px !important;
-    background:#080808 !important;
-    border-bottom:1px solid rgba(255,215,0,.25) !important;
+    height:54px !important;
+    background:rgba(5,5,5,.96) !important;
+    border-bottom:1px solid rgba(255,215,0,.28) !important;
     padding:0 18px !important;
     z-index:200 !important;
+    backdrop-filter:blur(14px) !important;
 }
 
 .welcomeText{
     color:#aaa !important;
-    font-size:12px !important;
+    font-size:11px !important;
 }
 
 .userHeader b{
     color:#fff !important;
-    font-size:17px !important;
+    font-size:16px !important;
 }
 
 #topUserBadge{
@@ -151,7 +157,7 @@ body{
     color:#000 !important;
     padding:4px 9px !important;
     border-radius:20px !important;
-    font-size:11px !important;
+    font-size:10px !important;
     font-weight:900 !important;
 }
 
@@ -161,7 +167,7 @@ body{
 
 .topCenter #activeAsset{
     color:#ffd700 !important;
-    font-size:17px !important;
+    font-size:16px !important;
     font-weight:900 !important;
 }
 
@@ -182,22 +188,23 @@ body{
 
 /* MARKET STRIP */
 .marketStrip{
-    margin:10px 14px 0 !important;
+    margin:8px 12px 0 !important;
     display:grid !important;
     grid-template-columns:repeat(6,1fr) !important;
     gap:8px !important;
 }
 
 .marketItem{
-    background:linear-gradient(180deg,#121212,#090909) !important;
+    background:linear-gradient(180deg,#121212,#080808) !important;
     border:1px solid rgba(255,215,0,.25) !important;
-    border-radius:14px !important;
+    border-radius:13px !important;
     padding:8px 10px !important;
-    min-height:58px !important;
+    min-height:56px !important;
 }
 
 .marketItem.active{
     border-color:#ffd700 !important;
+    box-shadow:0 0 20px rgba(255,215,0,.18) !important;
 }
 
 .marketItem b{
@@ -217,24 +224,25 @@ body{
 /* LAYOUT */
 .dashboardContent{
     display:grid !important;
-    grid-template-columns:1fr 290px !important;
+    grid-template-columns:1fr 280px !important;
     gap:10px !important;
-    margin:10px 14px 0 !important;
+    margin:8px 12px 0 !important;
 }
 
 /* CHART */
 .chartCard{
-    background:#070707 !important;
-    border:1px solid rgba(255,215,0,.28) !important;
+    background:#060606 !important;
+    border:1px solid rgba(255,215,0,.35) !important;
     border-radius:18px !important;
     overflow:hidden !important;
-    min-height:660px !important;
+    min-height:calc(100vh - 142px) !important;
+    box-shadow:0 15px 45px rgba(0,0,0,.55) !important;
 }
 
 .chartTitleBar{
     height:48px !important;
-    background:#0b0b0b !important;
-    border-bottom:1px solid rgba(255,215,0,.20) !important;
+    background:#090909 !important;
+    border-bottom:1px solid rgba(255,215,0,.22) !important;
     padding:0 14px !important;
 }
 
@@ -244,14 +252,14 @@ body{
 }
 
 .chartTitleBar span{
-    color:#aaa !important;
+    color:#ffd700 !important;
     font-size:12px !important;
 }
 
 .chartMiniActions button{
     background:#111 !important;
     color:#fff !important;
-    border:1px solid rgba(255,215,0,.30) !important;
+    border:1px solid rgba(255,215,0,.35) !important;
     border-radius:8px !important;
     padding:7px 10px !important;
 }
@@ -263,33 +271,29 @@ body{
 
 .chartCard #chart{
     position:relative !important;
-    left:auto !important;
-    top:auto !important;
-    right:auto !important;
-    bottom:auto !important;
     width:100% !important;
-    height:612px !important;
+    height:calc(100vh - 190px) !important;
     background:#050505 !important;
     overflow:hidden !important;
 }
 
 #oandaChart{
     position:absolute !important;
-    left:0 !important;
+    left:58px !important;
     top:0 !important;
     right:0 !important;
     bottom:0 !important;
-    width:100% !important;
-    height:100% !important;
+    width:auto !important;
+    height:auto !important;
     margin:0 !important;
     padding:0 !important;
 }
 
-/* VERTICAL TOOLS INSIDE CHART */
+/* PRO GOLD TOOLBAR */
 .chartToolbar{
     position:absolute !important;
-    top:58px !important;
-    left:8px !important;
+    top:60px !important;
+    left:9px !important;
     width:42px !important;
     max-width:42px !important;
     display:flex !important;
@@ -297,11 +301,12 @@ body{
     align-items:center !important;
     gap:5px !important;
     padding:7px 5px !important;
-    background:rgba(8,8,8,.94) !important;
-    border:1px solid rgba(255,215,0,.30) !important;
-    border-radius:15px !important;
+    background:rgba(4,4,4,.96) !important;
+    border:1px solid #ffd700 !important;
+    border-radius:16px !important;
     z-index:80 !important;
     transform:none !important;
+    box-shadow:0 0 22px rgba(255,215,0,.20) !important;
 }
 
 .toolbarSymbol{
@@ -321,7 +326,7 @@ body{
 .toolbarDivider{
     width:28px !important;
     height:1px !important;
-    background:#333 !important;
+    background:rgba(255,215,0,.35) !important;
 }
 
 .chartToolbar button{
@@ -331,39 +336,60 @@ body{
     padding:0 !important;
     font-size:10px !important;
     border-radius:8px !important;
+    background:#111 !important;
+    color:#ffd700 !important;
+    border:1px solid rgba(255,215,0,.35) !important;
 }
 
+.chartToolbar button:hover,
+.chartToolbar button.active{
+    background:#ffd700 !important;
+    color:#000 !important;
+}
+
+/* DRAWING TOOLS */
 .drawingToolbar{
     position:absolute !important;
     top:250px !important;
-    left:8px !important;
+    left:9px !important;
     bottom:auto !important;
     width:42px !important;
     height:auto !important;
     z-index:85 !important;
-    background:rgba(8,8,8,.94) !important;
-    border:1px solid rgba(255,215,0,.30) !important;
-    border-radius:15px !important;
+    background:rgba(4,4,4,.96) !important;
+    border:1px solid #ffd700 !important;
+    border-radius:16px !important;
     transform:none !important;
+    box-shadow:0 0 22px rgba(255,215,0,.20) !important;
 }
 
 .drawingToolbar button{
     width:30px !important;
     height:30px !important;
+    background:#111 !important;
+    color:#ffd700 !important;
+    border:1px solid rgba(255,215,0,.35) !important;
+}
+
+.drawingToolbar button:hover,
+.drawingToolbar button.active{
+    background:#ffd700 !important;
+    color:#000 !important;
 }
 
 /* RIGHT PANEL */
 .newSignalBox{
     position:sticky !important;
-    top:74px !important;
-    height:calc(100vh - 90px) !important;
+    top:70px !important;
+    height:calc(100vh - 84px) !important;
     min-height:auto !important;
     overflow-y:auto !important;
     background:#070707 !important;
-    border:1px solid rgba(255,215,0,.28) !important;
+    border:1px solid rgba(255,215,0,.35) !important;
     border-radius:18px !important;
     padding:13px !important;
     color:#fff !important;
+    box-shadow:0 15px 45px rgba(0,0,0,.55) !important;
 }
 
 .newSignalBox h3{
@@ -378,10 +404,17 @@ body{
     border-radius:14px !important;
 }
 
-.panelSignal span,
+.panelSignal span{
+    color:#ffd700 !important;
+    font-size:13px !important;
+    font-weight:900 !important;
+}
+
 .panelSignal p{
     color:#fff !important;
-    font-size:13px !important;
+    font-size:15px !important;
+    font-weight:900 !important;
+    line-height:1.55 !important;
 }
 
 .miniStats{
@@ -404,7 +437,7 @@ body{
 
 .miniStats b{
     color:#ffd700 !important;
-    font-size:13px !important;
+    font-size:14px !important;
 }
 
 #channelBox{
@@ -417,30 +450,32 @@ body{
 
 #channelBox b{
     color:#ffd700 !important;
-    font-size:15px !important;
+    font-size:16px !important;
 }
 
 #channelBox p,
 #channelBox small{
     color:#fff !important;
-    font-size:13px !important;
+    font-size:14px !important;
+    line-height:1.55 !important;
 }
 
 /* RIGHT PANEL TOGGLE */
 .panelToggleBtn{
     position:fixed !important;
-    right:292px !important;
+    right:282px !important;
     top:92px !important;
-    width:34px !important;
-    height:56px !important;
-    border-radius:14px 0 0 14px !important;
+    width:38px !important;
+    height:70px !important;
+    border-radius:18px 0 0 18px !important;
     border:1px solid #ffd700 !important;
     background:#ffd700 !important;
     color:#000 !important;
-    font-size:28px !important;
+    font-size:34px !important;
     font-weight:900 !important;
     cursor:pointer !important;
     z-index:9999 !important;
+    box-shadow:0 0 30px rgba(255,215,0,.35) !important;
 }
 
 body.rightPanelClosed .dashboardContent{
@@ -456,25 +491,21 @@ body.rightPanelClosed .panelToggleBtn{
     transform:rotate(180deg) !important;
 }
 
-body.rightPanelClosed .chartCard{
-    min-height:720px !important;
-}
-
-body.rightPanelClosed .chartCard #chart{
-    height:672px !important;
-}
-
-/* BOTTOM CARDS */
+/* BOTTOM CARDS - CLOSED BY DEFAULT STYLE */
 .bottomCards{
-    display:grid !important;
+    display:none !important;
     grid-template-columns:repeat(4,1fr) !important;
     gap:10px !important;
-    margin:8px 14px 0 !important;
+    margin:8px 12px 0 !important;
+}
+
+body.bottomCardsOpen .bottomCards{
+    display:grid !important;
 }
 
 .dashCard{
     background:linear-gradient(180deg,#111,#080808) !important;
-    border:1px solid rgba(255,215,0,.25) !important;
+    border:1px solid rgba(255,215,0,.35) !important;
     border-radius:16px !important;
     padding:12px !important;
     min-height:125px !important;
@@ -498,38 +529,24 @@ body.rightPanelClosed .chartCard #chart{
 /* BOTTOM TOGGLE */
 .bottomToggleBtn{
     position:fixed !important;
-    right:22px !important;
-    bottom:18px !important;
-    width:52px !important;
+    left:50% !important;
+    bottom:14px !important;
+    transform:translateX(-50%) !important;
+    width:110px !important;
     height:42px !important;
-    border-radius:14px !important;
+    border-radius:20px 20px 0 0 !important;
     border:1px solid #ffd700 !important;
-    background:#ffd700 !important;
+    background:linear-gradient(180deg,#ffd700,#b8860b) !important;
     color:#000 !important;
     font-size:24px !important;
     font-weight:900 !important;
     cursor:pointer !important;
     z-index:9999 !important;
+    box-shadow:0 0 30px rgba(255,215,0,.35) !important;
 }
 
-body.bottomCardsClosed .bottomCards{
-    display:none !important;
-}
-
-body.bottomCardsClosed .floatingChat{
-    display:none !important;
-}
-
-body.bottomCardsClosed .chartCard{
-    min-height:calc(100vh - 150px) !important;
-}
-
-body.bottomCardsClosed .chartCard #chart{
-    height:calc(100vh - 205px) !important;
-}
-
-body.bottomCardsClosed .bottomToggleBtn{
-    transform:rotate(180deg) !important;
+body.bottomCardsOpen .bottomToggleBtn{
+    transform:translateX(-50%) rotate(180deg) !important;
 }
 
 /* FLOATING CHAT */
@@ -539,9 +556,14 @@ body.bottomCardsClosed .bottomToggleBtn{
     border-radius:16px !important;
     width:275px !important;
     height:235px !important;
-    left:255px !important;
+    left:235px !important;
     bottom:16px !important;
     z-index:9998 !important;
+    display:none !important;
+}
+
+body.bottomCardsOpen .floatingChat{
+    display:flex !important;
 }
 
 .floatingChatHeader{
@@ -640,4 +662,36 @@ body.chatBody{
 .chatInputBox button{
     background:#ffd700 !important;
     color:#000 !important;
+}
+
+/* MOBILE */
+@media(max-width:900px){
+    .sidebar{
+        width:88px !important;
+    }
+
+    .dashboardMain{
+        left:88px !important;
+    }
+
+    .sidebar h2,
+    .profileName,
+    .profileTitle,
+    .profileEmail,
+    .section-title,
+    .subscriptionMini{
+        display:none !important;
+    }
+
+    .dashboardContent{
+        grid-template-columns:1fr !important;
+    }
+
+    .newSignalBox{
+        display:none !important;
+    }
+
+    .panelToggleBtn{
+        display:none !important;
+    }
 }
