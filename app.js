@@ -1491,17 +1491,44 @@ window.addEventListener("load",()=>{
 
 
 // =======================
-// RIGHT PANEL TOGGLE
+// PRO DASHBOARD TOGGLES FINAL
 // =======================
-window.toggleRightPanel = function(){
-    document.body.classList.toggle("rightPanelClosed");
 
+function resizeGoldenChart(){
     setTimeout(() => {
-        if(oandaChart){
+        const box = document.getElementById("oandaChart");
+
+        if(oandaChart && box){
             oandaChart.resize(
-                document.getElementById("oandaChart").clientWidth,
-                document.getElementById("oandaChart").clientHeight
+                box.clientWidth,
+                box.clientHeight
             );
         }
-    }, 300);
+
+        if(typeof renderSessionProfile === "function"){
+            renderSessionProfile();
+        }
+
+        if(typeof renderDrawings === "function"){
+            renderDrawings();
+        }
+
+    }, 350);
+}
+
+window.toggleRightPanel = function(){
+    document.body.classList.toggle("rightPanelClosed");
+    resizeGoldenChart();
 };
+
+window.toggleBottomCards = function(){
+    document.body.classList.toggle("bottomCardsOpen");
+    resizeGoldenChart();
+};
+
+window.addEventListener("load", () => {
+    document.body.classList.add("rightPanelClosed");
+    document.body.classList.remove("bottomCardsOpen");
+
+    resizeGoldenChart();
+});
