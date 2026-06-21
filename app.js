@@ -1720,3 +1720,36 @@ document.addEventListener("fullscreenchange", () => {
 setInterval(() => {
     forceChartResize();
 }, 3000);
+
+
+// =======================
+// FORCE CLIENTS CHAT OPEN
+// =======================
+window.openFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    document.body.classList.add("bottomCardsOpen");
+
+    chat.classList.remove("closed");
+    chat.classList.remove("minimized");
+    chat.classList.add("chatOpen");
+    chat.style.display = "flex";
+
+    if(typeof resizeGoldenChartFinal === "function"){
+        resizeGoldenChartFinal();
+    }
+};
+
+window.toggleFloatingChat = function(){
+    window.openFloatingChat();
+};
+
+window.closeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.remove("chatOpen");
+    chat.classList.add("closed");
+    chat.style.display = "none";
+};
