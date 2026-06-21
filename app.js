@@ -1203,3 +1203,133 @@ window.addEventListener("resize", () => {
         createChart();
     }, 500);
 });
+
+
+// =======================
+// DASHBOARD UI UPGRADE - PART 1
+// Floating Chat + User Cards
+// =======================
+
+function getLoggedUser(){
+    try{
+        return JSON.parse(localStorage.getItem("golden_user")) || null;
+    }catch(e){
+        return null;
+    }
+}
+
+function calculateDaysLeft(dateValue){
+    if(!dateValue || dateValue === "lifetime") return "Lifetime";
+
+    const now = new Date();
+    const end = new Date(dateValue);
+    const diff = end - now;
+
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
+function updateDashboardUserUI(){
+    const user = getLoggedUser();
+    if(!user) return;
+
+    const name = user.name || "Golden Trade Client";
+    const email = user.email || "";
+    const subscription = user.subscription || "trial";
+    const status = user.status || "active";
+
+    setText("topUserName", name);
+    setText("miniName", name);
+    setText("dashboardName", name);
+    setText("dashboardEmail", email);
+
+    const badge = document.getElementById("topUserBadge");
+    if(badge){
+        badge.innerHTML = subscription.toUpperCase();
+    }
+
+    setText("accountStatus", status.toUpperCase());
+    setText("accountMembership", subscription.toUpperCase());
+
+    let remaining = "-";
+
+    if(subscription === "trial"){
+        remaining = calculateDaysLeft(user.trialEnd) + " days";
+    }else if(subscription === "vip"){
+        remaining = calculateDaysLeft(user.vipUntil);
+        if(remaining !== "Lifetime") remaining += " days";
+    }else{
+        remaining = "Expired";
+    }
+
+    setText("accountDays", remaining);
+    setText("sideSubscription", `${subscription.toUpperCase()} - ${remaining}`);
+
+    const title = document.getElementById("dashboardTitle");
+    if(title){
+        if(subscription === "trial"){
+            title.innerHTML = `Trial Member - ${remaining}`;
+        }else if(subscription === "vip"){
+            title.innerHTML = "VIP Member";
+        }else{
+            title.innerHTML = "Expired Member";
+        }
+    }
+}
+
+// =======================
+// FLOATING CHAT
+// =======================
+window.toggleFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.remove("closed");
+    chat.classList.toggle("minimized");
+};
+
+window.minimizeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.toggle("minimized");
+};
+
+window.closeFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.add("closed");
+};
+
+window.sendFloatingChatMessage = function(){
+    const input = document.getElementById("floatingChatInput");
+    const body = document.getElementById("floatingChatBody");
+
+    if(!input || !body) return;
+
+    const message = input.value.trim();
+
+    if(message === "") return;
+
+    const div = document.createElement("div");
+    div.className = "floatingMsg userMsg";
+    div.innerHTML = `
+        <b>You</b>
+        <p>${message}</p>
+    `;
+
+    body.appendChild(div);
+    input.value = "";
+    body.scrollTop = body.scrollHeight;
+
+    setText("signal", "💬 Message added to floating chat");
+};
+
+// =======================
+// DASHBOARD UI AUTO UPDATE
+// =======================
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        updateDashboardUserUI();
+    }, 800);
+});
