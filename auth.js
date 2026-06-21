@@ -17,7 +17,7 @@ function getDaysRemaining(endDate){
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
-function updateLocalUserStatus(user){
+async function updateLocalUserStatus(user){
     if(!user) return user;
 
     const today = new Date();
@@ -29,6 +29,14 @@ function updateLocalUserStatus(user){
             user.subscription = "expired";
             user.status = "expired";
             user.role = "Expired Member";
+
+            if(window.updateUserStatusFirebase){
+                await window.updateUserStatusFirebase(user.email, {
+                    subscription: "expired",
+                    status: "expired",
+                    role: "Expired Member"
+                });
+            }
         }
     }
 
@@ -39,11 +47,25 @@ function updateLocalUserStatus(user){
             user.subscription = "expired";
             user.status = "expired";
             user.role = "Expired Member";
+
+            if(window.updateUserStatusFirebase){
+                await window.updateUserStatusFirebase(user.email, {
+                    subscription: "expired",
+                    status: "expired",
+                    role: "Expired Member"
+                });
+            }
         }
     }
 
     localStorage.setItem("golden_user", JSON.stringify(user));
     return user;
+}
+
+function goToUpgrade(){
+    setTimeout(() => {
+        window.location.replace("upgrade.html");
+    }, 300);
 }
 
 // =======================
@@ -142,7 +164,7 @@ async function loginUser() {
         return;
     }
 
-    user = updateLocalUserStatus(user);
+    user = await updateLocalUserStatus(user);
 
     localStorage.setItem("golden_user", JSON.stringify(user));
     localStorage.setItem("golden_logged", "true");
@@ -157,11 +179,11 @@ async function loginUser() {
 
     if(user.subscription === "expired" || user.status === "expired"){
         alert("Your trial or subscription has expired. Please renew your membership.");
-        window.location.href = "upgrade.html";
+        goToUpgrade();
         return;
     }
 
-    window.location.href = "dashboard.html";
+    window.location.replace("dashboard.html");
 }
 
 // =======================
@@ -175,7 +197,7 @@ function logout() {
 // =======================
 // LOAD DASHBOARD USER
 // =======================
-function loadDashboardUser(){
+async function loadDashboardUser(){
     const savedUser = localStorage.getItem("golden_user");
 
     if(!savedUser){
@@ -184,10 +206,18 @@ function loadDashboardUser(){
     }
 
     let user = JSON.parse(savedUser);
-    user = updateLocalUserStatus(user);
+
+    if(window.getUserFromFirebase && user.email){
+        const freshUser = await window.getUserFromFirebase(user.email);
+        if(freshUser){
+            user = freshUser;
+        }
+    }
+
+    user = await updateLocalUserStatus(user);
 
     if(user.subscription === "expired" || user.status === "expired"){
-        window.location.href = "upgrade.html";
+        goToUpgrade();
         return;
     }
 
