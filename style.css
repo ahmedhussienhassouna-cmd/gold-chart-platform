@@ -2762,3 +2762,97 @@ body.lightTheme .sidebar button{
         align-items:stretch !important;
     }
 }
+.goalClose{
+    position:absolute !important;
+    top:18px !important;
+    right:18px !important;
+    width:42px !important;
+    height:42px !important;
+    border-radius:50% !important;
+    border:1px solid #ffd700 !important;
+    background:#111 !important;
+    color:#ffd700 !important;
+    font-size:24px !important;
+    font-weight:900 !important;
+    cursor:pointer !important;
+    z-index:5 !important;
+}
+
+.goalBox{
+    position:relative !important;
+}
+
+.goalHeader{
+    justify-content:flex-start !important;
+    gap:14px !important;
+}
+
+.goalHeader span{
+    width:58px !important;
+    height:58px !important;
+    border-radius:18px !important;
+    background:linear-gradient(135deg,#ffd700,#b8860b) !important;
+    color:#000 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:28px !important;
+}
+
+.goalHeader p{
+    color:#aaa !important;
+    font-size:14px !important;
+    font-weight:700 !important;
+    margin:6px 0 0 !important;
+}
+
+.goalResult h3{
+    color:#ffd700 !important;
+    font-size:24px !important;
+    margin:0 0 18px !important;
+}
+
+.goalStats div{
+    background:#111 !important;
+    border:1px solid rgba(255,215,0,.28) !important;
+    border-radius:16px !important;
+    padding:14px !important;
+}
+
+.goalStats div span{
+    color:#aaa !important;
+    font-size:12px !important;
+    font-weight:800 !important;
+}
+
+.goalStats div b{
+    display:block !important;
+    color:#ffd700 !important;
+    font-size:20px !important;
+    margin-top:7px !important;
+}
+
+.goalPlanBox{
+    margin-top:20px !important;
+    background:#0d0d0d !important;
+    border:1px solid rgba(255,215,0,.28) !important;
+    border-radius:18px !important;
+    padding:18px !important;
+}
+
+.goalPlanBox h4{
+    color:#ffd700 !important;
+    margin:0 0 10px !important;
+    font-size:20px !important;
+}
+
+.goalPlanBox p{
+    color:#fff !important;
+    font-size:15px !important;
+    line-height:1.8 !important;
+    font-weight:700 !important;
+}
+
+.goalProgressCircle{
+    margin:0 auto 22px !important;
+}
