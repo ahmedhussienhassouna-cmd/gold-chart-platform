@@ -1333,3 +1333,159 @@ window.addEventListener("load", () => {
         updateDashboardUserUI();
     }, 800);
 });
+
+
+// =======================
+// DASHBOARD UI UPGRADE - PART 2
+// =======================
+
+// فتح الشات من زر Clients Chat
+window.openFloatingChat = function(){
+    const chat = document.getElementById("floatingChat");
+    if(!chat) return;
+
+    chat.classList.remove("closed");
+    chat.classList.remove("minimized");
+
+    const body = document.getElementById("floatingChatBody");
+
+    if(body && body.children.length === 0){
+
+        const msg = document.createElement("div");
+        msg.className = "floatingMsg adminMsg";
+
+        msg.innerHTML = `
+            <b>Admin</b>
+            <p>
+            Welcome to Golden Trade 👋<br>
+            How can we help you today?
+            </p>
+        `;
+
+        body.appendChild(msg);
+    }
+};
+
+// إرسال بالضغط Enter
+window.addEventListener("load",()=>{
+
+    const input = document.getElementById("floatingChatInput");
+
+    if(input){
+
+        input.addEventListener("keydown",(e)=>{
+
+            if(e.key === "Enter"){
+                sendFloatingChatMessage();
+            }
+
+        });
+
+    }
+
+});
+
+// تحديث الوقت أعلى الصفحة
+function updateServerClock(){
+
+    const box = document.getElementById("serverTime");
+
+    if(!box) return;
+
+    const now = new Date();
+
+    box.innerHTML =
+        now.toLocaleTimeString();
+}
+
+setInterval(updateServerClock,1000);
+
+
+// تحديث سعر الذهب في الماركت ستريب
+function updateMarketStrip(){
+
+    if(!lastPrice) return;
+
+    setText("marketGoldPrice",lastPrice);
+
+}
+
+setInterval(updateMarketStrip,1000);
+
+
+// تحديث Account Card
+function updateAccountCard(){
+
+    const user = getLoggedUser();
+
+    if(!user) return;
+
+    setText(
+        "accountType",
+        (user.subscription || "TRIAL").toUpperCase()
+    );
+
+    if(user.subscription === "trial"){
+        setText(
+            "accountExpire",
+            calculateDaysLeft(user.trialEnd) + " Days"
+        );
+    }
+
+    if(user.subscription === "vip"){
+        if(user.vipUntil === "lifetime"){
+            setText(
+                "accountExpire",
+                "Lifetime"
+            );
+        }else{
+            setText(
+                "accountExpire",
+                calculateDaysLeft(user.vipUntil) + " Days"
+            );
+        }
+    }
+
+}
+
+setInterval(updateAccountCard,3000);
+
+
+// إشعار عند استقبال رسالة جديدة
+window.showChatNotification = function(){
+
+    const badge = document.getElementById("chatNotification");
+
+    if(!badge) return;
+
+    badge.style.display = "flex";
+
+};
+
+
+// إزالة الإشعار
+window.clearChatNotification = function(){
+
+    const badge = document.getElementById("chatNotification");
+
+    if(!badge) return;
+
+    badge.style.display = "none";
+
+};
+
+
+// تحميل كل عناصر الداشبورد الجديدة
+window.addEventListener("load",()=>{
+
+    setTimeout(()=>{
+
+        updateDashboardUserUI();
+        updateServerClock();
+        updateMarketStrip();
+        updateAccountCard();
+
+    },1000);
+
+});
+
