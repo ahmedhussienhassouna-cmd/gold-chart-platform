@@ -786,3 +786,37 @@ body.bottomCardsOpen .bottomToggleBtn{
     font-size:15px !important;
     line-height:1.8 !important;
 }
+
+/* =======================
+   FIX DRAWERS OVERLAP
+======================= */
+
+/* لما يمين يفتح: الشارت يسيب مساحة لأرقام الذهب */
+body:not(.rightPanelClosed) #oandaChart{
+    right:8px !important;
+}
+
+/* لما يمين مقفول: الشارت ياخد العرض كله */
+body.rightPanelClosed #oandaChart{
+    right:0 !important;
+}
+
+/* فتح الدرج السفلي لا يخفي Golden Trade Panel */
+body.bottomCardsOpen .newSignalBox{
+    display:block !important;
+}
+
+/* لو اليمين كان مقفول يفضل مقفول حتى لو فتحت تحت */
+body.rightPanelClosed.bottomCardsOpen .newSignalBox{
+    display:none !important;
+}
+
+/* زرار الدرج السفلي لا يغطي يمين الشاشة */
+.bottomToggleBtn{
+    z-index:9990 !important;
+}
+
+/* زرار يمين يفضل فوق كل شيء */
+.panelToggleBtn{
+    z-index:99999 !important;
+}
