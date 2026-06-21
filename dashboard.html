@@ -291,37 +291,42 @@ if(savedUser){
 
 </div>
 
-<!-- FLOATING CHAT -->
+<!-- FLOATING CHAT PRO -->
 <div class="floatingChat" id="floatingChat">
-    <div class="floatingChatHeader">
-        <div>
-            <b>💬 Clients Chat</b>
-            <span>Online</span>
+
+    <div class="chatProHeader">
+        <div class="chatProLeft">
+            <div class="chatProAvatar">GT</div>
+            <div>
+                <b>Golden Trade Chat</b>
+                <span>● Online Support</span>
+            </div>
         </div>
 
-        <div>
+        <div class="chatProActions">
             <button onclick="minimizeFloatingChat()">−</button>
             <button onclick="window.location.href='chat.html'">⛶</button>
             <button onclick="closeFloatingChat()">×</button>
         </div>
     </div>
 
-    <div class="floatingChatBody" id="floatingChatBody">
-        <div class="floatingMsg adminMsg">
-            <b>Golden Trade</b>
-            <p>Welcome to Golden Trade Chat 👋</p>
-        </div>
-
-        <div class="floatingMsg userMsg">
-            <b>You</b>
-            <p>Open full chat for live messages.</p>
+    <div class="chatProBody" id="floatingChatBody">
+        <div class="chatBubbleRow adminBubble">
+            <div class="chatMiniAvatar">GT</div>
+            <div class="chatBubbleText">
+                <b>Golden Trade</b>
+                <p>Welcome to Golden Trade 👋<br>How can we help you today?</p>
+                <small>Now</small>
+            </div>
         </div>
     </div>
 
-    <div class="floatingChatInput">
-        <input id="floatingChatInput" placeholder="Type message...">
-        <button onclick="sendFloatingChatMessage()">➤</button>
+    <div class="chatProInput">
+        <button class="emojiBtn">＋</button>
+        <input id="floatingChatInput" placeholder="Write a message...">
+        <button class="sendBtn" onclick="sendFloatingChatMessage()">➤</button>
     </div>
+
 </div>
 
 <!-- ACADEMY -->
