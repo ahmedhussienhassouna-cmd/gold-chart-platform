@@ -1187,7 +1187,7 @@ window.toggleVWAP = function(){
 };
 
 // =======================
-// CHANNEL
+// CHANNEL REALTIME
 // =======================
 function formatChannelText(text){
     return String(text || "")
@@ -1196,8 +1196,10 @@ function formatChannelText(text){
         .replace(/>/g, "&gt;")
         .replace(/\n/g, "<br>");
 }
+
 let lastChannelMessage = "";
 let channelFirstLoad = true;
+let unsubscribeChannel = null;
 
 function playChannelAlert(){
     try{
@@ -1207,9 +1209,9 @@ function playChannelAlert(){
         const gainNode = audioCtx.createGain();
 
         oscillator.type = "square";
-        oscillator.frequency.setValueAtTime(900, audioCtx.currentTime);
+        oscillator.frequency.setValueAtTime(950, audioCtx.currentTime);
 
-        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
 
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
@@ -1219,56 +1221,59 @@ function playChannelAlert(){
         setTimeout(() => {
             oscillator.stop();
             audioCtx.close();
-        }, 700);
+        }, 900);
 
     }catch(error){
         console.log("Sound blocked until user interacts with page");
     }
 }
-async function loadChannel(){
+
+function renderChannel(data){
     const box = document.getElementById("channelBox");
     if(!box) return;
 
-    if(typeof window.loadChannelMessage !== "function"){
-        box.innerHTML = "Channel not loaded";
+    if(!data){
+        box.innerHTML = "No channel message";
         return;
     }
 
-    try{
-        const data = await window.loadChannelMessage();
+    const title = formatChannelText(data.title || "Golden Trade");
+    const message = formatChannelText(data.message || "");
+    const createdAt = formatChannelText(data.createdAt || "");
+    const rawMessage = String(data.message || "");
 
-        if(!data){
-            box.innerHTML = "No channel message";
-            return;
-        }
-
-        const title = formatChannelText(data.title || "Golden Trade");
-        const message = formatChannelText(data.message || "");
-        const rawMessage = String(data.message || "");
-
-if(!channelFirstLoad && rawMessage !== lastChannelMessage){
-    playChannelAlert();
-    setText("signal", "🔔 New Channel Alert");
-}
-
-lastChannelMessage = rawMessage;
-channelFirstLoad = false;
-        const createdAt = formatChannelText(data.createdAt || "");
-
-        box.innerHTML = `
-            <div style="background:#1b1b1b;border:1px solid #333;border-radius:8px;padding:10px;margin-top:8px;">
-                <b style="color:#ffd700;">${title}</b>
-                <p style="margin-top:8px;line-height:1.7;white-space:normal;">${message}</p>
-                <small style="color:#888;">${createdAt}</small>
-            </div>
-        `;
-
-    }catch(error){
-        console.error(error);
-        box.innerHTML = "Channel error";
+    if(!channelFirstLoad && rawMessage !== lastChannelMessage){
+        playChannelAlert();
+        setText("signal", "🔔 New Signal Received");
     }
+
+    lastChannelMessage = rawMessage;
+    channelFirstLoad = false;
+
+    box.innerHTML = `
+        <div style="background:#1b1b1b;border:1px solid #333;border-radius:8px;padding:10px;margin-top:8px;">
+            <b style="color:#ffd700;">${title}</b>
+            <p style="margin-top:8px;line-height:1.7;white-space:normal;">${message}</p>
+            <small style="color:#888;">${createdAt}</small>
+        </div>
+    `;
 }
 
+function startChannelListener(){
+    const box = document.getElementById("channelBox");
+    if(!box) return;
+
+    if(typeof window.listenChannelMessage !== "function"){
+        box.innerHTML = "Channel realtime not loaded";
+        return;
+    }
+
+    if(unsubscribeChannel) return;
+
+    unsubscribeChannel = window.listenChannelMessage((data) => {
+        renderChannel(data);
+    });
+}
 // =======================
 // SESSION
 // =======================
@@ -1311,18 +1316,16 @@ window.addEventListener("load", () => {
     setActiveTimeframeButton();
     setActiveToolButton();
 
-    setTimeout(() => {
-        loadChannel();
-    }, 1000);
+setTimeout(() => {
+    startChannelListener();
+}, 1000);
 });
 
 setInterval(() => {
     updateSession();
 }, 1000);
 
-setInterval(() => {
-    loadChannel();
-}, 30000);
+
 
 setInterval(() => {
     if(currentAsset === "GOLD"){
