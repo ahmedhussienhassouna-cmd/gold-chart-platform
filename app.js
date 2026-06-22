@@ -1196,7 +1196,35 @@ function formatChannelText(text){
         .replace(/>/g, "&gt;")
         .replace(/\n/g, "<br>");
 }
+let lastChannelMessage = "";
+let channelFirstLoad = true;
 
+function playChannelAlert(){
+    try{
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(900, audioCtx.currentTime);
+
+        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+
+        setTimeout(() => {
+            oscillator.stop();
+            audioCtx.close();
+        }, 700);
+
+    }catch(error){
+        console.log("Sound blocked until user interacts with page");
+    }
+}
 async function loadChannel(){
     const box = document.getElementById("channelBox");
     if(!box) return;
@@ -1216,6 +1244,15 @@ async function loadChannel(){
 
         const title = formatChannelText(data.title || "Golden Trade");
         const message = formatChannelText(data.message || "");
+        const rawMessage = String(data.message || "");
+
+if(!channelFirstLoad && rawMessage !== lastChannelMessage){
+    playChannelAlert();
+    setText("signal", "🔔 New Channel Alert");
+}
+
+lastChannelMessage = rawMessage;
+channelFirstLoad = false;
         const createdAt = formatChannelText(data.createdAt || "");
 
         box.innerHTML = `
