@@ -2856,3 +2856,43 @@ body.lightTheme .sidebar button{
 .goalProgressCircle{
     margin:0 auto 22px !important;
 }
+
+.chatNotification{
+    position:fixed;
+    top:20px;
+    right:20px;
+    min-width:260px;
+    max-width:340px;
+    background:linear-gradient(135deg,#ffd700,#b8860b);
+    color:#000;
+    padding:14px 18px;
+    border-radius:14px;
+    font-weight:800;
+    z-index:999999;
+    box-shadow:0 10px 35px rgba(255,215,0,.35);
+    transform:translateY(-130px);
+    opacity:0;
+    transition:.35s ease;
+    cursor:pointer;
+}
+
+.chatNotification strong{
+    display:block;
+    font-size:14px;
+    margin-bottom:5px;
+}
+
+.chatNotification small{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    opacity:.85;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.chatNotification.show{
+    transform:translateY(0);
+    opacity:1;
+}
