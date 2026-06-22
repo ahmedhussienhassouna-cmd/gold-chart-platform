@@ -20,29 +20,53 @@
 
         <div class="authHeroText">
             <h2>Welcome Back</h2>
-            <p>Login to access live gold chart, strategy tools, group chat, signals and premium analysis.</p>
+            <p>
+                Login to access live gold chart, strategy tools,
+                group chat, signals and premium analysis.
+            </p>
         </div>
     </div>
 
     <div class="authBox">
+
         <div class="authLogo">GT</div>
 
         <h1>Golden Trade</h1>
         <h2>Login to Dashboard</h2>
 
-        <input type="email" id="loginEmail" placeholder="Email Address">
-        <input type="password" id="loginPassword" placeholder="Password">
+        <input
+            type="email"
+            id="loginEmail"
+            placeholder="Email Address"
+            autocomplete="email"
+        >
 
-        <button onclick="loginUser()">Login</button>
+        <input
+            type="password"
+            id="loginPassword"
+            placeholder="Password"
+            autocomplete="current-password"
+        >
+
+        <button type="button" onclick="loginUser()">
+            Login
+        </button>
 
         <p>Don't have an account?</p>
-        <a href="register.html">Create Account</a>
+
+        <a href="register.html">
+            Create Account
+        </a>
+
     </div>
 
 </div>
 
+<!-- Firebase -->
 <script type="module" src="firebase.js"></script>
-<script src="auth.js" defer></script>
+
+<!-- Auth -->
+<script src="auth.js"></script>
 
 </body>
 </html>
