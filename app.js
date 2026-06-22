@@ -1189,6 +1189,14 @@ window.toggleVWAP = function(){
 // =======================
 // CHANNEL
 // =======================
+function formatChannelText(text){
+    return String(text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>");
+}
+
 async function loadChannel(){
     const box = document.getElementById("channelBox");
     if(!box) return;
@@ -1206,11 +1214,15 @@ async function loadChannel(){
             return;
         }
 
+        const title = formatChannelText(data.title || "Golden Trade");
+        const message = formatChannelText(data.message || "");
+        const createdAt = formatChannelText(data.createdAt || "");
+
         box.innerHTML = `
             <div style="background:#1b1b1b;border:1px solid #333;border-radius:8px;padding:10px;margin-top:8px;">
-                <b style="color:#ffd700;">${data.title || "Golden Trade"}</b>
-                <p style="margin-top:8px;line-height:1.5;">${data.message || ""}</p>
-                <small style="color:#888;">${data.createdAt || ""}</small>
+                <b style="color:#ffd700;">${title}</b>
+                <p style="margin-top:8px;line-height:1.7;white-space:normal;">${message}</p>
+                <small style="color:#888;">${createdAt}</small>
             </div>
         `;
 
