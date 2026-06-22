@@ -33,20 +33,27 @@ function cleanEmail(email){
     return String(email || "").trim().toLowerCase();
 }
 
+window.cleanEmail = cleanEmail;
+
 // =======================
 // GET USER BY EMAIL
 // =======================
 window.getUserFromFirebase = async function(email){
     try{
-        const originalEmail = String(email || "").trim();
         const userEmail = cleanEmail(email);
 
-        if(!userEmail) return null;
+        if(!userEmail){
+            console.log("❌ Empty email");
+            return null;
+        }
 
-        let docRef = doc(db, "users", userEmail);
-        let docSnap = await getDoc(docRef);
+        // 1) Search by document ID
+        const docRef = doc(db, "users", userEmail);
+        const docSnap = await getDoc(docRef);
 
         if(docSnap.exists()){
+            console.log("✅ User found by document ID:", userEmail);
+
             return {
                 id: docSnap.id,
                 ...docSnap.data(),
@@ -54,9 +61,10 @@ window.getUserFromFirebase = async function(email){
             };
         }
 
+        // 2) Search by email field cleaned
         const q = query(
             collection(db, "users"),
-            where("email", "==", originalEmail),
+            where("email", "==", userEmail),
             limit(1)
         );
 
@@ -66,10 +74,14 @@ window.getUserFromFirebase = async function(email){
             const oldDoc = snap.docs[0];
             const data = oldDoc.data();
 
+            // migrate old user to correct document ID
             await setDoc(doc(db, "users", userEmail), {
                 ...data,
-                email: userEmail
+                email: userEmail,
+                migratedAt: serverTimestamp()
             }, { merge: true });
+
+            console.log("✅ User found by email field and migrated:", userEmail);
 
             return {
                 id: userEmail,
@@ -78,10 +90,12 @@ window.getUserFromFirebase = async function(email){
             };
         }
 
+        console.log("❌ User not found:", userEmail);
         return null;
 
     }catch(error){
         console.error("Get user error:", error);
+        alert("Firebase Error: " + error.message);
         return null;
     }
 };
@@ -95,8 +109,10 @@ window.saveUserToFirebase = async function(user){
 
         const userEmail = cleanEmail(user.email);
 
+        if(!userEmail) return false;
+
         await setDoc(doc(db, "users", userEmail), {
-            name: user.name || "Client",
+            name: String(user.name || "Client").trim(),
             email: userEmail,
             password: String(user.password || "").trim(),
             photo: user.photo || "",
@@ -117,10 +133,12 @@ window.saveUserToFirebase = async function(user){
             lastLogin: serverTimestamp()
         }, { merge: true });
 
+        console.log("✅ User saved:", userEmail);
         return true;
 
     }catch(error){
         console.error("Save user error:", error);
+        alert("Save User Error: " + error.message);
         return false;
     }
 };
