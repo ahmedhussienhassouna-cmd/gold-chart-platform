@@ -295,7 +295,29 @@ window.loadChannelMessage = async function(){
         return null;
     }
 };
-
+// =======================
+// CHANNEL REALTIME LISTEN
+// =======================
+window.listenChannelMessage = function(callback){
+    try{
+        return onSnapshot(
+            doc(db, "channel", "welcome"),
+            (docSnap) => {
+                if(docSnap.exists()){
+                    callback(docSnap.data());
+                }else{
+                    callback(null);
+                }
+            },
+            (error) => {
+                console.error("Channel listen error:", error);
+            }
+        );
+    }catch(error){
+        console.error("Start channel listener error:", error);
+        return null;
+    }
+};
 // =======================
 // CHANNEL SAVE
 // =======================
