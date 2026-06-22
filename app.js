@@ -126,7 +126,7 @@ function clearStrategyLines(){
     strategyLines = [];
 }
 
-function drawStrategyZone(high, low){
+function drawStrategyZone(high, low, tp1, tp2, tp3, tp4){
     if(!candleSeries) return;
 
     clearStrategyLines();
@@ -151,7 +151,60 @@ function drawStrategyZone(high, low){
 
     strategyLines.push(highLine, lowLine);
 
-    setText("signal", `✅ Strategy Zone Drawn<br>High: ${high}<br>Low: ${low}`);
+    if(tp1){
+        strategyLines.push(
+            candleSeries.createPriceLine({
+                price: tp1,
+                color: "#00ff88",
+                lineWidth: 1,
+                axisLabelVisible: true,
+                title: "TP1"
+            })
+        );
+    }
+
+    if(tp2){
+        strategyLines.push(
+            candleSeries.createPriceLine({
+                price: tp2,
+                color: "#00ff88",
+                lineWidth: 1,
+                axisLabelVisible: true,
+                title: "TP2"
+            })
+        );
+    }
+
+    if(tp3){
+        strategyLines.push(
+            candleSeries.createPriceLine({
+                price: tp3,
+                color: "#00ff88",
+                lineWidth: 1,
+                axisLabelVisible: true,
+                title: "TP3"
+            })
+        );
+    }
+
+    if(tp4){
+        strategyLines.push(
+            candleSeries.createPriceLine({
+                price: tp4,
+                color: "#00ff88",
+                lineWidth: 1,
+                axisLabelVisible: true,
+                title: "TP4"
+            })
+        );
+    }
+
+    setText(
+        "signal",
+        `✅ Strategy Zone Drawn<br>
+        High: ${high}<br>
+        Low: ${low}`
+    );
 }
 
 // =======================
@@ -1080,13 +1133,26 @@ window.toggleStrategy = async function(){
 
         const high = Number(levels.high);
         const low = Number(levels.low);
+
+        const tp1 = Number(levels.tp1);
+        const tp2 = Number(levels.tp2);
+        const tp3 = Number(levels.tp3);
+        const tp4 = Number(levels.tp4);
+
         const message = levels.message || "Golden Trade Strategy";
 
-        drawStrategyZone(high, low);
+        drawStrategyZone(high, low, tp1, tp2, tp3, tp4);
 
         setText(
             "signal",
-            `✅ ${message}<br>High: ${high}<br>Low: ${low}<br>Live Price: ${lastPrice || "Loading..."}`
+            `✅ ${message}<br>
+            High: ${high}<br>
+            Low: ${low}<br>
+            ${tp1 ? "TP1: " + tp1 + "<br>" : ""}
+            ${tp2 ? "TP2: " + tp2 + "<br>" : ""}
+            ${tp3 ? "TP3: " + tp3 + "<br>" : ""}
+            ${tp4 ? "TP4: " + tp4 + "<br>" : ""}
+            Live Price: ${lastPrice || "Loading..."}`
         );
 
     }catch(error){
