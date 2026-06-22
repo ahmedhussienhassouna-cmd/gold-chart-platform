@@ -4,11 +4,13 @@ import {
     getFirestore,
     doc,
     getDoc,
+    getDocs,
     setDoc,
-    updateDoc,
     collection,
     addDoc,
     query,
+    where,
+    limit,
     orderBy,
     onSnapshot,
     serverTimestamp,
@@ -36,21 +38,47 @@ function cleanEmail(email){
 // =======================
 window.getUserFromFirebase = async function(email){
     try{
+        const originalEmail = String(email || "").trim();
         const userEmail = cleanEmail(email);
+
         if(!userEmail) return null;
 
-        const docRef = doc(db, "users", userEmail);
-        const docSnap = await getDoc(docRef);
+        let docRef = doc(db, "users", userEmail);
+        let docSnap = await getDoc(docRef);
 
-        if(!docSnap.exists()){
-            return null;
+        if(docSnap.exists()){
+            return {
+                id: docSnap.id,
+                ...docSnap.data(),
+                email: userEmail
+            };
         }
 
-        return {
-            id: docSnap.id,
-            ...docSnap.data(),
-            email: userEmail
-        };
+        const q = query(
+            collection(db, "users"),
+            where("email", "==", originalEmail),
+            limit(1)
+        );
+
+        const snap = await getDocs(q);
+
+        if(!snap.empty){
+            const oldDoc = snap.docs[0];
+            const data = oldDoc.data();
+
+            await setDoc(doc(db, "users", userEmail), {
+                ...data,
+                email: userEmail
+            }, { merge: true });
+
+            return {
+                id: userEmail,
+                ...data,
+                email: userEmail
+            };
+        }
+
+        return null;
 
     }catch(error){
         console.error("Get user error:", error);
