@@ -1,6 +1,30 @@
 // =======================
 // HELPERS
 // =======================
+function normalizeEmail(email){
+    return String(email || "").trim().toLowerCase();
+}
+
+function waitForFirebase(){
+    return new Promise((resolve) => {
+        let count = 0;
+
+        const timer = setInterval(() => {
+            if(window.getUserFromFirebase && window.saveUserToFirebase){
+                clearInterval(timer);
+                resolve(true);
+            }
+
+            count++;
+
+            if(count > 50){
+                clearInterval(timer);
+                resolve(false);
+            }
+        }, 100);
+    });
+}
+
 function addDays(date, days){
     const result = new Date(date);
     result.setDate(result.getDate() + days);
@@ -71,7 +95,7 @@ function goToUpgrade(){
 // =======================
 // REGISTER
 // =======================
-function registerUser() {
+async function registerUser() {
 
     const nameInput = document.getElementById("registerName");
     const emailInput = document.getElementById("registerEmail");
@@ -79,7 +103,7 @@ function registerUser() {
     const photoInput = document.getElementById("registerPhoto");
 
     const name = nameInput.value.trim();
-    const email = emailInput.value.trim();
+    const email = normalizeEmail(emailInput.value);
     const password = passwordInput.value.trim();
 
     if (name === "" || email === "" || password === "") {
@@ -89,6 +113,21 @@ function registerUser() {
 
     if (!photoInput || !photoInput.files[0]) {
         alert("Please select profile photo");
+        return;
+    }
+
+    const firebaseReady = await waitForFirebase();
+
+    if(!firebaseReady){
+        alert("Connection error. Please refresh page and try again.");
+        return;
+    }
+
+    const existingUser = await window.getUserFromFirebase(email);
+
+    if(existingUser){
+        alert("This email already has an account. Please login.");
+        window.location.href = "login.html";
         return;
     }
 
@@ -115,15 +154,14 @@ function registerUser() {
             trialEnd: trialEnd.toISOString(),
 
             vipUntil: "",
-            createdAt: now.toISOString()
+            createdAt: now.toISOString(),
+            lastLogin: ""
         };
+
+        await window.saveUserToFirebase(user);
 
         localStorage.setItem("golden_user", JSON.stringify(user));
         localStorage.removeItem("golden_logged");
-
-        if (window.saveUserToFirebase) {
-            await window.saveUserToFirebase(user);
-        }
 
         alert("Account Created Successfully - 14 Days Free Trial Started");
         window.location.href = "login.html";
@@ -140,7 +178,7 @@ async function loginUser() {
     const emailInput = document.getElementById("loginEmail");
     const passwordInput = document.getElementById("loginPassword");
 
-    const email = emailInput.value.trim();
+    const email = normalizeEmail(emailInput.value);
     const password = passwordInput.value.trim();
 
     if (email === "" || password === "") {
@@ -148,18 +186,21 @@ async function loginUser() {
         return;
     }
 
-    let user = null;
+    const firebaseReady = await waitForFirebase();
 
-    if(window.getUserFromFirebase){
-        user = await window.getUserFromFirebase(email);
+    if(!firebaseReady){
+        alert("Connection error. Please refresh page and try again.");
+        return;
     }
+
+    let user = await window.getUserFromFirebase(email);
 
     if(!user){
         alert("No account found. Please create account first.");
         return;
     }
 
-    if(user.password !== password){
+    if(String(user.password || "").trim() !== password){
         alert("Wrong Email or Password");
         return;
     }
