@@ -2896,3 +2896,18 @@ body.lightTheme .sidebar button{
     transform:translateY(0);
     opacity:1;
 }
+
+.enableSoundBtn{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    z-index:999999;
+    background:#ffd700;
+    color:#000;
+    border:none;
+    border-radius:14px;
+    padding:12px 16px;
+    font-weight:900;
+    cursor:pointer;
+    box-shadow:0 8px 25px rgba(255,215,0,.35);
+}
