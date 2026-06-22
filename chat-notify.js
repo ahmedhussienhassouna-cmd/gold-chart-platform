@@ -1,6 +1,21 @@
 let lastChatMessageId = null;
 let firstNotifyLoad = true;
 let notifyUnsubscribe = null;
+let soundEnabled = localStorage.getItem("sound_enabled") === "true";
+
+window.enableNotificationSound = function(){
+    localStorage.setItem("sound_enabled", "true");
+    soundEnabled = true;
+
+    const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+
+    const btn = document.getElementById("enableSoundBtn");
+    if(btn) btn.style.display = "none";
+
+    alert("Notification sound enabled");
+};
 
 function getNotifyCurrentUser(){
     try{
@@ -10,12 +25,10 @@ function getNotifyCurrentUser(){
     }
 }
 
-// 🔔 صوت الرنة
 function playNotifySound(){
-    const audio = new Audio(
-        "https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"
-    );
+    if(!soundEnabled) return;
 
+    const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
     audio.volume = 0.8;
     audio.play().catch(() => {});
 }
@@ -33,8 +46,6 @@ function showChatNotification(message){
     `;
 
     box.classList.add("show");
-
-    // تشغيل الرنة
     playNotifySound();
 
     setTimeout(() => {
@@ -56,7 +67,6 @@ function startChatNotifications(){
             const currentUser = getNotifyCurrentUser();
 
             notifyUnsubscribe = window.listenChatMessagesFirebase((messages) => {
-
                 if(!messages || messages.length === 0) return;
 
                 const lastMessage = messages[messages.length - 1];
@@ -68,7 +78,6 @@ function startChatNotifications(){
                 }
 
                 if(lastMessage.id !== lastChatMessageId){
-
                     lastChatMessageId = lastMessage.id || null;
 
                     if(lastMessage.email !== currentUser.email){
@@ -84,10 +93,14 @@ function startChatNotifications(){
             clearInterval(timer);
             console.log("Chat notifications not loaded");
         }
-
     }, 300);
 }
 
 window.addEventListener("load", () => {
+    const btn = document.getElementById("enableSoundBtn");
+    if(btn && soundEnabled){
+        btn.style.display = "none";
+    }
+
     startChatNotifications();
 });
