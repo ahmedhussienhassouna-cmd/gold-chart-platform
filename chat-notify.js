@@ -10,6 +10,16 @@ function getNotifyCurrentUser(){
     }
 }
 
+// 🔔 صوت الرنة
+function playNotifySound(){
+    const audio = new Audio(
+        "https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"
+    );
+
+    audio.volume = 0.8;
+    audio.play().catch(() => {});
+}
+
 function showChatNotification(message){
     const box = document.getElementById("chatNotification");
     if(!box) return;
@@ -19,10 +29,13 @@ function showChatNotification(message){
 
     box.innerHTML = `
         <strong>🔔 رسالة جديدة من ${sender}</strong>
-        <small>${text.substring(0, 45)}</small>
+        <small>${text.substring(0,45)}</small>
     `;
 
     box.classList.add("show");
+
+    // تشغيل الرنة
+    playNotifySound();
 
     setTimeout(() => {
         box.classList.remove("show");
@@ -43,6 +56,7 @@ function startChatNotifications(){
             const currentUser = getNotifyCurrentUser();
 
             notifyUnsubscribe = window.listenChatMessagesFirebase((messages) => {
+
                 if(!messages || messages.length === 0) return;
 
                 const lastMessage = messages[messages.length - 1];
@@ -54,6 +68,7 @@ function startChatNotifications(){
                 }
 
                 if(lastMessage.id !== lastChatMessageId){
+
                     lastChatMessageId = lastMessage.id || null;
 
                     if(lastMessage.email !== currentUser.email){
@@ -69,6 +84,7 @@ function startChatNotifications(){
             clearInterval(timer);
             console.log("Chat notifications not loaded");
         }
+
     }, 300);
 }
 
