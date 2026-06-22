@@ -54,6 +54,16 @@ function calcVipDate(plan){
     return "";
 }
 
+function getNumberValue(id){
+    const el = document.getElementById(id);
+    if(!el) return null;
+
+    const value = el.value.trim();
+    if(value === "") return null;
+
+    return Number(value);
+}
+
 // =======================
 // SAVE LEVELS
 // =======================
@@ -61,24 +71,39 @@ window.saveLevels = async function(){
 
     try{
         await setDoc(doc(db, "strategy", "GOLD"), {
-            high: Number(document.getElementById("goldHigh").value),
-            low: Number(document.getElementById("goldLow").value),
-            message: "Gold Liquidity"
-        });
+            high: getNumberValue("goldHigh"),
+            low: getNumberValue("goldLow"),
+            tp1: getNumberValue("goldTp1"),
+            tp2: getNumberValue("goldTp2"),
+            tp3: getNumberValue("goldTp3"),
+            tp4: getNumberValue("goldTp4"),
+            message: "Gold Liquidity",
+            updatedAt: serverTimestamp()
+        }, { merge:true });
 
         await setDoc(doc(db, "strategy", "EURUSD"), {
-            high: Number(document.getElementById("eurHigh").value),
-            low: Number(document.getElementById("eurLow").value),
-            message: "EURUSD Liquidity"
-        });
+            high: getNumberValue("eurHigh"),
+            low: getNumberValue("eurLow"),
+            tp1: getNumberValue("eurTp1"),
+            tp2: getNumberValue("eurTp2"),
+            tp3: getNumberValue("eurTp3"),
+            tp4: getNumberValue("eurTp4"),
+            message: "EURUSD Liquidity",
+            updatedAt: serverTimestamp()
+        }, { merge:true });
 
         await setDoc(doc(db, "strategy", "BTCUSD"), {
-            high: Number(document.getElementById("btcHigh").value),
-            low: Number(document.getElementById("btcLow").value),
-            message: "Bitcoin Liquidity"
-        });
+            high: getNumberValue("btcHigh"),
+            low: getNumberValue("btcLow"),
+            tp1: getNumberValue("btcTp1"),
+            tp2: getNumberValue("btcTp2"),
+            tp3: getNumberValue("btcTp3"),
+            tp4: getNumberValue("btcTp4"),
+            message: "Bitcoin Liquidity",
+            updatedAt: serverTimestamp()
+        }, { merge:true });
 
-        alert("✅ Levels Saved Successfully");
+        alert("✅ Levels & Targets Saved Successfully");
 
     }catch(error){
         console.error(error);
