@@ -25,12 +25,23 @@ function getNotifyCurrentUser(){
     }
 }
 
+let notificationAudio = null;
+
 function playNotifySound(){
     if(!soundEnabled) return;
 
-    const audio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
-    audio.volume = 0.8;
-    audio.play().catch(() => {});
+    if(!notificationAudio){
+        notificationAudio = new Audio(
+            "https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"
+        );
+        notificationAudio.volume = 1;
+    }
+
+    notificationAudio.currentTime = 0;
+
+    notificationAudio.play().catch(error => {
+        console.log("Sound blocked:", error);
+    });
 }
 
 function showChatNotification(message){
