@@ -20,7 +20,10 @@
 
         <div class="authHeroText">
             <h2>Create Your Account</h2>
-            <p>Join Golden Trade platform and access live charts, strategy tools, premium chat and client dashboard.</p>
+            <p>
+                Join Golden Trade platform and access live charts,
+                strategy tools, premium chat and client dashboard.
+            </p>
         </div>
     </div>
 
@@ -30,14 +33,39 @@
         <h1>Golden Trade</h1>
         <h2>Create Account</h2>
 
-        <input type="text" id="registerName" placeholder="Full Name">
-        <input type="email" id="registerEmail" placeholder="Email Address">
-        <input type="password" id="registerPassword" placeholder="Password">
+        <input
+            type="text"
+            id="registerName"
+            placeholder="Full Name"
+            autocomplete="name"
+        >
+
+        <input
+            type="email"
+            id="registerEmail"
+            placeholder="Email Address"
+            autocomplete="email"
+        >
+
+        <input
+            type="password"
+            id="registerPassword"
+            placeholder="Password"
+            autocomplete="new-password"
+        >
 
         <label class="authFileLabel">Profile Photo</label>
-        <input type="file" id="registerPhoto" accept="image/*" class="authFileInput">
 
-        <button onclick="registerUser()">Create Account</button>
+        <input
+            type="file"
+            id="registerPhoto"
+            accept="image/*"
+            class="authFileInput"
+        >
+
+        <button type="button" onclick="registerUser()">
+            Create Account
+        </button>
 
         <p>Already have an account?</p>
         <a href="login.html">Login</a>
@@ -46,7 +74,7 @@
 </div>
 
 <script type="module" src="firebase.js"></script>
-<script src="auth.js" defer></script>
+<script src="auth.js"></script>
 
 </body>
 </html>
