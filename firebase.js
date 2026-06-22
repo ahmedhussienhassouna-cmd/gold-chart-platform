@@ -27,14 +27,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+function cleanEmail(email){
+    return String(email || "").trim().toLowerCase();
+}
+
 // =======================
 // GET USER BY EMAIL
 // =======================
 window.getUserFromFirebase = async function(email){
     try{
-        if(!email) return null;
+        const userEmail = cleanEmail(email);
+        if(!userEmail) return null;
 
-        const docRef = doc(db, "users", email);
+        const docRef = doc(db, "users", userEmail);
         const docSnap = await getDoc(docRef);
 
         if(!docSnap.exists()){
@@ -43,7 +48,8 @@ window.getUserFromFirebase = async function(email){
 
         return {
             id: docSnap.id,
-            ...docSnap.data()
+            ...docSnap.data(),
+            email: userEmail
         };
 
     }catch(error){
@@ -59,10 +65,12 @@ window.saveUserToFirebase = async function(user){
     try{
         if(!user || !user.email) return false;
 
-        await setDoc(doc(db, "users", user.email), {
+        const userEmail = cleanEmail(user.email);
+
+        await setDoc(doc(db, "users", userEmail), {
             name: user.name || "Client",
-            email: user.email,
-            password: user.password || "",
+            email: userEmail,
+            password: String(user.password || "").trim(),
             photo: user.photo || "",
 
             role: user.role || "Trial Member",
@@ -76,7 +84,8 @@ window.saveUserToFirebase = async function(user){
             vipPlan: user.vipPlan || "",
             vipUntil: user.vipUntil || "",
 
-            createdAt: serverTimestamp(),
+            createdAt: user.createdAt || new Date().toISOString(),
+            createdAtServer: serverTimestamp(),
             lastLogin: serverTimestamp()
         }, { merge: true });
 
@@ -93,9 +102,10 @@ window.saveUserToFirebase = async function(user){
 // =======================
 window.updateUserLoginFirebase = async function(email){
     try{
-        if(!email) return false;
+        const userEmail = cleanEmail(email);
+        if(!userEmail) return false;
 
-        await setDoc(doc(db, "users", email), {
+        await setDoc(doc(db, "users", userEmail), {
             lastLogin: serverTimestamp(),
             visits: increment(1)
         }, { merge: true });
@@ -113,14 +123,15 @@ window.updateUserLoginFirebase = async function(email){
 // =======================
 window.updateUserStatusFirebase = async function(email, data){
     try{
-        if(!email) return false;
+        const userEmail = cleanEmail(email);
+        if(!userEmail) return false;
 
-        await updateDoc(doc(db, "users", email), {
+        await setDoc(doc(db, "users", userEmail), {
             subscription: data.subscription || "expired",
             role: data.role || "Expired Member",
             status: data.status || "expired",
             updatedAt: serverTimestamp()
-        });
+        }, { merge: true });
 
         return true;
 
@@ -162,7 +173,7 @@ window.trackSiteVisitFirebase = async function(){
 window.listenUsersFirebase = function(callback){
     const q = query(
         collection(db, "users"),
-        orderBy("createdAt", "desc")
+        orderBy("createdAtServer", "desc")
     );
 
     return onSnapshot(q, (snapshot) => {
@@ -184,16 +195,17 @@ window.listenUsersFirebase = function(callback){
 // =======================
 window.updateUserSubscriptionFirebase = async function(email, data){
     try{
-        if(!email) return false;
+        const userEmail = cleanEmail(email);
+        if(!userEmail) return false;
 
-        await updateDoc(doc(db, "users", email), {
+        await setDoc(doc(db, "users", userEmail), {
             subscription: data.subscription || "trial",
             role: data.role || "Trial Member",
             status: data.status || "active",
             vipPlan: data.vipPlan || "",
             vipUntil: data.vipUntil || "",
             updatedAt: serverTimestamp()
-        });
+        }, { merge: true });
 
         return true;
 
@@ -266,7 +278,7 @@ window.sendChatMessageFirebase = async function(message, user){
         await addDoc(collection(db, "chatMessages"), {
             message: message,
             name: user.name || "Client",
-            email: user.email || "",
+            email: cleanEmail(user.email),
             role: user.role || "Golden Trade Client",
             createdAt: serverTimestamp()
         });
