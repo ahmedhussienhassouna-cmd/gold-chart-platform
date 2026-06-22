@@ -10,14 +10,18 @@ function waitForFirebase(){
         let count = 0;
 
         const timer = setInterval(() => {
-            if(window.getUserFromFirebase && window.saveUserToFirebase){
+            if(
+                window.getUserFromFirebase &&
+                window.saveUserToFirebase &&
+                window.updateUserLoginFirebase
+            ){
                 clearInterval(timer);
                 resolve(true);
             }
 
             count++;
 
-            if(count > 50){
+            if(count > 80){
                 clearInterval(timer);
                 resolve(false);
             }
@@ -36,20 +40,24 @@ function getDaysRemaining(endDate){
 
     const now = new Date();
     const end = new Date(endDate);
-    const diff = end - now;
 
+    if(isNaN(end.getTime())) return 0;
+
+    const diff = end - now;
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
 async function updateLocalUserStatus(user){
     if(!user) return user;
 
+    user.email = normalizeEmail(user.email);
+
     const today = new Date();
 
     if(user.subscription === "trial"){
         const trialEnd = new Date(user.trialEnd);
 
-        if(today > trialEnd){
+        if(!user.trialEnd || isNaN(trialEnd.getTime()) || today > trialEnd){
             user.subscription = "expired";
             user.status = "expired";
             user.role = "Expired Member";
@@ -67,7 +75,7 @@ async function updateLocalUserStatus(user){
     if(user.subscription === "vip" && user.vipUntil && user.vipUntil !== "lifetime"){
         const vipEnd = new Date(user.vipUntil);
 
-        if(today > vipEnd){
+        if(isNaN(vipEnd.getTime()) || today > vipEnd){
             user.subscription = "expired";
             user.status = "expired";
             user.role = "Expired Member";
@@ -87,31 +95,34 @@ async function updateLocalUserStatus(user){
 }
 
 function goToUpgrade(){
-    setTimeout(() => {
-        window.location.replace("upgrade.html");
-    }, 300);
+    window.location.replace("upgrade.html");
 }
 
 // =======================
 // REGISTER
 // =======================
-async function registerUser() {
+async function registerUser(){
 
     const nameInput = document.getElementById("registerName");
     const emailInput = document.getElementById("registerEmail");
     const passwordInput = document.getElementById("registerPassword");
     const photoInput = document.getElementById("registerPhoto");
 
-    const name = nameInput.value.trim();
-    const email = normalizeEmail(emailInput.value);
-    const password = passwordInput.value.trim();
+    if(!nameInput || !emailInput || !passwordInput){
+        alert("Register form error");
+        return;
+    }
 
-    if (name === "" || email === "" || password === "") {
+    const name = String(nameInput.value || "").trim();
+    const email = normalizeEmail(emailInput.value);
+    const password = String(passwordInput.value || "").trim();
+
+    if(name === "" || email === "" || password === ""){
         alert("Please fill all fields");
         return;
     }
 
-    if (!photoInput || !photoInput.files[0]) {
+    if(!photoInput || !photoInput.files || !photoInput.files[0]){
         alert("Please select profile photo");
         return;
     }
@@ -137,7 +148,7 @@ async function registerUser() {
     const file = photoInput.files[0];
     const reader = new FileReader();
 
-    reader.onload = async function () {
+    reader.onload = async function(){
 
         const user = {
             name: name,
@@ -153,12 +164,18 @@ async function registerUser() {
             trialStart: now.toISOString(),
             trialEnd: trialEnd.toISOString(),
 
+            vipPlan: "",
             vipUntil: "",
             createdAt: now.toISOString(),
             lastLogin: ""
         };
 
-        await window.saveUserToFirebase(user);
+        const saved = await window.saveUserToFirebase(user);
+
+        if(!saved){
+            alert("Account save failed. Please try again.");
+            return;
+        }
 
         localStorage.setItem("golden_user", JSON.stringify(user));
         localStorage.removeItem("golden_logged");
@@ -167,21 +184,30 @@ async function registerUser() {
         window.location.href = "login.html";
     };
 
+    reader.onerror = function(){
+        alert("Photo upload error. Please choose another photo.");
+    };
+
     reader.readAsDataURL(file);
 }
 
 // =======================
-// LOGIN FROM FIREBASE
+// LOGIN
 // =======================
-async function loginUser() {
+async function loginUser(){
 
     const emailInput = document.getElementById("loginEmail");
     const passwordInput = document.getElementById("loginPassword");
 
-    const email = normalizeEmail(emailInput.value);
-    const password = passwordInput.value.trim();
+    if(!emailInput || !passwordInput){
+        alert("Login form error");
+        return;
+    }
 
-    if (email === "" || password === "") {
+    const email = normalizeEmail(emailInput.value);
+    const password = String(passwordInput.value || "").trim();
+
+    if(email === "" || password === ""){
         alert("Please fill all fields");
         return;
     }
@@ -200,6 +226,8 @@ async function loginUser() {
         return;
     }
 
+    user.email = normalizeEmail(user.email || email);
+
     if(String(user.password || "").trim() !== password){
         alert("Wrong Email or Password");
         return;
@@ -210,11 +238,11 @@ async function loginUser() {
     localStorage.setItem("golden_user", JSON.stringify(user));
     localStorage.setItem("golden_logged", "true");
 
-    if (window.updateUserLoginFirebase) {
-        await window.updateUserLoginFirebase(email);
+    if(window.updateUserLoginFirebase){
+        await window.updateUserLoginFirebase(user.email);
     }
 
-    if (window.trackSiteVisitFirebase) {
+    if(window.trackSiteVisitFirebase){
         await window.trackSiteVisitFirebase();
     }
 
@@ -230,7 +258,7 @@ async function loginUser() {
 // =======================
 // LOGOUT
 // =======================
-function logout() {
+function logout(){
     localStorage.removeItem("golden_logged");
     window.location.href = "login.html";
 }
@@ -239,19 +267,36 @@ function logout() {
 // LOAD DASHBOARD USER
 // =======================
 async function loadDashboardUser(){
+
+    const logged = localStorage.getItem("golden_logged");
     const savedUser = localStorage.getItem("golden_user");
 
-    if(!savedUser){
+    if(logged !== "true" || !savedUser){
         window.location.href = "login.html";
         return;
     }
 
-    let user = JSON.parse(savedUser);
+    let user;
 
-    if(window.getUserFromFirebase && user.email){
+    try{
+        user = JSON.parse(savedUser);
+    }catch(error){
+        localStorage.removeItem("golden_user");
+        localStorage.removeItem("golden_logged");
+        window.location.href = "login.html";
+        return;
+    }
+
+    user.email = normalizeEmail(user.email);
+
+    const firebaseReady = await waitForFirebase();
+
+    if(firebaseReady && window.getUserFromFirebase && user.email){
         const freshUser = await window.getUserFromFirebase(user.email);
+
         if(freshUser){
             user = freshUser;
+            user.email = normalizeEmail(user.email);
         }
     }
 
@@ -296,13 +341,10 @@ async function loadDashboardUser(){
 // =======================
 // PROTECT DASHBOARD
 // =======================
-if (
-    window.location.pathname.includes("dashboard.html") ||
-    window.location.pathname.endsWith("/")
-) {
+if(window.location.pathname.includes("dashboard.html")){
     const logged = localStorage.getItem("golden_logged");
 
-    if (logged !== "true") {
+    if(logged !== "true"){
         window.location.href = "login.html";
     }
 }
