@@ -48,7 +48,7 @@
             autocomplete="current-password"
         >
 
-        <button type="button" onclick="loginUser()">
+        <button type="button" id="loginBtn">
             Login
         </button>
 
@@ -62,11 +62,28 @@
 
 </div>
 
-<!-- Firebase -->
-<script type="module" src="firebase.js"></script>
+<!-- Auth + Firebase -->
+<script type="module">
+    import "./firebase.js";
 
-<!-- Auth -->
-<script src="auth.js"></script>
+    const script = document.createElement("script");
+    script.src = "auth.js?v=2";
+    script.onload = function(){
+        const loginBtn = document.getElementById("loginBtn");
+
+        if(loginBtn){
+            loginBtn.addEventListener("click", function(){
+                if(typeof loginUser === "function"){
+                    loginUser();
+                }else{
+                    alert("Login system is loading. Please try again in 2 seconds.");
+                }
+            });
+        }
+    };
+
+    document.body.appendChild(script);
+</script>
 
 </body>
 </html>
