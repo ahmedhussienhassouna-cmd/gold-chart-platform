@@ -1279,7 +1279,7 @@ async function startChannelListener(){
                 </div>
             `;
 
-            setTimeout(startChannelListener, 10000);
+            setTimeout(startChannelListener, 1000);
             return;
         }
 
@@ -1338,7 +1338,7 @@ async function startChannelListener(){
         `;
     }
 
-    setTimeout(startChannelListener, 10000);
+    setTimeout(startChannelListener, 1000);
 }
 
 
