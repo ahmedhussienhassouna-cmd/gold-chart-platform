@@ -5,6 +5,31 @@ function normalizeEmail(email){
     return String(email || "").trim().toLowerCase();
 }
 
+function isSafariBrowser(){
+    const ua = navigator.userAgent;
+    return /^((?!chrome|android).)*safari/i.test(ua);
+}
+
+function isFirebaseOfflineError(error){
+    const msg = String(error?.message || error || "").toLowerCase();
+
+    return (
+        msg.includes("client is offline") ||
+        msg.includes("could not reach cloud firestore backend") ||
+        msg.includes("code=unavailable") ||
+        msg.includes("failed to get document") ||
+        msg.includes("offline")
+    );
+}
+
+function showConnectionMessage(){
+    if(isSafariBrowser()){
+        alert("Safari عنده مشكلة اتصال مؤقتة مع Firebase. سيتم المحاولة مرة أخرى تلقائيًا. لو استمرت المشكلة افتح المنصة من Google Chrome.");
+    }else{
+        alert("Connection error. Please refresh page and try again.");
+    }
+}
+
 function waitForFirebase(){
     return new Promise((resolve) => {
         let count = 0;
@@ -21,12 +46,29 @@ function waitForFirebase(){
 
             count++;
 
-            if(count > 80){
+            if(count > 100){
                 clearInterval(timer);
                 resolve(false);
             }
         }, 100);
     });
+}
+
+async function firebaseRetry(operation, tries = 3){
+    let lastError = null;
+
+    for(let i = 0; i < tries; i++){
+        try{
+            return await operation();
+        }catch(error){
+            lastError = error;
+            console.error("Firebase retry error:", error);
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    }
+
+    throw lastError;
 }
 
 function addDays(date, days){
@@ -62,12 +104,16 @@ async function updateLocalUserStatus(user){
             user.status = "expired";
             user.role = "Expired Member";
 
-            if(window.updateUserStatusFirebase){
-                await window.updateUserStatusFirebase(user.email, {
-                    subscription: "expired",
-                    status: "expired",
-                    role: "Expired Member"
-                });
+            try{
+                if(window.updateUserStatusFirebase){
+                    await window.updateUserStatusFirebase(user.email, {
+                        subscription: "expired",
+                        status: "expired",
+                        role: "Expired Member"
+                    });
+                }
+            }catch(error){
+                console.error("Status update skipped:", error);
             }
         }
     }
@@ -80,12 +126,16 @@ async function updateLocalUserStatus(user){
             user.status = "expired";
             user.role = "Expired Member";
 
-            if(window.updateUserStatusFirebase){
-                await window.updateUserStatusFirebase(user.email, {
-                    subscription: "expired",
-                    status: "expired",
-                    role: "Expired Member"
-                });
+            try{
+                if(window.updateUserStatusFirebase){
+                    await window.updateUserStatusFirebase(user.email, {
+                        subscription: "expired",
+                        status: "expired",
+                        role: "Expired Member"
+                    });
+                }
+            }catch(error){
+                console.error("VIP status update skipped:", error);
             }
         }
     }
@@ -130,11 +180,19 @@ async function registerUser(){
     const firebaseReady = await waitForFirebase();
 
     if(!firebaseReady){
-        alert("Connection error. Please refresh page and try again.");
+        showConnectionMessage();
         return;
     }
 
-    const existingUser = await window.getUserFromFirebase(email);
+    let existingUser = null;
+
+    try{
+        existingUser = await firebaseRetry(() => window.getUserFromFirebase(email), 3);
+    }catch(error){
+        console.error("Register get user error:", error);
+        showConnectionMessage();
+        return;
+    }
 
     if(existingUser){
         alert("This email already has an account. Please login.");
@@ -170,7 +228,15 @@ async function registerUser(){
             lastLogin: ""
         };
 
-        const saved = await window.saveUserToFirebase(user);
+        let saved = false;
+
+        try{
+            saved = await firebaseRetry(() => window.saveUserToFirebase(user), 3);
+        }catch(error){
+            console.error("Register save error:", error);
+            showConnectionMessage();
+            return;
+        }
 
         if(!saved){
             alert("Account save failed. Please try again.");
@@ -215,11 +281,40 @@ async function loginUser(){
     const firebaseReady = await waitForFirebase();
 
     if(!firebaseReady){
-        alert("Connection error. Please refresh page and try again.");
+        showConnectionMessage();
         return;
     }
 
-    let user = await window.getUserFromFirebase(email);
+    let user = null;
+
+    try{
+        user = await firebaseRetry(() => window.getUserFromFirebase(email), 3);
+    }catch(error){
+        console.error("Login get user error:", error);
+
+        const savedUser = localStorage.getItem("golden_user");
+
+        if(savedUser){
+            try{
+                const localUser = JSON.parse(savedUser);
+
+                if(
+                    normalizeEmail(localUser.email) === email &&
+                    String(localUser.password || "").trim() === password
+                ){
+                    user = localUser;
+                    console.log("✅ Login from local cache because Firebase is unavailable");
+                }
+            }catch(e){
+                console.error("Local login parse error:", e);
+            }
+        }
+
+        if(!user){
+            showConnectionMessage();
+            return;
+        }
+    }
 
     if(!user){
         alert("No account found. Please create account first.");
@@ -238,12 +333,20 @@ async function loginUser(){
     localStorage.setItem("golden_user", JSON.stringify(user));
     localStorage.setItem("golden_logged", "true");
 
-    if(window.updateUserLoginFirebase){
-        await window.updateUserLoginFirebase(user.email);
+    try{
+        if(window.updateUserLoginFirebase){
+            await window.updateUserLoginFirebase(user.email);
+        }
+    }catch(error){
+        console.error("Login update skipped:", error);
     }
 
-    if(window.trackSiteVisitFirebase){
-        await window.trackSiteVisitFirebase();
+    try{
+        if(window.trackSiteVisitFirebase){
+            await window.trackSiteVisitFirebase();
+        }
+    }catch(error){
+        console.error("Visit tracking skipped:", error);
     }
 
     if(user.subscription === "expired" || user.status === "expired"){
@@ -292,11 +395,15 @@ async function loadDashboardUser(){
     const firebaseReady = await waitForFirebase();
 
     if(firebaseReady && window.getUserFromFirebase && user.email){
-        const freshUser = await window.getUserFromFirebase(user.email);
+        try{
+            const freshUser = await firebaseRetry(() => window.getUserFromFirebase(user.email), 2);
 
-        if(freshUser){
-            user = freshUser;
-            user.email = normalizeEmail(user.email);
+            if(freshUser){
+                user = freshUser;
+                user.email = normalizeEmail(user.email);
+            }
+        }catch(error){
+            console.error("Dashboard fresh user skipped:", error);
         }
     }
 
