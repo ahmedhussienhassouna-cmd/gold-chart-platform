@@ -2911,3 +2911,53 @@ body.lightTheme .sidebar button{
     cursor:pointer;
     box-shadow:0 8px 25px rgba(255,215,0,.35);
 }
+
+.telegramChannelBox{
+    max-height:400px;
+    overflow-y:auto;
+    margin-top:10px;
+}
+
+.telegramPost{
+    background:#161616;
+    border:1px solid #2d2d2d;
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:10px;
+}
+
+.telegramPostHeader{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+}
+
+.telegramText{
+    color:#fff;
+    line-height:1.7;
+    white-space:pre-wrap;
+}
+
+.telegramImage{
+    width:100%;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+
+.telegramOpenBtn{
+    width:100%;
+    margin-top:10px;
+    background:#ffd700;
+    color:#000;
+    border:none;
+    padding:10px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.telegramEmpty{
+    color:#999;
+    text-align:center;
+    padding:20px;
+}
