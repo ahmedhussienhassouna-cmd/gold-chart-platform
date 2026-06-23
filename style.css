@@ -2913,51 +2913,72 @@ body.lightTheme .sidebar button{
 }
 
 .telegramChannelBox{
-    max-height:400px;
-    overflow-y:auto;
-    margin-top:10px;
+    max-height:360px !important;
+    overflow-y:auto !important;
+    margin-top:10px !important;
+    background:#080808 !important;
+    border:1px solid rgba(255,215,0,.35) !important;
+    border-radius:14px !important;
+    padding:8px !important;
 }
 
 .telegramPost{
-    background:#161616;
-    border:1px solid #2d2d2d;
-    border-radius:10px;
-    padding:12px;
-    margin-bottom:10px;
+    background:#111 !important;
+    border:1px solid rgba(255,215,0,.25) !important;
+    border-radius:12px !important;
+    padding:8px !important;
+    margin-bottom:9px !important;
 }
 
 .telegramPostHeader{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:8px;
+    display:flex !important;
+    flex-direction:column !important;
+    gap:3px !important;
+    margin-bottom:7px !important;
+}
+
+.telegramPostHeader b{
+    color:#ffd700 !important;
+    font-size:12px !important;
+}
+
+.telegramPostHeader small{
+    color:#888 !important;
+    font-size:10px !important;
 }
 
 .telegramText{
-    color:#fff;
-    line-height:1.7;
-    white-space:pre-wrap;
+    color:#fff !important;
+    font-size:13px !important;
+    line-height:1.6 !important;
+    white-space:pre-wrap !important;
+    word-break:break-word !important;
 }
 
 .telegramImage{
-    width:100%;
-    border-radius:10px;
-    margin-bottom:10px;
+    width:100% !important;
+    max-height:180px !important;
+    object-fit:contain !important;
+    border-radius:10px !important;
+    margin:7px 0 !important;
+    background:#000 !important;
 }
 
 .telegramOpenBtn{
-    width:100%;
-    margin-top:10px;
-    background:#ffd700;
-    color:#000;
-    border:none;
-    padding:10px;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:bold;
+    width:100% !important;
+    margin-top:10px !important;
+    background:linear-gradient(135deg,#ffd700,#b8860b) !important;
+    color:#000 !important;
+    border:none !important;
+    padding:10px !important;
+    border-radius:12px !important;
+    cursor:pointer !important;
+    font-weight:900 !important;
 }
 
 .telegramEmpty{
-    color:#999;
-    text-align:center;
-    padding:20px;
+    color:#999 !important;
+    text-align:center !important;
+    padding:14px !important;
+    font-size:12px !important;
 }
