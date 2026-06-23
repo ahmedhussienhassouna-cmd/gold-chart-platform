@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
-    getFirestore,
+    initializeFirestore,
     doc,
     getDoc,
     getDocs,
@@ -27,7 +27,11 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+
+const db = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+    useFetchStreams: false
+});
 
 function cleanEmail(email){
     return String(email || "").trim().toLowerCase();
@@ -47,7 +51,6 @@ window.getUserFromFirebase = async function(email){
             return null;
         }
 
-        // 1) Search by document ID
         const docRef = doc(db, "users", userEmail);
         const docSnap = await getDoc(docRef);
 
@@ -61,7 +64,6 @@ window.getUserFromFirebase = async function(email){
             };
         }
 
-        // 2) Search by email field cleaned
         const q = query(
             collection(db, "users"),
             where("email", "==", userEmail),
@@ -74,7 +76,6 @@ window.getUserFromFirebase = async function(email){
             const oldDoc = snap.docs[0];
             const data = oldDoc.data();
 
-            // migrate old user to correct document ID
             await setDoc(doc(db, "users", userEmail), {
                 ...data,
                 email: userEmail,
@@ -233,6 +234,8 @@ window.listenUsersFirebase = function(callback){
         });
 
         callback(users);
+    }, (error) => {
+        console.error("Listen users error:", error);
     });
 };
 
@@ -268,10 +271,13 @@ window.loadStrategyLevels = async function(asset){
     try{
         const docRef = doc(db, "strategy", asset);
         const docSnap = await getDoc(docRef);
+
         if(!docSnap.exists()) return null;
+
         return docSnap.data();
+
     }catch(error){
-        console.error(error);
+        console.error("Load strategy error:", error);
         return null;
     }
 };
@@ -291,10 +297,11 @@ window.loadChannelMessage = async function(){
         return docSnap.data();
 
     }catch(error){
-        console.error(error);
+        console.error("Load channel message error:", error);
         return null;
     }
 };
+
 // =======================
 // CHANNEL REALTIME LISTEN
 // =======================
@@ -318,6 +325,7 @@ window.listenChannelMessage = function(callback){
         return null;
     }
 };
+
 // =======================
 // CHANNEL SAVE
 // =======================
@@ -333,7 +341,7 @@ window.saveChannelMessage = async function(title, message){
         return true;
 
     }catch(error){
-        console.error(error);
+        console.error("Save channel message error:", error);
         return false;
     }
 };
@@ -379,5 +387,7 @@ window.listenChatMessagesFirebase = function(callback){
         });
 
         callback(messages);
+    }, (error) => {
+        console.error("Listen chat messages error:", error);
     });
 };
