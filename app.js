@@ -1228,51 +1228,119 @@ function playChannelAlert(){
     }
 }
 
-function renderChannel(data){
-    const box = document.getElementById("channelBox");
-    if(!box) return;
+function renderTelegramPost(post){
+    const div = document.createElement("div");
+    div.className = "telegramPost";
 
-    if(!data){
-        box.innerHTML = "No channel message";
-        return;
+    const text = formatChannelText(post.text || "");
+    const time = post.date ? new Date(post.date).toLocaleString() : "";
+
+    let imageHtml = "";
+
+    if(post.imageFileId){
+        imageHtml = `
+            <img 
+                src="/api/telegram/photo/${post.imageFileId}" 
+                class="telegramImage"
+                alt="Telegram image">
+        `;
     }
 
-    const title = formatChannelText(data.title || "Golden Trade");
-    const message = formatChannelText(data.message || "");
-    const createdAt = formatChannelText(data.createdAt || "");
-    const rawMessage = String(data.message || "");
+    div.innerHTML = `
+        <div class="telegramPostHeader">
+            <b>${post.channelTitle || "Golden Trade"}</b>
+            <small>${time}</small>
+        </div>
 
-    if(!channelFirstLoad && rawMessage !== lastChannelMessage){
-        playChannelAlert();
-        setText("signal", "🔔 New Signal Received");
-    }
+        ${imageHtml}
 
-    lastChannelMessage = rawMessage;
-    channelFirstLoad = false;
-
-    box.innerHTML = `
-        <div style="background:#1b1b1b;border:1px solid #333;border-radius:8px;padding:10px;margin-top:8px;">
-            <b style="color:#ffd700;">${title}</b>
-            <p style="margin-top:8px;line-height:1.7;white-space:normal;">${message}</p>
-            <small style="color:#888;">${createdAt}</small>
+        <div class="telegramText">
+            ${text || ""}
         </div>
     `;
+
+    return div;
 }
 
-function startChannelListener(){
-    const box = document.getElementById("channelBox");
+async function startChannelListener(){
+
+    const box = document.getElementById("telegramChannelBox");
     if(!box) return;
 
-    if(typeof window.listenChannelMessage !== "function"){
-        box.innerHTML = "Channel realtime not loaded";
-        return;
+    try{
+
+        const response = await fetch("/api/telegram/posts");
+        const data = await response.json();
+
+        if(!data.posts || data.posts.length === 0){
+            box.innerHTML = `
+                <div class="telegramEmpty">
+                    No Telegram posts yet
+                </div>
+            `;
+
+            setTimeout(startChannelListener, 10000);
+            return;
+        }
+
+        box.innerHTML = "";
+
+        data.posts.forEach(post => {
+
+            const div = document.createElement("div");
+            div.className = "telegramPost";
+
+            let imageHtml = "";
+
+            if(post.imageFileId){
+                imageHtml = `
+                    <img
+                        src="/api/telegram/photo/${post.imageFileId}"
+                        class="telegramImage"
+                    >
+                `;
+            }
+
+            const time = post.date
+                ? new Date(post.date).toLocaleString()
+                : "";
+
+            div.innerHTML = `
+                <div class="telegramPostHeader">
+                    <b style="color:#ffd700;">
+                        ${post.channelTitle || "Golden Trade"}
+                    </b>
+
+                    <small style="color:#888;">
+                        ${time}
+                    </small>
+                </div>
+
+                ${imageHtml}
+
+                <div class="telegramText">
+                    ${formatChannelText(post.text || "")}
+                </div>
+            `;
+
+            box.appendChild(div);
+
+        });
+
+    }catch(error){
+
+        console.error(error);
+
+        box.innerHTML = `
+            <div class="telegramEmpty">
+                Telegram loading error
+            </div>
+        `;
     }
 
-    if(unsubscribeChannel) return;
+    setTimeout(startChannelListener, 10000);
+}
 
-    unsubscribeChannel = window.listenChannelMessage((data) => {
-        renderChannel(data);
-    });
 }
 // =======================
 // SESSION
