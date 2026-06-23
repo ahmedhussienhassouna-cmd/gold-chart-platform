@@ -15,7 +15,7 @@ const allowedGranularity = ["M1", "M5", "M15", "H1", "H4", "D"];
 // TELEGRAM SETTINGS
 // =======================
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHANNEL_ID = String(process.env.TELEGRAM_CHANNEL_ID || "").trim();
+const TELEGRAM_CHANNEL_ID = String(process.env.TELEGRAM_CHANNEL_ID || "-1003389248786").trim();
 
 let telegramChannelPosts = [];
 let telegramDebugUpdates = [];
