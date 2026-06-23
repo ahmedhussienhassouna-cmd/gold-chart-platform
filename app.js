@@ -1341,7 +1341,7 @@ async function startChannelListener(){
     setTimeout(startChannelListener, 10000);
 }
 
-}
+
 // =======================
 // SESSION
 // =======================
