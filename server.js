@@ -15,9 +15,10 @@ const allowedGranularity = ["M1", "M5", "M15", "H1", "H4", "D"];
 // TELEGRAM SETTINGS
 // =======================
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHANNEL_ID = String(process.env.TELEGRAM_CHANNEL_ID || "");
+const TELEGRAM_CHANNEL_ID = String(process.env.TELEGRAM_CHANNEL_ID || "").trim();
 
 let telegramChannelPosts = [];
+let telegramDebugUpdates = [];
 
 // =======================
 // TELEGRAM WEBHOOK
@@ -26,19 +27,30 @@ app.post("/telegram/webhook", async (req, res) => {
   try {
     const update = req.body;
 
+    telegramDebugUpdates.unshift(update);
+    telegramDebugUpdates = telegramDebugUpdates.slice(0, 10);
+
+    console.log("Telegram update received:", JSON.stringify(update));
+
     const post = update.channel_post || update.edited_channel_post;
 
     if (!post || !post.chat) {
+      console.log("No channel post found");
       return res.sendStatus(200);
     }
 
-    const chatId = String(post.chat.id);
+    const chatId = String(post.chat.id).trim();
+    const allowedId = String(TELEGRAM_CHANNEL_ID).trim();
 
-    if (chatId !== TELEGRAM_CHANNEL_ID) {
+    console.log("Telegram chat id:", chatId);
+    console.log("Allowed channel id:", allowedId);
+
+    if (chatId !== allowedId) {
+      console.log("Wrong channel ignored");
       return res.sendStatus(200);
     }
 
-    let text = post.text || post.caption || "";
+    const text = post.text || post.caption || "";
     let imageFileId = null;
 
     if (post.photo && post.photo.length > 0) {
@@ -57,13 +69,13 @@ app.post("/telegram/webhook", async (req, res) => {
     telegramChannelPosts.unshift(newPost);
     telegramChannelPosts = telegramChannelPosts.slice(0, 50);
 
-    console.log("New Telegram post saved:", newPost.id);
+    console.log("New Telegram post saved:", newPost);
 
-    res.sendStatus(200);
+    return res.sendStatus(200);
 
   } catch (error) {
-    console.error("Telegram webhook error:", error.message);
-    res.sendStatus(200);
+    console.error("Telegram webhook error:", error);
+    return res.sendStatus(200);
   }
 });
 
@@ -74,6 +86,18 @@ app.get("/api/telegram/posts", (req, res) => {
   res.json({
     success: true,
     posts: telegramChannelPosts
+  });
+});
+
+// =======================
+// TELEGRAM DEBUG
+// =======================
+app.get("/api/telegram/debug", (req, res) => {
+  res.json({
+    success: true,
+    channelIdFromEnv: TELEGRAM_CHANNEL_ID,
+    postsCount: telegramChannelPosts.length,
+    lastUpdates: telegramDebugUpdates
   });
 });
 
@@ -96,7 +120,6 @@ app.get("/api/telegram/photo/:fileId", async (req, res) => {
     );
 
     const filePath = fileInfo.data.result.file_path;
-
     const fileUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${filePath}`;
 
     const imageResponse = await axios.get(fileUrl, {
