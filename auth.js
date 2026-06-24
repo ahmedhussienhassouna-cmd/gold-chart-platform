@@ -156,7 +156,7 @@ async function registerUser(){
     const nameInput = document.getElementById("registerName");
     const emailInput = document.getElementById("registerEmail");
     const passwordInput = document.getElementById("registerPassword");
-    const photoInput = document.getElementById("registerPhoto");
+
 
     if(!nameInput || !emailInput || !passwordInput){
         alert("Register form error");
@@ -172,10 +172,7 @@ async function registerUser(){
         return;
     }
 
-    if(!photoInput || !photoInput.files || !photoInput.files[0]){
-        alert("Please select profile photo");
-        return;
-    }
+   
 
     const firebaseReady = await waitForFirebase();
 
