@@ -68,7 +68,7 @@ function setActiveTimeframeButton(){
 }
 
 function setActiveToolButton(){
-    ["cursor","trend","horizontal","vertical","rectangle","arrow","text"].forEach(tool => {
+["cursor","trend","horizontal","vertical","rectangle","arrow","text","fib","elliott"].forEach(tool => {
         const btn = document.getElementById("tool-" + tool);
         if(btn) btn.classList.toggle("active", tool === drawingMode);
     });
@@ -705,7 +705,7 @@ function createDrawingLayer(){
     drawingSvg.style.width = "100%";
     drawingSvg.style.height = "100%";
     drawingSvg.style.zIndex = "30";
-    drawingSvg.style.pointerEvents = "none";
+drawingSvg.style.pointerEvents = "auto";
     drawingSvg.style.display = drawingsVisible ? "block" : "none";
 
     chartBox.appendChild(drawingSvg);
@@ -917,7 +917,7 @@ function setupDrawingEvents(){
     const chartBox = document.getElementById("oandaChart");
     if(!chartBox) return;
 
-    chartBox.onclick = function(e){
+drawingSvg.onclick = function(e){
         if(drawingsLocked) return;
         if(drawingMode === "cursor") return;
 
