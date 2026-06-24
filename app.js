@@ -705,7 +705,7 @@ function createDrawingLayer(){
     drawingSvg.style.width = "100%";
     drawingSvg.style.height = "100%";
     drawingSvg.style.zIndex = "30";
-drawingSvg.style.pointerEvents = "auto";
+drawingSvg.style.pointerEvents = "none";
     drawingSvg.style.display = drawingsVisible ? "block" : "none";
 
     chartBox.appendChild(drawingSvg);
@@ -917,7 +917,7 @@ function setupDrawingEvents(){
     const chartBox = document.getElementById("oandaChart");
     if(!chartBox) return;
 
-drawingSvg.onclick = function(e){
+chartBox.onclick = function(e){
         if(drawingsLocked) return;
         if(drawingMode === "cursor") return;
 
