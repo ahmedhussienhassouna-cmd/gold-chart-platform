@@ -200,59 +200,46 @@ async function registerUser(){
     const now = new Date();
     const trialEnd = addDays(now, 14);
 
-    const file = photoInput.files[0];
-    const reader = new FileReader();
+    const user = {
+    name: name,
+    email: email,
+    password: password,
+    photo: "images/ahmed.jpg",
 
-    reader.onload = async function(){
+    role: "Trial Member",
+    subscription: "trial",
+    status: "active",
 
-        const user = {
-            name: name,
-            email: email,
-            password: password,
-            photo: reader.result,
+    trialDays: 14,
+    trialStart: now.toISOString(),
+    trialEnd: trialEnd.toISOString(),
 
-            role: "Trial Member",
-            subscription: "trial",
-            status: "active",
+    vipPlan: "",
+    vipUntil: "",
+    createdAt: now.toISOString(),
+    lastLogin: ""
+};
 
-            trialDays: 14,
-            trialStart: now.toISOString(),
-            trialEnd: trialEnd.toISOString(),
+let saved = false;
 
-            vipPlan: "",
-            vipUntil: "",
-            createdAt: now.toISOString(),
-            lastLogin: ""
-        };
-
-        let saved = false;
-
-        try{
-            saved = await firebaseRetry(() => window.saveUserToFirebase(user), 3);
-        }catch(error){
-            console.error("Register save error:", error);
-            showConnectionMessage();
-            return;
-        }
-
-        if(!saved){
-            alert("Account save failed. Please try again.");
-            return;
-        }
-
-        localStorage.setItem("golden_user", JSON.stringify(user));
-        localStorage.removeItem("golden_logged");
-
-        alert("Account Created Successfully - 14 Days Free Trial Started");
-        window.location.href = "login.html";
-    };
-
-    reader.onerror = function(){
-        alert("Photo upload error. Please choose another photo.");
-    };
-
-    reader.readAsDataURL(file);
+try{
+    saved = await firebaseRetry(() => window.saveUserToFirebase(user), 3);
+}catch(error){
+    console.error("Register save error:", error);
+    showConnectionMessage();
+    return;
 }
+
+if(!saved){
+    alert("Account save failed. Please try again.");
+    return;
+}
+
+localStorage.setItem("golden_user", JSON.stringify(user));
+localStorage.removeItem("golden_logged");
+
+alert("Account Created Successfully - 14 Days Free Trial Started");
+window.location.href = "login.html";
 
 // =======================
 // LOGIN
