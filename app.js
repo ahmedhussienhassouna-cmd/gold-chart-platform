@@ -125,85 +125,88 @@ function clearStrategyLines(){
 
     strategyLines = [];
 }
-
-function drawStrategyZone(high, low, tp1, tp2, tp3, tp4){
+function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
     if(!candleSeries) return;
 
     clearStrategyLines();
 
+    const styleSolid = LightweightCharts.LineStyle.Solid;
+
     const highLine = candleSeries.createPriceLine({
         price: high,
-        color: "#ffd700",
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
+        color: "#ff2d2d",
+        lineWidth: 4,
+        lineStyle: styleSolid,
         axisLabelVisible: true,
-        title: "GT HIGH"
+        title: "HIGH - بعد كسر وثبات المستوى"
+    });
+
+    const buyTp1Line = candleSeries.createPriceLine({
+        price: buyTp1,
+        color: "#00ff88",
+        lineWidth: 4,
+        lineStyle: styleSolid,
+        axisLabelVisible: true,
+        title: "🎯 هدف أول BUY TP1"
+    });
+
+    const buyTp2Line = candleSeries.createPriceLine({
+        price: buyTp2,
+        color: "#00cc66",
+        lineWidth: 4,
+        lineStyle: styleSolid,
+        axisLabelVisible: true,
+        title: "🎯 هدف ثاني BUY TP2"
     });
 
     const lowLine = candleSeries.createPriceLine({
         price: low,
-        color: "#ffd700",
-        lineWidth: 2,
-        lineStyle: LightweightCharts.LineStyle.Solid,
+        color: "#008cff",
+        lineWidth: 4,
+        lineStyle: styleSolid,
         axisLabelVisible: true,
-        title: "GT LOW"
+        title: "LOW - بعد كسر وثبات المستوى"
     });
 
-    strategyLines.push(highLine, lowLine);
+    const sellTp1Line = candleSeries.createPriceLine({
+        price: sellTp1,
+        color: "#ff9800",
+        lineWidth: 4,
+        lineStyle: styleSolid,
+        axisLabelVisible: true,
+        title: "🎯 هدف أول SELL TP1"
+    });
 
-    if(tp1){
-        strategyLines.push(
-            candleSeries.createPriceLine({
-                price: tp1,
-                color: "#00ff88",
-                lineWidth: 1,
-                axisLabelVisible: true,
-                title: "TP1"
-            })
-        );
-    }
+    const sellTp2Line = candleSeries.createPriceLine({
+        price: sellTp2,
+        color: "#ff00ff",
+        lineWidth: 4,
+        lineStyle: styleSolid,
+        axisLabelVisible: true,
+        title: "🎯 هدف ثاني SELL TP2"
+    });
 
-    if(tp2){
-        strategyLines.push(
-            candleSeries.createPriceLine({
-                price: tp2,
-                color: "#00ff88",
-                lineWidth: 1,
-                axisLabelVisible: true,
-                title: "TP2"
-            })
-        );
-    }
-
-    if(tp3){
-        strategyLines.push(
-            candleSeries.createPriceLine({
-                price: tp3,
-                color: "#00ff88",
-                lineWidth: 1,
-                axisLabelVisible: true,
-                title: "TP3"
-            })
-        );
-    }
-
-    if(tp4){
-        strategyLines.push(
-            candleSeries.createPriceLine({
-                price: tp4,
-                color: "#00ff88",
-                lineWidth: 1,
-                axisLabelVisible: true,
-                title: "TP4"
-            })
-        );
-    }
+    strategyLines.push(
+        highLine,
+        buyTp1Line,
+        buyTp2Line,
+        lowLine,
+        sellTp1Line,
+        sellTp2Line
+    );
 
     setText(
         "signal",
-        `✅ Strategy Zone Drawn<br>
-        High: ${high}<br>
-        Low: ${low}`
+        `✅ Strategy Zone Drawn<br><br>
+        🔴 HIGH: ${high}<br>
+        بعد كسر وثبات المستوى<br>
+        🎯 هدف أول: ${buyTp1}<br>
+        🎯 هدف ثاني: ${buyTp2}<br><br>
+
+        🔵 LOW: ${low}<br>
+        بعد كسر وثبات المستوى<br>
+        🎯 هدف أول: ${sellTp1}<br>
+        🎯 هدف ثاني: ${sellTp2}`
     );
 }
 
@@ -1134,26 +1137,31 @@ window.toggleStrategy = async function(){
         const high = Number(levels.high);
         const low = Number(levels.low);
 
-        const tp1 = Number(levels.tp1);
-        const tp2 = Number(levels.tp2);
-        const tp3 = Number(levels.tp3);
-        const tp4 = Number(levels.tp4);
+        const buyTp1 = Number(levels.buyTp1 || levels.tp1);
+const buyTp2 = Number(levels.buyTp2 || levels.tp2);
+
+const sellTp1 = Number(levels.sellTp1 || levels.tp3);
+const sellTp2 = Number(levels.sellTp2 || levels.tp4);
 
         const message = levels.message || "Golden Trade Strategy";
 
-        drawStrategyZone(high, low, tp1, tp2, tp3, tp4);
+drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2);
+setText(
+    "signal",
+    `✅ ${message}<br><br>
 
-        setText(
-            "signal",
-            `✅ ${message}<br>
-            High: ${high}<br>
-            Low: ${low}<br>
-            ${tp1 ? "TP1: " + tp1 + "<br>" : ""}
-            ${tp2 ? "TP2: " + tp2 + "<br>" : ""}
-            ${tp3 ? "TP3: " + tp3 + "<br>" : ""}
-            ${tp4 ? "TP4: " + tp4 + "<br>" : ""}
-            Live Price: ${lastPrice || "Loading..."}`
-        );
+    🔴 HIGH: ${high}<br>
+    بعد كسر وثبات المستوى<br>
+    🎯 هدف أول: ${buyTp1}<br>
+    🎯 هدف ثاني: ${buyTp2}<br><br>
+
+    🔵 LOW: ${low}<br>
+    بعد كسر وثبات المستوى<br>
+    🎯 هدف أول: ${sellTp1}<br>
+    🎯 هدف ثاني: ${sellTp2}<br><br>
+
+    Live Price: ${lastPrice || "Loading..."}`
+);
 
     }catch(error){
         console.error(error);
