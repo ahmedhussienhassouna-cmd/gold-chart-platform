@@ -420,7 +420,15 @@ barSpacing: 16
             close: lastCandle.close
         };
 
-        oandaChart.timeScale().fitContent();
+oandaChart.timeScale().applyOptions({
+    barSpacing: 18,
+    rightOffset: 8
+});
+
+oandaChart.timeScale().setVisibleLogicalRange({
+    from: candles.length - 120,
+    to: candles.length + 10
+});
 
         setText("signal", `✅ GOLD OANDA Chart Loaded | TF: ${currentGranularity}`);
     }else{
