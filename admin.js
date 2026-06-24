@@ -73,10 +73,15 @@ window.saveLevels = async function(){
         await setDoc(doc(db, "strategy", "GOLD"), {
             high: getNumberValue("goldHigh"),
             low: getNumberValue("goldLow"),
-            tp1: getNumberValue("goldTp1"),
-            tp2: getNumberValue("goldTp2"),
-            tp3: getNumberValue("goldTp3"),
-            tp4: getNumberValue("goldTp4"),
+            buyTp1: getNumberValue("goldTp1"),
+buyTp2: getNumberValue("goldTp2"),
+sellTp1: getNumberValue("goldTp3"),
+sellTp2: getNumberValue("goldTp4"),
+
+tp1: getNumberValue("goldTp1"),
+tp2: getNumberValue("goldTp2"),
+tp3: getNumberValue("goldTp3"),
+tp4: getNumberValue("goldTp4"),
             message: "Gold Liquidity",
             updatedAt: serverTimestamp()
         }, { merge:true });
@@ -84,10 +89,15 @@ window.saveLevels = async function(){
         await setDoc(doc(db, "strategy", "EURUSD"), {
             high: getNumberValue("eurHigh"),
             low: getNumberValue("eurLow"),
-            tp1: getNumberValue("eurTp1"),
-            tp2: getNumberValue("eurTp2"),
-            tp3: getNumberValue("eurTp3"),
-            tp4: getNumberValue("eurTp4"),
+            buyTp1: getNumberValue("goldTp1"),
+buyTp2: getNumberValue("goldTp2"),
+sellTp1: getNumberValue("goldTp3"),
+sellTp2: getNumberValue("goldTp4"),
+
+tp1: getNumberValue("goldTp1"),
+tp2: getNumberValue("goldTp2"),
+tp3: getNumberValue("goldTp3"),
+tp4: getNumberValue("goldTp4"),
             message: "EURUSD Liquidity",
             updatedAt: serverTimestamp()
         }, { merge:true });
@@ -95,10 +105,15 @@ window.saveLevels = async function(){
         await setDoc(doc(db, "strategy", "BTCUSD"), {
             high: getNumberValue("btcHigh"),
             low: getNumberValue("btcLow"),
-            tp1: getNumberValue("btcTp1"),
-            tp2: getNumberValue("btcTp2"),
-            tp3: getNumberValue("btcTp3"),
-            tp4: getNumberValue("btcTp4"),
+            buyTp1: getNumberValue("goldTp1"),
+buyTp2: getNumberValue("goldTp2"),
+sellTp1: getNumberValue("goldTp3"),
+sellTp2: getNumberValue("goldTp4"),
+
+tp1: getNumberValue("goldTp1"),
+tp2: getNumberValue("goldTp2"),
+tp3: getNumberValue("goldTp3"),
+tp4: getNumberValue("goldTp4"),
             message: "Bitcoin Liquidity",
             updatedAt: serverTimestamp()
         }, { merge:true });
