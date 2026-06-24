@@ -290,6 +290,46 @@ function checkBreakRetestSignal(price){
         }
     }
 }
+function scanPastBreakRetest(){
+    if(!activeStrategySetup || !candlesData.length) return;
+
+    const high = activeStrategySetup.high;
+    const low = activeStrategySetup.low;
+
+    const moveMin = 7;
+    const moveMax = 10;
+    const retestGap = 0.80;
+
+    let buyReady = false;
+    let sellReady = false;
+
+    const recentCandles = candlesData.slice(-300);
+
+    recentCandles.forEach(c => {
+
+        if(!activeStrategySetup.buyDone){
+            if(c.high >= high + moveMin && c.high <= high + moveMax){
+                buyReady = true;
+            }
+
+            if(buyReady && c.low <= high + retestGap && c.high >= high - retestGap){
+                activeStrategySetup.buyDone = true;
+                drawStrategySignal("BUY", high, low);
+            }
+        }
+
+        if(!activeStrategySetup.sellDone){
+            if(c.low <= low - moveMin && c.low >= low - moveMax){
+                sellReady = true;
+            }
+
+            if(sellReady && c.high >= low - retestGap && c.low <= low + retestGap){
+                activeStrategySetup.sellDone = true;
+                drawStrategySignal("SELL", low, high);
+            }
+        }
+    });
+}
 // =======================
 // LIVE PRICE
 // =======================
@@ -1245,6 +1285,8 @@ activeStrategySetup = {
     buyDone:false,
     sellDone:false
 };
+scanPastBreakRetest();
+
 setText(
     "signal",
     `✅ ${message}<br><br>
