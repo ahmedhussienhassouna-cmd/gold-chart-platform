@@ -23,7 +23,11 @@ if(savedUser){
 </script>
 
 <!-- SIDEBAR -->
-<div class="sidebar">
+<div class="sidebar" id="leftSidebar">
+
+<button class="leftCollapseBtn" onclick="toggleLeftSidebar()">
+    ‹
+</button>
 
     <h2>🟡 Golden Trade</h2>
 
@@ -181,7 +185,8 @@ if(savedUser){
                     <button title="Rectangle" onclick="setDrawingTool('rectangle')" id="tool-rectangle">▭</button>
                     <button title="Arrow" onclick="setDrawingTool('arrow')" id="tool-arrow">↗</button>
                     <button title="Text" onclick="setDrawingTool('text')" id="tool-text">T</button>
-
+<button title="Fibonacci Retracement" onclick="setDrawingTool('fib')" id="tool-fib">Fib</button>
+<button title="Elliott Wave" onclick="setDrawingTool('elliott')" id="tool-elliott">123</button>
                     <div class="drawingDivider"></div>
 
                     <button title="Magnet Mode" onclick="toggleMagnet()" id="tool-magnet">🧲</button>
@@ -205,7 +210,7 @@ if(savedUser){
         </div>
 
         <!-- RIGHT PANEL -->
-<button class="panelToggleBtn" onclick="toggleRightPanel()">›</button>
+<button class="panelToggleBtn" id="rightPanelToggle" onclick="toggleRightPanel()">›</button>
 
 <div class="signalBox newSignalBox" id="rightPanel">
             <h3>Golden Trade Panel</h3>
