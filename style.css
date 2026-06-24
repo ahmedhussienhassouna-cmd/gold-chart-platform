@@ -2982,3 +2982,58 @@ body.lightTheme .sidebar button{
     padding:14px !important;
     font-size:12px !important;
 }
+
+/* =======================
+   PRO COLLAPSE BUTTONS
+======================= */
+
+.leftCollapseBtn{
+    position:absolute;
+    right:-18px;
+    top:16px;
+    width:36px;
+    height:44px;
+    border-radius:12px;
+    border:1px solid #ffd700;
+    background:#111;
+    color:#ffd700;
+    font-size:26px;
+    font-weight:bold;
+    z-index:99999;
+    cursor:pointer;
+    box-shadow:0 0 20px rgba(255,215,0,.35);
+}
+
+body.leftSidebarClosed .sidebar{
+    transform:translateX(-100%);
+}
+
+body.leftSidebarClosed .dashboardMain{
+    left:0 !important;
+}
+
+body.leftSidebarClosed .leftCollapseBtn{
+    position:fixed;
+    left:8px;
+    right:auto;
+    top:85px;
+    transform:rotate(180deg);
+}
+
+.panelToggleBtn{
+    font-size:30px !important;
+    font-weight:bold !important;
+    border-radius:14px !important;
+    box-shadow:0 0 18px rgba(255,215,0,.35) !important;
+}
+
+body.rightPanelClosed .panelToggleBtn{
+    right:8px !important;
+    transform:rotate(180deg);
+}
+
+/* Bigger clearer candles space */
+#chart,
+#oandaChart{
+    min-height:620px !important;
+}
