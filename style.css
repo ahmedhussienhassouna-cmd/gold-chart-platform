@@ -3037,3 +3037,67 @@ body.rightPanelClosed .panelToggleBtn{
 #oandaChart{
     min-height:620px !important;
 }
+
+/* FORCE LEFT/RIGHT COLLAPSE FINAL */
+
+.sidebar{
+    transition:transform .35s ease !important;
+    z-index:9999 !important;
+}
+
+.dashboardMain{
+    transition:left .35s ease, right .35s ease !important;
+}
+
+.leftCollapseBtn{
+    position:fixed !important;
+    left:218px !important;
+    top:90px !important;
+    width:42px !important;
+    height:46px !important;
+    background:#ffd700 !important;
+    color:#000 !important;
+    border:2px solid #111 !important;
+    border-radius:14px !important;
+    font-size:32px !important;
+    font-weight:900 !important;
+    z-index:999999 !important;
+    cursor:pointer !important;
+}
+
+body.leftSidebarClosed .sidebar{
+    transform:translateX(-230px) !important;
+}
+
+body.leftSidebarClosed .dashboardMain{
+    left:0 !important;
+}
+
+body.leftSidebarClosed .leftCollapseBtn{
+    left:10px !important;
+    transform:rotate(180deg) !important;
+}
+
+.panelToggleBtn{
+    position:fixed !important;
+    right:255px !important;
+    top:220px !important;
+    width:42px !important;
+    height:58px !important;
+    background:#ffd700 !important;
+    color:#000 !important;
+    border:2px solid #111 !important;
+    border-radius:14px !important;
+    font-size:34px !important;
+    font-weight:900 !important;
+    z-index:999999 !important;
+}
+
+body.rightPanelClosed .signalBox{
+    transform:translateX(330px) !important;
+}
+
+body.rightPanelClosed .panelToggleBtn{
+    right:10px !important;
+    transform:rotate(180deg) !important;
+}
