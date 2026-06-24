@@ -151,12 +151,14 @@ function goToUpgrade(){
 // =======================
 // REGISTER
 // =======================
+// =======================
+// REGISTER
+// =======================
 async function registerUser(){
 
     const nameInput = document.getElementById("registerName");
     const emailInput = document.getElementById("registerEmail");
     const passwordInput = document.getElementById("registerPassword");
-
 
     if(!nameInput || !emailInput || !passwordInput){
         alert("Register form error");
@@ -171,8 +173,6 @@ async function registerUser(){
         alert("Please fill all fields");
         return;
     }
-
-   
 
     const firebaseReady = await waitForFirebase();
 
@@ -201,45 +201,46 @@ async function registerUser(){
     const trialEnd = addDays(now, 14);
 
     const user = {
-    name: name,
-    email: email,
-    password: password,
-    photo: "images/ahmed.jpg",
+        name: name,
+        email: email,
+        password: password,
+        photo: "images/ahmed.jpg",
 
-    role: "Trial Member",
-    subscription: "trial",
-    status: "active",
+        role: "Trial Member",
+        subscription: "trial",
+        status: "active",
 
-    trialDays: 14,
-    trialStart: now.toISOString(),
-    trialEnd: trialEnd.toISOString(),
+        trialDays: 14,
+        trialStart: now.toISOString(),
+        trialEnd: trialEnd.toISOString(),
 
-    vipPlan: "",
-    vipUntil: "",
-    createdAt: now.toISOString(),
-    lastLogin: ""
-};
+        vipPlan: "",
+        vipUntil: "",
+        createdAt: now.toISOString(),
+        lastLogin: ""
+    };
 
-let saved = false;
+    let saved = false;
 
-try{
-    saved = await firebaseRetry(() => window.saveUserToFirebase(user), 3);
-}catch(error){
-    console.error("Register save error:", error);
-    showConnectionMessage();
-    return;
+    try{
+        saved = await firebaseRetry(() => window.saveUserToFirebase(user), 3);
+    }catch(error){
+        console.error("Register save error:", error);
+        showConnectionMessage();
+        return;
+    }
+
+    if(!saved){
+        alert("Account save failed. Please try again.");
+        return;
+    }
+
+    localStorage.setItem("golden_user", JSON.stringify(user));
+    localStorage.removeItem("golden_logged");
+
+    alert("Account Created Successfully - 14 Days Free Trial Started");
+    window.location.href = "login.html";
 }
-
-if(!saved){
-    alert("Account save failed. Please try again.");
-    return;
-}
-
-localStorage.setItem("golden_user", JSON.stringify(user));
-localStorage.removeItem("golden_logged");
-
-alert("Account Created Successfully - 14 Days Free Trial Started");
-window.location.href = "login.html";
 
 // =======================
 // LOGIN
