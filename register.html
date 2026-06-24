@@ -56,9 +56,9 @@
 
      
 
-        <button type="button" onclick="registerUser()">
-            Create Account
-        </button>
+<button type="button">
+    Create Account
+</button>
 
         <p>Already have an account?</p>
         <a href="login.html">Login</a>
@@ -66,8 +66,27 @@
 
 </div>
 
-<script type="module" src="firebase.js"></script>
-<script src="auth.js?v=3"></script>
+<script type="module">
+    import "./firebase.js";
+
+    const script = document.createElement("script");
+    script.src = "auth.js?v=3";
+    script.onload = function(){
+        const btn = document.querySelector("button");
+
+        if(btn){
+            btn.addEventListener("click", function(){
+                if(typeof registerUser === "function"){
+                    registerUser();
+                }else{
+                    alert("Register system is loading. Please refresh and try again.");
+                }
+            });
+        }
+    };
+
+    document.body.appendChild(script);
+</script>
 
 </body>
 </html>
