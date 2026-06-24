@@ -359,8 +359,8 @@ async function createChart(){
             borderColor: "#333",
             timeVisible: true,
             secondsVisible: false,
-            rightOffset: 10,
-            barSpacing: 8
+            rightOffset: 4,
+barSpacing: 16
         },
         handleScroll: {
             mouseWheel: true,
@@ -1730,7 +1730,17 @@ function resizeGoldenChart(){
 
 window.toggleRightPanel = function(){
     document.body.classList.toggle("rightPanelClosed");
-    resizeGoldenChart();
+
+    const btn = document.getElementById("rightPanelToggle");
+    if(btn){
+        btn.innerHTML = document.body.classList.contains("rightPanelClosed") ? "‹" : "›";
+    }
+
+    if(typeof forceChartResize === "function"){
+        forceChartResize();
+    }else if(typeof resizeGoldenChart === "function"){
+        resizeGoldenChart();
+    }
 };
 
 window.toggleBottomCards = function(){
@@ -2419,3 +2429,12 @@ function loadTradingGoal(){
 window.addEventListener("load", () => {
     setTimeout(loadTradingGoal, 1000);
 });
+window.toggleLeftSidebar = function(){
+    document.body.classList.toggle("leftSidebarClosed");
+
+    if(typeof forceChartResize === "function"){
+        forceChartResize();
+    }else if(typeof resizeGoldenChart === "function"){
+        resizeGoldenChart();
+    }
+};
