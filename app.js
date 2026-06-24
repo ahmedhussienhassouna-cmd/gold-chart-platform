@@ -125,6 +125,8 @@ function clearStrategyLines(){
 
     strategyLines = [];
 }
+let activeStrategySetup = null;
+let strategySignalDrawings = [];
 function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
     if(!candleSeries) return;
 
@@ -210,6 +212,84 @@ function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
     );
 }
 
+function drawStrategySignal(type, entry, stop){
+    if(!drawingSvg || !oandaChart || !candleSeries) return;
+
+    const lastTime = currentLiveCandle ? currentLiveCandle.time : null;
+    if(!lastTime) return;
+
+    const x = oandaChart.timeScale().timeToCoordinate(lastTime);
+    const y = candleSeries.priceToCoordinate(entry);
+
+    if(x == null || y == null) return;
+
+    const label = svgEl("text", {
+        x: x - 40,
+        y: y - 18,
+        fill: type === "BUY" ? "#00ff88" : "#ff4d4d",
+        "font-size": "20",
+        "font-weight": "bold"
+    });
+
+    label.textContent = type === "BUY"
+        ? `BUY | SL ${stop}`
+        : `SELL | SL ${stop}`;
+
+    drawingSvg.appendChild(label);
+    strategySignalDrawings.push(label);
+}
+function checkBreakRetestSignal(price){
+    if(!activeStrategySetup || !price) return;
+
+    const high = activeStrategySetup.high;
+    const low = activeStrategySetup.low;
+
+    const moveMin = 7;
+    const moveMax = 10;
+    const retestGap = 0.50;
+
+    if(activeStrategySetup.buyDone !== true){
+
+        if(price >= high + moveMin && price <= high + moveMax){
+            activeStrategySetup.buyReady = true;
+        }
+
+        if(activeStrategySetup.buyReady && Math.abs(price - high) <= retestGap){
+            activeStrategySetup.buyDone = true;
+
+            drawStrategySignal("BUY", high, low);
+
+            setText(
+                "signal",
+                `✅ BUY Signal<br>
+                Entry Retest: ${high}<br>
+                Stop Loss: ${low}<br>
+                شرط الدخول تحقق: كسر HIGH + حركة 7$ إلى 10$ + رجوع لإعادة الاختبار`
+            );
+        }
+    }
+
+    if(activeStrategySetup.sellDone !== true){
+
+        if(price <= low - moveMin && price >= low - moveMax){
+            activeStrategySetup.sellReady = true;
+        }
+
+        if(activeStrategySetup.sellReady && Math.abs(price - low) <= retestGap){
+            activeStrategySetup.sellDone = true;
+
+            drawStrategySignal("SELL", low, high);
+
+            setText(
+                "signal",
+                `✅ SELL Signal<br>
+                Entry Retest: ${low}<br>
+                Stop Loss: ${high}<br>
+                شرط الدخول تحقق: كسر LOW + حركة 7$ إلى 10$ + رجوع لإعادة الاختبار`
+            );
+        }
+    }
+}
 // =======================
 // LIVE PRICE
 // =======================
@@ -275,6 +355,7 @@ function updateLiveCandle(price){
     }
 
     candleSeries.update(currentLiveCandle);
+    checkBreakRetestSignal(price);
 }
 
 // =======================
@@ -1125,6 +1206,8 @@ window.toggleStrategy = async function(){
 
     if(!strategyOn){
         clearStrategyLines();
+        activeStrategySetup = null;
+strategySignalDrawings = [];
         setText("signal", "🔴 Strategy OFF");
         return;
     }
@@ -1154,6 +1237,14 @@ const sellTp2 = Number(levels.sellTp2 || levels.tp4);
         const message = levels.message || "Golden Trade Strategy";
 
 drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2);
+activeStrategySetup = {
+    high,
+    low,
+    buyReady:false,
+    sellReady:false,
+    buyDone:false,
+    sellDone:false
+};
 setText(
     "signal",
     `✅ ${message}<br><br>
