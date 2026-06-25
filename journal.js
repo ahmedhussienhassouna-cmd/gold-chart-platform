@@ -36,7 +36,7 @@ function saveTradeManual(){
     const tradeResult = Number(document.getElementById("tradeResult").value);
     const tradeNotes = document.getElementById("tradeNotes").value.trim();
 
-    if(!tradeNumber  !tradeDate  isNaN(tradeResult)){
+if (!tradeNumber || !tradeDate || isNaN(tradeResult)) {
         alert("Please fill trade number, date and result");
         return;
     }
