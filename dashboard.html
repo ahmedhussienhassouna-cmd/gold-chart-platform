@@ -48,6 +48,7 @@ if(savedUser){
     <button onclick="service('daily')">📊 Analysis</button>
     <button id="strategyBtn" onclick="toggleStrategy()">💰 Strategy</button>
     <button onclick="openTradingGoal()">🎯 Trading Goal</button>
+    <button onclick="openJournal()">📒 Trading Journal</button>
     <button onclick="toggleVWAP()">📈 VWAP</button>
     <button onclick="toggleSessionProfile()">📊 Session Profile</button>
 <button onclick="openFloatingChat()">💬 Clients Chat</button>
@@ -303,6 +304,79 @@ if(savedUser){
     </div>
 
 </div>
+<!-- TRADING JOURNAL MODAL -->
+<div class="journalModal" id="journalModal">
+    <div class="journalBox">
+
+        <button class="journalClose" onclick="closeJournal()">×</button>
+
+        <div class="journalHeader">
+            <div>
+                <h2>📒 Trading Performance Journal</h2>
+                <p>Track daily trades, monthly results and total pips.</p>
+            </div>
+
+            <button class="journalAddBtn" onclick="openAddTradeForm()">➕ Add Trade</button>
+        </div>
+
+        <div class="journalStats">
+            <div><span>Total Pips</span><b id="journalTotalPips">0</b></div>
+            <div><span>Total Trades</span><b id="journalTotalTrades">0</b></div>
+            <div><span>Wins</span><b id="journalWins">0</b></div>
+            <div><span>Losses</span><b id="journalLosses">0</b></div>
+        </div>
+
+        <div class="journalMonthBar">
+            <button onclick="changeJournalMonth(-1)">‹</button>
+            <h3 id="journalMonthTitle">June 2026</h3>
+            <button onclick="changeJournalMonth(1)">›</button>
+        </div>
+
+        <div class="journalCalendar" id="journalCalendar"></div>
+
+    </div>
+</div>
+
+<!-- ADD TRADE FORM -->
+<div class="tradeFormModal" id="tradeFormModal">
+    <div class="tradeFormBox">
+
+        <button class="journalClose" onclick="closeAddTradeForm()">×</button>
+
+        <h2>➕ Add Trade</h2>
+
+        <label>Trade Number</label>
+        <input id="tradeNumber" placeholder="TR1">
+
+        <label>Date</label>
+        <input id="tradeDate" type="date">
+
+        <label>Asset</label>
+        <select id="tradeAsset">
+            <option>GOLD</option>
+            <option>EURUSD</option>
+            <option>BTCUSD</option>
+        </select>
+
+        <label>Quick Result</label>
+        <div class="quickResultBtns">
+            <button onclick="setTradeResult(200)">TP +200</button>
+            <button onclick="setTradeResult(400)">TP2 +400</button>
+            <button onclick="setTradeResult(600)">TP3 +600</button>
+            <button onclick="setTradeResult(-100)">Stop -100</button>
+            <button onclick="setTradeResult(0)">BE 0</button>
+        </div>
+
+        <label>Result Pips</label>
+        <input id="tradeResult" type="number" placeholder="Example: 200 or -100">
+
+        <label>Notes</label>
+        <textarea id="tradeNotes" placeholder="Optional"></textarea>
+
+        <button class="tradeSaveBtn" onclick="saveTradeManual()">Save Trade</button>
+
+    </div>
+</div>
 <!-- TRADING GOAL MODAL -->
 <div class="goalModal" id="goalModal">
     <div class="goalBox">
@@ -434,5 +508,6 @@ if(savedUser){
 <button id="enableSoundBtn" class="enableSoundBtn" onclick="enableNotificationSound()">
     🔔 Enable Sound
 </button>
+<script src="journal.js?v=1"></script>
 </body>
 </html>
