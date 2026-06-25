@@ -131,11 +131,49 @@ function renderJournal(){
             `;
         }
 
-        dayBox.innerHTML = html;
-        calendar.appendChild(dayBox);
+     dayBox.innerHTML = html;
+dayBox.onclick = function(){
+    openEditDay(dateKey);
+};
+calendar.appendChild(dayBox);
     }
 }
 
 document.addEventListener("DOMContentLoaded", function(){
     renderJournal();
 });
+
+function openEditDay(dateKey){
+    const dayTrades = journalTrades.filter(t => t.date === dateKey);
+
+    let text = dayTrades.map(t => {
+        const sign = Number(t.result) > 0 ? "+" : "";
+        return `${t.number} ${sign}${t.result}`;
+    }).join("\n");
+
+    const newText = prompt(
+        "Edit trades for " + dateKey + "\nExample:\nTR1 +200\nTR2 -100",
+        text
+    );
+
+    if(newText === null) return;
+
+    journalTrades = journalTrades.filter(t => t.date !== dateKey);
+
+    newText.split("\n").forEach(line => {
+        const parts = line.trim().split(" ");
+        if(parts.length < 2) return;
+
+        journalTrades.push({
+            id: Date.now() + Math.random(),
+            number: parts[0],
+            date: dateKey,
+            asset: "GOLD",
+            result: Number(parts[1]),
+            notes: ""
+        });
+    });
+
+    localStorage.setItem("gt_journal_trades", JSON.stringify(journalTrades));
+    renderJournal();
+}
