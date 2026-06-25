@@ -1,4 +1,3 @@
-
 let journalDate = new Date();
 let journalTrades = JSON.parse(localStorage.getItem("gt_journal_trades")) || [];
 
@@ -36,7 +35,7 @@ function saveTradeManual(){
     const tradeResult = Number(document.getElementById("tradeResult").value);
     const tradeNotes = document.getElementById("tradeNotes").value.trim();
 
-if (!tradeNumber || !tradeDate || isNaN(tradeResult)) {
+    if (!tradeNumber || !tradeDate || isNaN(tradeResult)) {
         alert("Please fill trade number, date and result");
         return;
     }
@@ -66,7 +65,7 @@ function renderJournal(){
     const calendar = document.getElementById("journalCalendar");
     const title = document.getElementById("journalMonthTitle");
 
-    if(!calendar || !title) return;
+    if (!calendar || !title) return;
 
     calendar.innerHTML = "";
 
@@ -74,7 +73,7 @@ function renderJournal(){
     const month = journalDate.getMonth();
 
     const monthName = journalDate.toLocaleString("en-US", { month: "long" });
-if (!calendar || !title) return;
+    title.innerText = `${monthName} ${year}`;
 
     const monthTrades = journalTrades.filter(t => {
         const d = new Date(t.date);
@@ -85,7 +84,7 @@ if (!calendar || !title) return;
     const wins = monthTrades.filter(t => Number(t.result) > 0).length;
     const losses = monthTrades.filter(t => Number(t.result) < 0).length;
 
-    document.getElementById("journalTotalPips").innerText = totalPips > 0 ? +${totalPips} : totalPips;
+    document.getElementById("journalTotalPips").innerText = totalPips > 0 ? `+${totalPips}` : totalPips;
     document.getElementById("journalTotalTrades").innerText = monthTrades.length;
     document.getElementById("journalWins").innerText = wins;
     document.getElementById("journalLosses").innerText = losses;
@@ -93,7 +92,7 @@ if (!calendar || !title) return;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     for(let day = 1; day <= daysInMonth; day++){
-        const dateKey = ${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")};
+        const dateKey = `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
 
         const dayTrades = monthTrades.filter(t => t.date === dateKey);
         const dayTotal = dayTrades.reduce((sum, t) => sum + Number(t.result), 0);
@@ -109,11 +108,12 @@ if (!calendar || !title) return;
             dayBox.classList.add("loss");
         }
 
-        let html = <div class="journalDayNumber">${day}</div>;
+        let html = `<div class="journalDayNumber">${day}</div>`;
 
         dayTrades.forEach(t => {
             const cls = Number(t.result) >= 0 ? "win" : "loss";
             const sign = Number(t.result) > 0 ? "+" : "";
+
             html += `
                 <div class="journalTrade ${cls}">
                     ${t.number} ${sign}${t.result} pip
@@ -123,6 +123,7 @@ if (!calendar || !title) return;
 
         if(dayTrades.length > 0){
             const sign = dayTotal > 0 ? "+" : "";
+
             html += `
                 <div class="journalTotal">
                     Total = ${sign}${dayTotal} pip
