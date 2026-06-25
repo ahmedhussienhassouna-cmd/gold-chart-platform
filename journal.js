@@ -74,7 +74,7 @@ function renderJournal(){
     const month = journalDate.getMonth();
 
     const monthName = journalDate.toLocaleString("en-US", { month: "long" });
-    title.innerText = ${monthName} ${year};
+if (!calendar || !title) return;
 
     const monthTrades = journalTrades.filter(t => {
         const d = new Date(t.date);
