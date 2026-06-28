@@ -1,8 +1,51 @@
 let journalDate = new Date();
-let journalTrades = JSON.parse(localStorage.getItem("gt_journal_trades")) || [];
+let journalTrades = [];
+let unsubscribeJournal = null;
+
+function isMasterJournalUser(){
+    try{
+        const user = JSON.parse(localStorage.getItem("golden_user") || "{}");
+        const email = String(user.email || "").trim().toLowerCase();
+
+        return email === "ahmedhussienhassouna@gmail.com";
+    }catch(e){
+        return false;
+    }
+}
+
+function requireJournalMaster(){
+    if(!isMasterJournalUser()){
+        alert("غير مسموح لك بالتعديل");
+        return false;
+    }
+    return true;
+}
+
+function updateJournalPermissions(){
+    const addBtn = document.getElementById("journalAddBtn");
+    if(addBtn){
+        addBtn.style.display = isMasterJournalUser() ? "inline-flex" : "none";
+    }
+}
+
+function startJournalFirebase(){
+    if(typeof window.listenJournalTradesFirebase !== "function"){
+        console.log("Journal Firebase not ready");
+        return;
+    }
+
+    if(unsubscribeJournal) return;
+
+    unsubscribeJournal = window.listenJournalTradesFirebase((trades) => {
+        journalTrades = trades || [];
+        renderJournal();
+    });
+}
 
 function openJournal(){
     document.getElementById("journalModal").classList.add("active");
+    updateJournalPermissions();
+    startJournalFirebase();
     renderJournal();
 }
 
@@ -11,6 +54,8 @@ function closeJournal(){
 }
 
 function openAddTradeForm(){
+    if(!requireJournalMaster()) return;
+
     document.getElementById("tradeFormModal").classList.add("active");
 
     const today = new Date().toISOString().split("T")[0];
@@ -25,17 +70,20 @@ function closeAddTradeForm(){
 }
 
 function setTradeResult(value){
+    if(!requireJournalMaster()) return;
     document.getElementById("tradeResult").value = value;
 }
 
-function saveTradeManual(){
+async function saveTradeManual(){
+    if(!requireJournalMaster()) return;
+
     const tradeNumber = document.getElementById("tradeNumber").value.trim();
     const tradeDate = document.getElementById("tradeDate").value;
     const tradeAsset = document.getElementById("tradeAsset").value;
     const tradeResult = Number(document.getElementById("tradeResult").value);
     const tradeNotes = document.getElementById("tradeNotes").value.trim();
 
-    if (!tradeNumber || !tradeDate || isNaN(tradeResult)) {
+    if(!tradeNumber || !tradeDate || isNaN(tradeResult)){
         alert("Please fill trade number, date and result");
         return;
     }
@@ -49,11 +97,14 @@ function saveTradeManual(){
         notes: tradeNotes
     };
 
-    journalTrades.push(trade);
-    localStorage.setItem("gt_journal_trades", JSON.stringify(journalTrades));
+    if(typeof window.saveJournalTradeFirebase !== "function"){
+        alert("Journal Firebase not loaded");
+        return;
+    }
+
+    await window.saveJournalTradeFirebase(trade);
 
     closeAddTradeForm();
-    renderJournal();
 }
 
 function changeJournalMonth(step){
@@ -62,10 +113,12 @@ function changeJournalMonth(step){
 }
 
 function renderJournal(){
+    updateJournalPermissions();
+
     const calendar = document.getElementById("journalCalendar");
     const title = document.getElementById("journalMonthTitle");
 
-    if (!calendar || !title) return;
+    if(!calendar || !title) return;
 
     calendar.innerHTML = "";
 
@@ -131,19 +184,21 @@ function renderJournal(){
             `;
         }
 
-     dayBox.innerHTML = html;
-dayBox.onclick = function(){
-    openEditDay(dateKey);
-};
-calendar.appendChild(dayBox);
+        dayBox.innerHTML = html;
+
+        if(isMasterJournalUser()){
+            dayBox.onclick = function(){
+                openEditDay(dateKey);
+            };
+        }
+
+        calendar.appendChild(dayBox);
     }
 }
 
-document.addEventListener("DOMContentLoaded", function(){
-    renderJournal();
-});
+async function openEditDay(dateKey){
+    if(!requireJournalMaster()) return;
 
-function openEditDay(dateKey){
     const dayTrades = journalTrades.filter(t => t.date === dateKey);
 
     let text = dayTrades.map(t => {
@@ -158,22 +213,41 @@ function openEditDay(dateKey){
 
     if(newText === null) return;
 
-    journalTrades = journalTrades.filter(t => t.date !== dateKey);
+    if(typeof window.deleteJournalTradeFirebase !== "function" ||
+       typeof window.saveJournalTradeFirebase !== "function"){
+        alert("Journal Firebase not loaded");
+        return;
+    }
 
-    newText.split("\n").forEach(line => {
+    for(const trade of dayTrades){
+        await window.deleteJournalTradeFirebase(trade.id);
+    }
+
+    const lines = newText.split("\n");
+
+    for(const line of lines){
         const parts = line.trim().split(" ");
-        if(parts.length < 2) return;
+        if(parts.length < 2) continue;
 
-        journalTrades.push({
-            id: Date.now() + Math.random(),
+        const result = Number(parts[1]);
+        if(isNaN(result)) continue;
+
+        await window.saveJournalTradeFirebase({
+            id: Date.now() + "_" + Math.random().toString(36).slice(2),
             number: parts[0],
             date: dateKey,
             asset: "GOLD",
-            result: Number(parts[1]),
+            result: result,
             notes: ""
         });
-    });
-
-    localStorage.setItem("gt_journal_trades", JSON.stringify(journalTrades));
-    renderJournal();
+    }
 }
+
+document.addEventListener("DOMContentLoaded", function(){
+    updateJournalPermissions();
+
+    setTimeout(() => {
+        startJournalFirebase();
+        renderJournal();
+    }, 1000);
+});
