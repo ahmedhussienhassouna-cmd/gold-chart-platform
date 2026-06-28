@@ -6,6 +6,7 @@ import {
     getDoc,
     getDocs,
     setDoc,
+    deleteDoc,
     collection,
     addDoc,
     query,
@@ -390,4 +391,61 @@ window.listenChatMessagesFirebase = function(callback){
     }, (error) => {
         console.error("Listen chat messages error:", error);
     });
+};
+
+// =======================
+// TRADING JOURNAL FIREBASE
+// =======================
+
+window.saveJournalTradeFirebase = async function(trade){
+    try{
+        const tradeId = String(trade.id || Date.now());
+
+        await setDoc(doc(db, "tradingJournal", tradeId), {
+            ...trade,
+            id: tradeId,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+
+        return true;
+
+    }catch(error){
+        console.error("Save journal trade error:", error);
+        alert("Journal Save Error: " + error.message);
+        return false;
+    }
+};
+
+window.listenJournalTradesFirebase = function(callback){
+    const q = query(
+        collection(db, "tradingJournal"),
+        orderBy("date", "asc")
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const trades = [];
+
+        snapshot.forEach(docSnap => {
+            trades.push({
+                id: docSnap.id,
+                ...docSnap.data()
+            });
+        });
+
+        callback(trades);
+
+    }, (error) => {
+        console.error("Listen journal trades error:", error);
+    });
+};
+
+window.deleteJournalTradeFirebase = async function(id){
+    try{
+        await deleteDoc(doc(db, "tradingJournal", String(id)));
+        return true;
+    }catch(error){
+        console.error("Delete journal trade error:", error);
+        return false;
+    }
 };
