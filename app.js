@@ -614,9 +614,10 @@ oandaChart.timeScale().setVisibleLogicalRange({
     setActiveToolButton();
 
     oandaChart.timeScale().subscribeVisibleTimeRangeChange(() => {
-        renderSessionProfile();
-        renderDrawings();
-    });
+    renderSessionProfile();
+    renderDrawings();
+    refreshStrategyAreasLive();
+});
 }
 
 // =======================
@@ -2125,6 +2126,13 @@ window.minimizeFloatingChat = function(){
 // =======================
 // FORCE CHART RESIZE FIX
 // =======================
+function refreshStrategyAreasLive(){
+    if(!strategyOn || !activeStrategySetup) return;
+
+    requestAnimationFrame(() => {
+        redrawStrategyAreas();
+    });
+}
 function forceChartResize(){
     setTimeout(() => {
         const box = document.getElementById("oandaChart");
@@ -2169,7 +2177,9 @@ setInterval(() => {
     forceChartResize();
 }, 3000);
 
-
+setInterval(() => {
+    refreshStrategyAreasLive();
+}, 100);
 // =======================
 // FORCE CLIENTS CHAT OPEN
 // =======================
