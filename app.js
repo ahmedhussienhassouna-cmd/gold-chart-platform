@@ -1064,12 +1064,18 @@ function setupDrawingEvents(){
     const chartBox = document.getElementById("oandaChart");
     if(!chartBox) return;
 
-chartBox.onclick = function(e){
+    chartBox.onmousedown = function(e){
         if(drawingsLocked) return;
         if(drawingMode === "cursor") return;
 
+        e.preventDefault();
+        e.stopPropagation();
+
         const point = chartPointFromMouse(e);
-        if(!point) return;
+        if(!point){
+            setText("signal", "Drawing point error");
+            return;
+        }
 
         if(drawingMode === "horizontal"){
             addHorizontalLine(point.price);
