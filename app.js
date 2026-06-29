@@ -1614,18 +1614,19 @@ function drawLightSessionIB(sessionName){
         sessionIBLines.push(line);
     }
 
-    addLine(high, `${sessionName} IB High`, config.color, 2, LightweightCharts.LineStyle.Solid);
-    addLine(low, `${sessionName} IB Low`, config.color, 2, LightweightCharts.LineStyle.Solid);
-    addLine(mid, `${sessionName} IB Mid`, "#ffd700", 1, LightweightCharts.LineStyle.Dashed);
+    addLine(high, `${sessionName} Buy`, "#008cff", 3, LightweightCharts.LineStyle.Solid);
+addLine(low, `${sessionName} Sell`, "#ff3333", 3, LightweightCharts.LineStyle.Solid);
 
-    addLine(ext50Up, `${sessionName} IB +50%`, "#ffffff", 1, LightweightCharts.LineStyle.Dashed);
-    addLine(ext50Down, `${sessionName} IB -50%`, "#ffffff", 1, LightweightCharts.LineStyle.Dashed);
+addLine(mid, `Mid`, "#ffd700", 1, LightweightCharts.LineStyle.Dashed);
 
-    addLine(ext100Up, `${sessionName} IB +100%`, "#00ff88", 1, LightweightCharts.LineStyle.Solid);
-    addLine(ext100Down, `${sessionName} IB -100%`, "#00ff88", 1, LightweightCharts.LineStyle.Solid);
+addLine(ext50Up, `TP1`, "#ffffff", 1, LightweightCharts.LineStyle.Dashed);
+addLine(ext50Down, `TP1`, "#ffffff", 1, LightweightCharts.LineStyle.Dashed);
 
-    addLine(ext200Up, `${sessionName} IB +200%`, "#009944", 1, LightweightCharts.LineStyle.Solid);
-    addLine(ext200Down, `${sessionName} IB -200%`, "#009944", 1, LightweightCharts.LineStyle.Solid);
+addLine(ext100Up, `TP2`, "#00ff88", 2, LightweightCharts.LineStyle.Solid);
+addLine(ext100Down, `TP2`, "#00ff88", 2, LightweightCharts.LineStyle.Solid);
+
+addLine(ext200Up, `TP3`, "#00aa55", 2, LightweightCharts.LineStyle.Solid);
+addLine(ext200Down, `TP3`, "#00aa55", 2, LightweightCharts.LineStyle.Solid);
 
     drawSessionIBFill(sessionName, ibCandles, high, low);
 
