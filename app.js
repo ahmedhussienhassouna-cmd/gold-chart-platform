@@ -1495,16 +1495,22 @@ function renderSessionIB(sessionName){
         timeZone: "Africa/Cairo"
     });
 
-    const sessionCandles = candlesData.filter(c => {
-        const p = getCairoParts(c.time);
-        const candleDate = `${p.year}-${p.month}-${p.day}`;
-        return candleDate === today && candleInCairoSession(c, config);
-    });
+ let sessionCandles = candlesData.filter(c => {
+    const p = getCairoParts(c.time);
+    const candleDate = `${p.year}-${p.month}-${p.day}`;
+    return candleDate === today && candleInCairoSession(c, config);
+});
 
-    if(!sessionCandles.length){
-        setText("signal", `⚠️ No candles found for ${sessionName} session today`);
-        return;
-    }
+if(!sessionCandles.length){
+    sessionCandles = candlesData.filter(c => {
+        return candleInCairoSession(c, config);
+    }).slice(-300);
+}
+
+if(!sessionCandles.length){
+    setText("signal", `⚠️ No candles found for ${sessionName}`);
+    return;
+}
 
     // أول ساعة كاملة من الجلسة
     const firstCandle = sessionCandles[0];
