@@ -5,6 +5,10 @@ let currentGranularity = "M1";
 let strategyOn = false;
 let liquidityOn = false;
 let ibOn = false;
+
+let asiaSessionOn = false;
+let europeSessionOn = false;
+let americaSessionOn = false;
 let vwapOn = false;
 let sessionProfileOn = false;
 
@@ -42,6 +46,20 @@ function updatePanel(){
     setText("panelStrategy", strategyOn ? "ON" : "OFF");
     setText("panelLiquidity", liquidityOn ? "ON" : "OFF");
     setText("panelIB", ibOn ? "ON" : "OFF");
+    const asiaBtn = document.getElementById("asiaSessionBtn");
+if(asiaBtn){
+    asiaBtn.innerHTML = asiaSessionOn ? "✅ Session Asia ON" : "🟢 Session Asia";
+}
+
+const europeBtn = document.getElementById("europeSessionBtn");
+if(europeBtn){
+    europeBtn.innerHTML = europeSessionOn ? "✅ Session Europe ON" : "🔵 Session Europe";
+}
+
+const americaBtn = document.getElementById("americaSessionBtn");
+if(americaBtn){
+    americaBtn.innerHTML = americaSessionOn ? "✅ Session America ON" : "🔴 Session America";
+}
     setText("panelVWAP", vwapOn ? "ON" : "OFF");
 
     const btn = document.getElementById("strategyBtn");
@@ -613,8 +631,9 @@ oandaChart.timeScale().setVisibleLogicalRange({
     setActiveTimeframeButton();
     setActiveToolButton();
 
-    oandaChart.timeScale().subscribeVisibleTimeRangeChange(() => {
+oandaChart.timeScale().subscribeVisibleTimeRangeChange(() => {
     renderSessionProfile();
+    renderActiveSessionIBs();
     renderDrawings();
     refreshStrategyAreasLive();
 });
@@ -1402,10 +1421,248 @@ window.toggleLiquidity = function(){
     setText("signal", liquidityOn ? "💧 Liquidity ON" : "💧 Liquidity OFF");
 };
 
-window.toggleIB = function(){
-    ibOn = !ibOn;
+// =======================
+// SESSION IB BUTTONS
+// =======================
+
+function getSessionConfig(sessionName){
+    if(sessionName === "Asia"){
+        return {
+            name: "Asia",
+            startHour: 3,
+            endHour: 10,
+            color: "#2196f3",
+            fill: "rgba(33,150,243,0.14)"
+        };
+    }
+
+    if(sessionName === "Europe"){
+        return {
+            name: "Europe",
+            startHour: 10,
+            endHour: 15.5,
+            color: "#4caf50",
+            fill: "rgba(76,175,80,0.14)"
+        };
+    }
+
+    if(sessionName === "America"){
+        return {
+            name: "America",
+            startHour: 15.5,
+            endHour: 23,
+            color: "#ff3333",
+            fill: "rgba(255,51,51,0.14)"
+        };
+    }
+
+    return null;
+}
+
+function candleInCairoSession(candle, config){
+    const p = getCairoParts(candle.time);
+    const current = p.hour + p.minute / 60;
+    return current >= config.startHour && current < config.endHour;
+}
+
+function clearSessionIBDrawings(sessionName){
+    if(!sessionSvg) return;
+
+    sessionSvg.querySelectorAll(`[data-session-ib="${sessionName}"]`).forEach(el => {
+        el.remove();
+    });
+}
+
+function clearAllSessionIBDrawings(){
+    clearSessionIBDrawings("Asia");
+    clearSessionIBDrawings("Europe");
+    clearSessionIBDrawings("America");
+}
+
+function renderSessionIB(sessionName){
+    if(!sessionSvg || !oandaChart || !candleSeries || !candlesData.length) return;
+
+    const config = getSessionConfig(sessionName);
+    if(!config) return;
+
+    clearSessionIBDrawings(sessionName);
+
+    const today = new Date().toLocaleDateString("en-CA", {
+        timeZone: "Africa/Cairo"
+    });
+
+    const sessionCandles = candlesData.filter(c => {
+        const p = getCairoParts(c.time);
+        const candleDate = `${p.year}-${p.month}-${p.day}`;
+
+        return candleDate === today && candleInCairoSession(c, config);
+    });
+
+    if(!sessionCandles.length){
+        setText("signal", `⚠️ No candles found for ${sessionName} session today`);
+        return;
+    }
+
+    const firstCandles = sessionCandles.slice(0, 12);
+
+    const startTime = firstCandles[0].time;
+    const endTime = firstCandles[firstCandles.length - 1].time;
+
+    const high = Math.max(...firstCandles.map(c => c.high));
+    const low = Math.min(...firstCandles.map(c => c.low));
+    const mid = high - ((high - low) / 2);
+
+    const x1 = oandaChart.timeScale().timeToCoordinate(startTime);
+    const x2 = oandaChart.timeScale().timeToCoordinate(endTime);
+    const yHigh = candleSeries.priceToCoordinate(high);
+    const yLow = candleSeries.priceToCoordinate(low);
+    const yMid = candleSeries.priceToCoordinate(mid);
+
+    if(x1 == null || x2 == null || yHigh == null || yLow == null || yMid == null) return;
+
+    const left = Math.min(x1, x2);
+    const width = Math.max(30, Math.abs(x2 - x1));
+    const top = Math.min(yHigh, yLow);
+    const height = Math.abs(yLow - yHigh);
+
+    const rect = svgEl("rect", {
+        x: left,
+        y: top,
+        width: width,
+        height: height,
+        fill: config.fill,
+        stroke: config.color,
+        "stroke-width": 2,
+        "data-session-ib": sessionName
+    });
+
+    const highLine = svgEl("line", {
+        x1: left,
+        y1: yHigh,
+        x2: left + width + 250,
+        y2: yHigh,
+        stroke: config.color,
+        "stroke-width": 2,
+        "data-session-ib": sessionName
+    });
+
+    const lowLine = svgEl("line", {
+        x1: left,
+        y1: yLow,
+        x2: left + width + 250,
+        y2: yLow,
+        stroke: config.color,
+        "stroke-width": 2,
+        "data-session-ib": sessionName
+    });
+
+    const midLine = svgEl("line", {
+        x1: left,
+        y1: yMid,
+        x2: left + width + 250,
+        y2: yMid,
+        stroke: "#ffd700",
+        "stroke-width": 1.5,
+        "stroke-dasharray": "6 6",
+        "data-session-ib": sessionName
+    });
+
+    const label = svgEl("text", {
+        x: left + 6,
+        y: top + 18,
+        fill: config.color,
+        "font-size": "13",
+        "font-weight": "bold",
+        "data-session-ib": sessionName
+    });
+
+    label.textContent = `${sessionName} IB`;
+
+    const highText = svgEl("text", {
+        x: left + width + 260,
+        y: yHigh + 4,
+        fill: config.color,
+        "font-size": "12",
+        "font-weight": "bold",
+        "data-session-ib": sessionName
+    });
+
+    highText.textContent = `${sessionName} IB High ${high.toFixed(2)}`;
+
+    const lowText = svgEl("text", {
+        x: left + width + 260,
+        y: yLow + 4,
+        fill: config.color,
+        "font-size": "12",
+        "font-weight": "bold",
+        "data-session-ib": sessionName
+    });
+
+    lowText.textContent = `${sessionName} IB Low ${low.toFixed(2)}`;
+
+    sessionSvg.appendChild(rect);
+    sessionSvg.appendChild(highLine);
+    sessionSvg.appendChild(lowLine);
+    sessionSvg.appendChild(midLine);
+    sessionSvg.appendChild(label);
+    sessionSvg.appendChild(highText);
+    sessionSvg.appendChild(lowText);
+
+    setText(
+        "signal",
+        `✅ ${sessionName} IB Drawn<br>
+        High: ${high.toFixed(2)}<br>
+        Low: ${low.toFixed(2)}<br>
+        Mid: ${mid.toFixed(2)}`
+    );
+}
+
+function renderActiveSessionIBs(){
+    if(asiaSessionOn) renderSessionIB("Asia");
+    if(europeSessionOn) renderSessionIB("Europe");
+    if(americaSessionOn) renderSessionIB("America");
+}
+
+window.toggleAsiaSession = function(){
+    asiaSessionOn = !asiaSessionOn;
+
+    if(!asiaSessionOn){
+        clearSessionIBDrawings("Asia");
+        setText("signal", "🟢 Session Asia OFF");
+    }else{
+        renderSessionIB("Asia");
+    }
+
+    ibOn = asiaSessionOn || europeSessionOn || americaSessionOn;
     updatePanel();
-    setText("signal", ibOn ? "📦 IB Zone ON" : "📦 IB Zone OFF");
+};
+
+window.toggleEuropeSession = function(){
+    europeSessionOn = !europeSessionOn;
+
+    if(!europeSessionOn){
+        clearSessionIBDrawings("Europe");
+        setText("signal", "🔵 Session Europe OFF");
+    }else{
+        renderSessionIB("Europe");
+    }
+
+    ibOn = asiaSessionOn || europeSessionOn || americaSessionOn;
+    updatePanel();
+};
+
+window.toggleAmericaSession = function(){
+    americaSessionOn = !americaSessionOn;
+
+    if(!americaSessionOn){
+        clearSessionIBDrawings("America");
+        setText("signal", "🔴 Session America OFF");
+    }else{
+        renderSessionIB("America");
+    }
+
+    ibOn = asiaSessionOn || europeSessionOn || americaSessionOn;
+    updatePanel();
 };
 
 window.toggleVWAP = function(){
@@ -2153,6 +2410,7 @@ function forceChartResize(){
         }
 
         if(typeof renderSessionProfile === "function") renderSessionProfile();
+        if(typeof renderActiveSessionIBs === "function") renderActiveSessionIBs();
         if(typeof renderDrawings === "function") renderDrawings();
 
     }, 250);
