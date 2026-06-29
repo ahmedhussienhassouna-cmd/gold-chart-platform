@@ -842,7 +842,21 @@ function chartPointFromMouse(e){
     const y = e.clientY - rect.top;
 
     const price = candleSeries.coordinateToPrice(y);
-    const time = oandaChart.timeScale().coordinateToTime(x);
+
+    let time = oandaChart.timeScale().coordinateToTime(x);
+
+    // لو بنرسم في الفراغ يمين آخر شمعة
+    if(time == null){
+        const logical = oandaChart.timeScale().coordinateToLogical(x);
+
+        if(logical != null && candlesData.length > 0){
+            const lastCandle = candlesData[candlesData.length - 1];
+            const tfSeconds = getTimeframeSeconds(currentGranularity);
+            const extraBars = Math.round(logical - (candlesData.length - 1));
+
+            time = lastCandle.time + (extraBars * tfSeconds);
+        }
+    }
 
     if(price == null || time == null) return null;
 
@@ -852,6 +866,16 @@ function chartPointFromMouse(e){
         price: Number(price),
         time
     };
+}
+
+function getTimeframeSeconds(tf){
+    if(tf === "M1") return 60;
+    if(tf === "M5") return 300;
+    if(tf === "M15") return 900;
+    if(tf === "H1") return 3600;
+    if(tf === "H4") return 14400;
+    if(tf === "D") return 86400;
+    return 60;
 }
 
 function coordinateFromPoint(point){
