@@ -253,6 +253,14 @@ function drawStrategyArea(price, color, text){
     drawingSvg.insertBefore(rect, drawingSvg.firstChild);
     drawingSvg.appendChild(label);
 }
+function redrawStrategyAreas(){
+    if(!strategyOn || !activeStrategySetup) return;
+
+    document.querySelectorAll(".strategyArea").forEach(el => el.remove());
+
+    drawStrategyArea(activeStrategySetup.high, "rgba(0,140,255,0.18)", "منطقة شراء");
+    drawStrategyArea(activeStrategySetup.low, "rgba(255,45,45,0.18)", "منطقة بيع");
+}
 
 function drawStrategySignal(type, entry, stop){
     if(!drawingSvg || !oandaChart || !candleSeries) return;
@@ -1007,8 +1015,10 @@ function renderDrawings(){
 
             text.textContent = d.text || "Text";
             drawingSvg.appendChild(text);
-        }
+                }
     });
+
+    redrawStrategyAreas();
 }
 
 // =======================
@@ -1215,8 +1225,19 @@ window.changeTimeframe = async function(tf){
     setActiveTimeframeButton();
     setText("signal", `Loading timeframe ${tf}...`);
 
-    await createChart();
-    await loadOandaPrice();
+  await createChart();
+await loadOandaPrice();
+
+if(strategyOn && activeStrategySetup){
+    drawStrategyZone(
+        activeStrategySetup.high,
+        activeStrategySetup.low,
+        activeStrategySetup.buyTp1,
+        activeStrategySetup.buyTp2,
+        activeStrategySetup.sellTp1,
+        activeStrategySetup.sellTp2
+    );
+}
 };
 
 // =======================
@@ -1340,6 +1361,10 @@ drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2);
 activeStrategySetup = {
     high,
     low,
+    buyTp1,
+    buyTp2,
+    sellTp1,
+    sellTp2,
     buyReady:false,
     sellReady:false,
     buyDone:false,
