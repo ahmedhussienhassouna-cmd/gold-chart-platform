@@ -599,7 +599,7 @@ fixRightEdge: false
         vwapSeries.setData(vwapData);
 
         renderSessionProfile();
-        renderActiveSessionIBs();
+
 
         const lastCandle = candles[candles.length - 1];
 
@@ -634,7 +634,7 @@ oandaChart.timeScale().setVisibleLogicalRange({
 
 oandaChart.timeScale().subscribeVisibleTimeRangeChange(() => {
     renderSessionProfile();
-    renderActiveSessionIBs();
+    redrawSessionIBFill();
     renderDrawings();
     refreshStrategyAreasLive();
 });
@@ -1423,204 +1423,234 @@ window.toggleLiquidity = function(){
 };
 
 // =======================
-// SESSION IB BUTTONS
+// LIGHT SESSION IB - NO LAG
 // =======================
 
-function getSessionConfig(sessionName){
-    if(sessionName === "Asia"){
+let sessionIBLines = [];
+let sessionIBFillDrawings = [];
+
+function clearSessionIB(){
+    if(candleSeries){
+        sessionIBLines.forEach(line => {
+            try{
+                candleSeries.removePriceLine(line);
+            }catch(e){}
+        });
+    }
+
+    sessionIBLines = [];
+
+    if(drawingSvg){
+        sessionIBFillDrawings.forEach(el => {
+            try{
+                el.remove();
+            }catch(e){}
+        });
+    }
+
+    sessionIBFillDrawings = [];
+}
+
+function getSessionIBConfig(name){
+    if(name === "Asia"){
         return {
             name: "Asia",
             startHour: 3,
-            endHour: 10,
+            endHour: 4,
             color: "#2196f3",
-            fill: "rgba(33,150,243,0.14)"
+            fill: "rgba(33,150,243,0.10)"
         };
     }
 
-    if(sessionName === "Europe"){
+    if(name === "Europe"){
         return {
             name: "Europe",
             startHour: 10,
-            endHour: 15.5,
+            endHour: 11,
             color: "#4caf50",
-            fill: "rgba(76,175,80,0.14)"
+            fill: "rgba(76,175,80,0.10)"
         };
     }
 
-    if(sessionName === "America"){
+    if(name === "America"){
         return {
             name: "America",
             startHour: 15.5,
-            endHour: 23,
+            endHour: 16.5,
             color: "#ff3333",
-            fill: "rgba(255,51,51,0.14)"
+            fill: "rgba(255,51,51,0.10)"
         };
     }
 
     return null;
 }
 
-function candleInCairoSession(candle, config){
-    const p = getCairoParts(candle.time);
-    const current = p.hour + p.minute / 60;
-    return current >= config.startHour && current < config.endHour;
-}
+function getLastSessionIBCandles(sessionName){
+    const config = getSessionIBConfig(sessionName);
+    if(!config || !candlesData.length) return [];
 
-function clearSessionIBDrawings(sessionName){
-    if(!sessionSvg) return;
+    const grouped = {};
 
-    sessionSvg.querySelectorAll(`[data-session-ib="${sessionName}"]`).forEach(el => {
-        el.remove();
-    });
-}
-
-function clearAllSessionIBDrawings(){
-    clearSessionIBDrawings("Asia");
-    clearSessionIBDrawings("Europe");
-    clearSessionIBDrawings("America");
-}
-
-function renderSessionIB(sessionName){
-    if(!sessionSvg || !oandaChart || !candleSeries || !candlesData.length) return;
-
-    const config = getSessionConfig(sessionName);
-    if(!config) return;
-
-    clearSessionIBDrawings(sessionName);
-
-    const chartBox = document.getElementById("oandaChart");
-    if(!chartBox) return;
-
-    const today = new Date().toLocaleDateString("en-CA", {
-        timeZone: "Africa/Cairo"
-    });
-
- let sessionCandles = candlesData.filter(c => {
-    const p = getCairoParts(c.time);
-    const candleDate = `${p.year}-${p.month}-${p.day}`;
-    return candleDate === today && candleInCairoSession(c, config);
-});
-
-if(!sessionCandles.length){
-    sessionCandles = candlesData.filter(c => {
-        return candleInCairoSession(c, config);
-    }).slice(-300);
-}
-
-if(!sessionCandles.length){
-    setText("signal", `⚠️ No candles found for ${sessionName}`);
-    return;
-}
-
-    // أول ساعة كاملة من الجلسة
-    const firstCandle = sessionCandles[0];
-    const pStart = getCairoParts(firstCandle.time);
-    const firstHourCandles = sessionCandles.filter(c => {
+    candlesData.forEach(c => {
         const p = getCairoParts(c.time);
         const current = p.hour + p.minute / 60;
-        return current >= config.startHour && current < config.startHour + 1;
+
+        if(current >= config.startHour && current < config.endHour){
+            const key = `${p.year}-${p.month}-${p.day}`;
+            if(!grouped[key]) grouped[key] = [];
+            grouped[key].push(c);
+        }
     });
 
-    const ibCandles = firstHourCandles.length ? firstHourCandles : sessionCandles.slice(0, 12);
+    const keys = Object.keys(grouped).sort();
+
+    if(!keys.length) return [];
+
+    return grouped[keys[keys.length - 1]];
+}
+
+function drawSessionIBFill(sessionName, ibCandles, high, low){
+    if(!drawingSvg || !oandaChart || !candleSeries || !ibCandles.length) return;
+
+    const config = getSessionIBConfig(sessionName);
+    if(!config) return;
 
     const startTime = ibCandles[0].time;
     const endTime = ibCandles[ibCandles.length - 1].time;
-
-    const high = Math.max(...ibCandles.map(c => c.high));
-    const low = Math.min(...ibCandles.map(c => c.low));
-    const range = high - low;
-    const mid = high - range / 2;
 
     const x1 = oandaChart.timeScale().timeToCoordinate(startTime);
     const x2 = oandaChart.timeScale().timeToCoordinate(endTime);
     const yHigh = candleSeries.priceToCoordinate(high);
     const yLow = candleSeries.priceToCoordinate(low);
-    const yMid = candleSeries.priceToCoordinate(mid);
 
-    if(x1 == null || x2 == null || yHigh == null || yLow == null || yMid == null) return;
+    if(x1 == null || x2 == null || yHigh == null || yLow == null) return;
 
-    const left = Math.min(x1, x2);
-    const width = Math.max(40, Math.abs(x2 - x1));
-    const rightExtend = chartBox.clientWidth - 10;
-
-    const top = Math.min(yHigh, yLow);
-    const height = Math.abs(yLow - yHigh);
-
-    sessionSvg.appendChild(svgEl("rect", {
-        x: left,
-        y: top,
-        width: width,
-        height: height,
+    const rect = svgEl("rect", {
+        x: Math.min(x1, x2),
+        y: Math.min(yHigh, yLow),
+        width: Math.max(20, Math.abs(x2 - x1)),
+        height: Math.abs(yLow - yHigh),
         fill: config.fill,
         stroke: config.color,
-        "stroke-width": 2,
-        "data-session-ib": sessionName
-    }));
-
-    function drawIBLine(price, y, title, color, dashed = false){
-        sessionSvg.appendChild(svgEl("line", {
-            x1: left,
-            y1: y,
-            x2: rightExtend,
-            y2: y,
-            stroke: color,
-            "stroke-width": 2,
-            "stroke-dasharray": dashed ? "6 6" : "",
-            "data-session-ib": sessionName
-        }));
-
-        const label = svgEl("text", {
-            x: rightExtend - 170,
-            y: y - 6,
-            fill: color,
-            "font-size": "12",
-            "font-weight": "bold",
-            "data-session-ib": sessionName
-        });
-
-        label.textContent = `${sessionName} ${title} ${price.toFixed(2)}`;
-        sessionSvg.appendChild(label);
-    }
-
-    drawIBLine(high, yHigh, "IB High", config.color);
-    drawIBLine(low, yLow, "IB Low", config.color);
-    drawIBLine(mid, yMid, "IB Mid", "#ffd700", true);
-
-    const boxLabel = svgEl("text", {
-        x: left + 6,
-        y: top + 18,
-        fill: config.color,
-        "font-size": "13",
-        "font-weight": "bold",
-        "data-session-ib": sessionName
+        "stroke-width": 1.5,
+        "data-light-ib-fill": sessionName
     });
 
-    boxLabel.textContent = `${sessionName} IB`;
-    sessionSvg.appendChild(boxLabel);
+    drawingSvg.insertBefore(rect, drawingSvg.firstChild);
+    sessionIBFillDrawings.push(rect);
+}
+
+function redrawSessionIBFill(){
+    if(!activeSessionIB) return;
+
+    sessionIBFillDrawings.forEach(el => {
+        try{
+            el.remove();
+        }catch(e){}
+    });
+
+    sessionIBFillDrawings = [];
+
+    drawSessionIBFill(
+        activeSessionIB.name,
+        activeSessionIB.candles,
+        activeSessionIB.high,
+        activeSessionIB.low
+    );
+}
+
+let activeSessionIB = null;
+
+function drawLightSessionIB(sessionName){
+    if(!candleSeries || !candlesData.length){
+        setText("signal", "Chart not ready");
+        return;
+    }
+
+    const config = getSessionIBConfig(sessionName);
+    if(!config) return;
+
+    clearSessionIB();
+
+    const ibCandles = getLastSessionIBCandles(sessionName);
+
+    if(!ibCandles.length){
+        setText("signal", `⚠️ No candles found for ${sessionName} IB`);
+        return;
+    }
+
+    const high = Math.max(...ibCandles.map(c => c.high));
+    const low = Math.min(...ibCandles.map(c => c.low));
+    const range = high - low;
+
+    const mid = high - range / 2;
+
+    const ext50Up = high + range * 0.5;
+    const ext50Down = low - range * 0.5;
+
+    const ext100Up = high + range;
+    const ext100Down = low - range;
+
+    const ext200Up = high + range * 2;
+    const ext200Down = low - range * 2;
+
+    activeSessionIB = {
+        name: sessionName,
+        candles: ibCandles,
+        high,
+        low
+    };
+
+    function addLine(price, title, color, width, style){
+        const line = candleSeries.createPriceLine({
+            price: price,
+            color: color,
+            lineWidth: width,
+            lineStyle: style,
+            axisLabelVisible: true,
+            title: title
+        });
+
+        sessionIBLines.push(line);
+    }
+
+    addLine(high, `${sessionName} IB High`, config.color, 2, LightweightCharts.LineStyle.Solid);
+    addLine(low, `${sessionName} IB Low`, config.color, 2, LightweightCharts.LineStyle.Solid);
+    addLine(mid, `${sessionName} IB Mid`, "#ffd700", 1, LightweightCharts.LineStyle.Dashed);
+
+    addLine(ext50Up, `${sessionName} IB +50%`, "#ffffff", 1, LightweightCharts.LineStyle.Dashed);
+    addLine(ext50Down, `${sessionName} IB -50%`, "#ffffff", 1, LightweightCharts.LineStyle.Dashed);
+
+    addLine(ext100Up, `${sessionName} IB +100%`, "#00ff88", 1, LightweightCharts.LineStyle.Solid);
+    addLine(ext100Down, `${sessionName} IB -100%`, "#00ff88", 1, LightweightCharts.LineStyle.Solid);
+
+    addLine(ext200Up, `${sessionName} IB +200%`, "#009944", 1, LightweightCharts.LineStyle.Solid);
+    addLine(ext200Down, `${sessionName} IB -200%`, "#009944", 1, LightweightCharts.LineStyle.Solid);
+
+    drawSessionIBFill(sessionName, ibCandles, high, low);
 
     setText(
         "signal",
         `✅ ${sessionName} IB Drawn<br>
         High: ${high.toFixed(2)}<br>
         Low: ${low.toFixed(2)}<br>
-        Mid: ${mid.toFixed(2)}`
+        Mid: ${mid.toFixed(2)}<br>
+        Range: ${range.toFixed(2)}`
     );
-}
-
-function renderActiveSessionIBs(){
-    if(asiaSessionOn) renderSessionIB("Asia");
-    if(europeSessionOn) renderSessionIB("Europe");
-    if(americaSessionOn) renderSessionIB("America");
 }
 
 window.toggleAsiaSession = function(){
     asiaSessionOn = !asiaSessionOn;
 
-    if(!asiaSessionOn){
-        clearSessionIBDrawings("Asia");
-        setText("signal", "🟢 Session Asia OFF");
+    europeSessionOn = false;
+    americaSessionOn = false;
+
+    if(asiaSessionOn){
+        drawLightSessionIB("Asia");
     }else{
-        renderSessionIB("Asia");
+        clearSessionIB();
+        activeSessionIB = null;
+        setText("signal", "🟢 Session Asia OFF");
     }
 
     ibOn = asiaSessionOn || europeSessionOn || americaSessionOn;
@@ -1630,11 +1660,15 @@ window.toggleAsiaSession = function(){
 window.toggleEuropeSession = function(){
     europeSessionOn = !europeSessionOn;
 
-    if(!europeSessionOn){
-        clearSessionIBDrawings("Europe");
-        setText("signal", "🔵 Session Europe OFF");
+    asiaSessionOn = false;
+    americaSessionOn = false;
+
+    if(europeSessionOn){
+        drawLightSessionIB("Europe");
     }else{
-        renderSessionIB("Europe");
+        clearSessionIB();
+        activeSessionIB = null;
+        setText("signal", "🔵 Session Europe OFF");
     }
 
     ibOn = asiaSessionOn || europeSessionOn || americaSessionOn;
@@ -1644,11 +1678,15 @@ window.toggleEuropeSession = function(){
 window.toggleAmericaSession = function(){
     americaSessionOn = !americaSessionOn;
 
-    if(!americaSessionOn){
-        clearSessionIBDrawings("America");
-        setText("signal", "🔴 Session America OFF");
+    asiaSessionOn = false;
+    europeSessionOn = false;
+
+    if(americaSessionOn){
+        drawLightSessionIB("America");
     }else{
-        renderSessionIB("America");
+        clearSessionIB();
+        activeSessionIB = null;
+        setText("signal", "🔴 Session America OFF");
     }
 
     ibOn = asiaSessionOn || europeSessionOn || americaSessionOn;
@@ -2400,7 +2438,7 @@ function forceChartResize(){
         }
 
         if(typeof renderSessionProfile === "function") renderSessionProfile();
-        if(typeof renderActiveSessionIBs === "function") renderActiveSessionIBs();
+if(typeof redrawSessionIBFill === "function") redrawSessionIBFill();
         if(typeof renderDrawings === "function") renderDrawings();
 
     }, 250);
