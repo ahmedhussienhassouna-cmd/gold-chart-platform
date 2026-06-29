@@ -599,6 +599,7 @@ fixRightEdge: false
         vwapSeries.setData(vwapData);
 
         renderSessionProfile();
+        renderActiveSessionIBs();
 
         const lastCandle = candles[candles.length - 1];
 
@@ -1487,6 +1488,9 @@ function renderSessionIB(sessionName){
 
     clearSessionIBDrawings(sessionName);
 
+    const chartBox = document.getElementById("oandaChart");
+    if(!chartBox) return;
+
     const today = new Date().toLocaleDateString("en-CA", {
         timeZone: "Africa/Cairo"
     });
@@ -1494,7 +1498,6 @@ function renderSessionIB(sessionName){
     const sessionCandles = candlesData.filter(c => {
         const p = getCairoParts(c.time);
         const candleDate = `${p.year}-${p.month}-${p.day}`;
-
         return candleDate === today && candleInCairoSession(c, config);
     });
 
@@ -1503,14 +1506,24 @@ function renderSessionIB(sessionName){
         return;
     }
 
-    const firstCandles = sessionCandles.slice(0, 12);
+    // أول ساعة كاملة من الجلسة
+    const firstCandle = sessionCandles[0];
+    const pStart = getCairoParts(firstCandle.time);
+    const firstHourCandles = sessionCandles.filter(c => {
+        const p = getCairoParts(c.time);
+        const current = p.hour + p.minute / 60;
+        return current >= config.startHour && current < config.startHour + 1;
+    });
 
-    const startTime = firstCandles[0].time;
-    const endTime = firstCandles[firstCandles.length - 1].time;
+    const ibCandles = firstHourCandles.length ? firstHourCandles : sessionCandles.slice(0, 12);
 
-    const high = Math.max(...firstCandles.map(c => c.high));
-    const low = Math.min(...firstCandles.map(c => c.low));
-    const mid = high - ((high - low) / 2);
+    const startTime = ibCandles[0].time;
+    const endTime = ibCandles[ibCandles.length - 1].time;
+
+    const high = Math.max(...ibCandles.map(c => c.high));
+    const low = Math.min(...ibCandles.map(c => c.low));
+    const range = high - low;
+    const mid = high - range / 2;
 
     const x1 = oandaChart.timeScale().timeToCoordinate(startTime);
     const x2 = oandaChart.timeScale().timeToCoordinate(endTime);
@@ -1521,11 +1534,13 @@ function renderSessionIB(sessionName){
     if(x1 == null || x2 == null || yHigh == null || yLow == null || yMid == null) return;
 
     const left = Math.min(x1, x2);
-    const width = Math.max(30, Math.abs(x2 - x1));
+    const width = Math.max(40, Math.abs(x2 - x1));
+    const rightExtend = chartBox.clientWidth - 10;
+
     const top = Math.min(yHigh, yLow);
     const height = Math.abs(yLow - yHigh);
 
-    const rect = svgEl("rect", {
+    sessionSvg.appendChild(svgEl("rect", {
         x: left,
         y: top,
         width: width,
@@ -1534,40 +1549,38 @@ function renderSessionIB(sessionName){
         stroke: config.color,
         "stroke-width": 2,
         "data-session-ib": sessionName
-    });
+    }));
 
-    const highLine = svgEl("line", {
-        x1: left,
-        y1: yHigh,
-        x2: left + width + 250,
-        y2: yHigh,
-        stroke: config.color,
-        "stroke-width": 2,
-        "data-session-ib": sessionName
-    });
+    function drawIBLine(price, y, title, color, dashed = false){
+        sessionSvg.appendChild(svgEl("line", {
+            x1: left,
+            y1: y,
+            x2: rightExtend,
+            y2: y,
+            stroke: color,
+            "stroke-width": 2,
+            "stroke-dasharray": dashed ? "6 6" : "",
+            "data-session-ib": sessionName
+        }));
 
-    const lowLine = svgEl("line", {
-        x1: left,
-        y1: yLow,
-        x2: left + width + 250,
-        y2: yLow,
-        stroke: config.color,
-        "stroke-width": 2,
-        "data-session-ib": sessionName
-    });
+        const label = svgEl("text", {
+            x: rightExtend - 170,
+            y: y - 6,
+            fill: color,
+            "font-size": "12",
+            "font-weight": "bold",
+            "data-session-ib": sessionName
+        });
 
-    const midLine = svgEl("line", {
-        x1: left,
-        y1: yMid,
-        x2: left + width + 250,
-        y2: yMid,
-        stroke: "#ffd700",
-        "stroke-width": 1.5,
-        "stroke-dasharray": "6 6",
-        "data-session-ib": sessionName
-    });
+        label.textContent = `${sessionName} ${title} ${price.toFixed(2)}`;
+        sessionSvg.appendChild(label);
+    }
 
-    const label = svgEl("text", {
+    drawIBLine(high, yHigh, "IB High", config.color);
+    drawIBLine(low, yLow, "IB Low", config.color);
+    drawIBLine(mid, yMid, "IB Mid", "#ffd700", true);
+
+    const boxLabel = svgEl("text", {
         x: left + 6,
         y: top + 18,
         fill: config.color,
@@ -1576,37 +1589,8 @@ function renderSessionIB(sessionName){
         "data-session-ib": sessionName
     });
 
-    label.textContent = `${sessionName} IB`;
-
-    const highText = svgEl("text", {
-        x: left + width + 260,
-        y: yHigh + 4,
-        fill: config.color,
-        "font-size": "12",
-        "font-weight": "bold",
-        "data-session-ib": sessionName
-    });
-
-    highText.textContent = `${sessionName} IB High ${high.toFixed(2)}`;
-
-    const lowText = svgEl("text", {
-        x: left + width + 260,
-        y: yLow + 4,
-        fill: config.color,
-        "font-size": "12",
-        "font-weight": "bold",
-        "data-session-ib": sessionName
-    });
-
-    lowText.textContent = `${sessionName} IB Low ${low.toFixed(2)}`;
-
-    sessionSvg.appendChild(rect);
-    sessionSvg.appendChild(highLine);
-    sessionSvg.appendChild(lowLine);
-    sessionSvg.appendChild(midLine);
-    sessionSvg.appendChild(label);
-    sessionSvg.appendChild(highText);
-    sessionSvg.appendChild(lowText);
+    boxLabel.textContent = `${sessionName} IB`;
+    sessionSvg.appendChild(boxLabel);
 
     setText(
         "signal",
