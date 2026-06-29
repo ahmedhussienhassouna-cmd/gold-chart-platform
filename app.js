@@ -136,7 +136,7 @@ function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
 
     const highLine = candleSeries.createPriceLine({
         price: high,
-        color: "#ff2d2d",
+color: "#008cff",
         lineWidth: 4,
         lineStyle: styleSolid,
         axisLabelVisible: true,
@@ -145,7 +145,7 @@ function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
 
     const buyTp1Line = candleSeries.createPriceLine({
         price: buyTp1,
-        color: "#00ff88",
+color: "#00ff88",
         lineWidth: 4,
         lineStyle: styleSolid,
         axisLabelVisible: true,
@@ -154,7 +154,7 @@ function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
 
     const buyTp2Line = candleSeries.createPriceLine({
         price: buyTp2,
-        color: "#00cc66",
+color: "#00ff88",
         lineWidth: 4,
         lineStyle: styleSolid,
         axisLabelVisible: true,
@@ -163,7 +163,7 @@ function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
 
     const lowLine = candleSeries.createPriceLine({
         price: low,
-        color: "#008cff",
+color: "#ff2d2d",
         lineWidth: 4,
         lineStyle: styleSolid,
         axisLabelVisible: true,
@@ -172,7 +172,7 @@ function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
 
     const sellTp1Line = candleSeries.createPriceLine({
         price: sellTp1,
-        color: "#ff9800",
+color: "#00ff88",
         lineWidth: 4,
         lineStyle: styleSolid,
         axisLabelVisible: true,
@@ -181,7 +181,7 @@ function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
 
     const sellTp2Line = candleSeries.createPriceLine({
         price: sellTp2,
-        color: "#ff00ff",
+color: "#00ff88",
         lineWidth: 4,
         lineStyle: styleSolid,
         axisLabelVisible: true,
@@ -196,7 +196,10 @@ function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
         sellTp1Line,
         sellTp2Line
     );
+document.querySelectorAll(".strategyArea").forEach(el => el.remove());
 
+drawStrategyArea(high, "rgba(0,140,255,0.18)", "منطقة شراء");
+drawStrategyArea(low, "rgba(255,45,45,0.18)", "منطقة بيع");
     setText(
         "signal",
         `✅ Strategy Zone Drawn<br><br>
@@ -210,6 +213,45 @@ function drawStrategyZone(high, low, buyTp1, buyTp2, sellTp1, sellTp2){
         🎯 هدف أول: ${sellTp1}<br>
         🎯 هدف ثاني: ${sellTp2}`
     );
+}
+function drawStrategyArea(price, color, text){
+    if(!drawingSvg || !candleSeries) return;
+
+    const chartBox = document.getElementById("oandaChart");
+    if(!chartBox) return;
+
+    const y = candleSeries.priceToCoordinate(price);
+    if(y == null) return;
+
+    const height = 34;
+    const top = y - height / 2;
+
+    const rect = svgEl("rect", {
+        class: "strategyArea",
+        x: 0,
+        y: top,
+        width: chartBox.clientWidth,
+        height: height,
+        fill: color,
+        stroke: color.replace("0.18", "0.95"),
+        "stroke-width": 2,
+        rx: 6
+    });
+
+    const label = svgEl("text", {
+        class: "strategyArea",
+        x: chartBox.clientWidth / 2,
+        y: y + 6,
+        fill: "#ffffff",
+        "font-size": "16",
+        "font-weight": "bold",
+        "text-anchor": "middle"
+    });
+
+    label.textContent = text;
+
+    drawingSvg.insertBefore(rect, drawingSvg.firstChild);
+    drawingSvg.appendChild(label);
 }
 
 function drawStrategySignal(type, entry, stop){
