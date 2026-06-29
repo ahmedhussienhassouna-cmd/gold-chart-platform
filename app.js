@@ -480,8 +480,9 @@ async function createChart(){
             borderColor: "#333",
             timeVisible: true,
             secondsVisible: false,
-            rightOffset: 4,
-barSpacing: 16
+rightOffset: 60,
+barSpacing: 16,
+fixRightEdge: false
         },
         handleScroll: {
             mouseWheel: true,
@@ -543,12 +544,13 @@ barSpacing: 16
 
 oandaChart.timeScale().applyOptions({
     barSpacing: 18,
-    rightOffset: 8
+    rightOffset: 60,
+    fixRightEdge: false
 });
 
 oandaChart.timeScale().setVisibleLogicalRange({
     from: candles.length - 120,
-    to: candles.length + 10
+    to: candles.length + 60
 });
 
         setText("signal", `✅ GOLD OANDA Chart Loaded | TF: ${currentGranularity}`);
