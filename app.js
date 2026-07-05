@@ -1133,12 +1133,46 @@ function addSMCText(time, price, text, color){
     if(x == null || y == null) return;
 
     const label = svgEl("text", {
-        x: x,
-        y: y,
+        x: x + 8,
+        y: y - 8,
         fill: color,
         "font-size": "13",
-        "font-weight": "bold",
-        "text-anchor": "middle"
+        "font-weight": "bold"
+    });
+
+    label.textContent = text;
+    smcSvg.appendChild(label);
+}
+
+function addSMCLiquidityLine(time, price, text, color){
+    if(!smcSvg || !oandaChart || !candleSeries) return;
+
+    const x1 = oandaChart.timeScale().timeToCoordinate(time);
+
+    const lastLogical = candlesData.length - 1;
+    const x2 = oandaChart.timeScale().logicalToCoordinate(lastLogical + 35);
+
+    const y = candleSeries.priceToCoordinate(price);
+
+    if(x1 == null || x2 == null || y == null) return;
+
+    smcSvg.appendChild(svgEl("line", {
+        x1,
+        y1: y,
+        x2,
+        y2: y,
+        stroke: color,
+        "stroke-width": 1.5,
+        "stroke-dasharray": "4 4",
+        opacity: 0.85
+    }));
+
+    const label = svgEl("text", {
+        x: x1 + 8,
+        y: y - 8,
+        fill: color,
+        "font-size": "12",
+        "font-weight": "bold"
     });
 
     label.textContent = text;
@@ -1413,8 +1447,8 @@ function renderSMC(){
     }
 
     liquidity.slice(-2).forEach(obj => {
-        addSMCText(obj.time, obj.price, obj.text, obj.color);
-    });
+    addSMCLiquidityLine(obj.time, obj.price, obj.text, obj.color);
+});
 }
 
 
@@ -1440,7 +1474,7 @@ window.toggleSMC = function(){
     setText(
         "signal",
         `🧠 Smart Money ON<br>
-        BOS / CHOCH / FVG / Liquidity detected`
+Market Structure / Zones / Liquidity detected
     );
 };
 
