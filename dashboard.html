@@ -9,53 +9,7 @@
 </head>
 
 <body>
-<script>
-const maintenanceMode = true;
 
-if(maintenanceMode){
-    document.body.innerHTML = `
-        <div style="
-            min-height:100vh;
-            background:#050505;
-            color:#fff;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            text-align:center;
-            font-family:Arial;
-            padding:20px;
-        ">
-            <div>
-                <h1 style="color:#ffd700;font-size:34px;">
-                    🟡 Golden Trade
-                </h1>
-                <h2>جاري تحديث البيانات</h2>
-                <p style="font-size:18px;color:#ccc;">
-                    يتم الآن تحميل النسخة الأصلية الجديدة من المنصة.
-                    <br>
-                    الرجاء المحاولة بعد قليل.
-                </p>
-                <div style="
-                    margin:25px auto;
-                    width:55px;
-                    height:55px;
-                    border:5px solid #333;
-                    border-top:5px solid #ffd700;
-                    border-radius:50%;
-                    animation:spin 1s linear infinite;
-                "></div>
-            </div>
-        </div>
-
-        <style>
-            @keyframes spin{
-                from{transform:rotate(0deg)}
-                to{transform:rotate(360deg)}
-            }
-        </style>
-    `;
-}
-</script>
 <script>
 const savedUser = localStorage.getItem("golden_user");
 
