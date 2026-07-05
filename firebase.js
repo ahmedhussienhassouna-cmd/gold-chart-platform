@@ -162,6 +162,36 @@ window.getUserFromFirebase = async function(email){
 // =======================
 // USERS / REGISTRATION
 // =======================
+window.getUserByPhoneFirebase = async function(phone){
+    try{
+        const phoneValue = String(phone || "").trim();
+
+        if(!phoneValue) return null;
+
+        const q = query(
+            collection(db, "users"),
+            where("phone", "==", phoneValue),
+            limit(1)
+        );
+
+        const snap = await getDocs(q);
+
+        if(!snap.empty){
+            const docSnap = snap.docs[0];
+
+            return {
+                id: docSnap.id,
+                ...docSnap.data()
+            };
+        }
+
+        return null;
+
+    }catch(error){
+        console.error("Get user by phone error:", error);
+        return null;
+    }
+};
 window.saveUserToFirebase = async function(user){
     try{
         if(!user || !user.email) return false;
@@ -172,9 +202,11 @@ window.saveUserToFirebase = async function(user){
 
         await setDoc(doc(db, "users", userEmail), {
             name: String(user.name || "Client").trim(),
-            email: userEmail,
-            password: String(user.password || "").trim(),
-            photo: user.photo || "",
+  email: userEmail,
+phone: String(user.phone || "").trim(),
+phoneVerified: user.phoneVerified === true,
+password: String(user.password || "").trim(),
+photo: user.photo || "",
 
  role: user.role || "Trial Member",
 subscription: user.subscription || "trial",
