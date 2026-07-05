@@ -176,9 +176,12 @@ window.saveUserToFirebase = async function(user){
             password: String(user.password || "").trim(),
             photo: user.photo || "",
 
-            role: user.role || "Trial Member",
-            subscription: user.subscription || "trial",
-            status: user.status || "active",
+ role: user.role || "Trial Member",
+subscription: user.subscription || "trial",
+status: user.status || "active",
+
+authCreated: user.authCreated === true,
+emailVerified: user.emailVerified === true,
 
             trialDays: user.trialDays || 14,
             trialStart: user.trialStart || new Date().toISOString(),
