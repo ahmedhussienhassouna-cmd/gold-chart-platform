@@ -1474,7 +1474,7 @@ window.toggleSMC = function(){
     setText(
         "signal",
         `🧠 Smart Money ON<br>
-Market Structure / Zones / Liquidity detected
+        Market Structure / Zones / Liquidity detected`
     );
 };
 
