@@ -53,6 +53,16 @@
     placeholder="Phone Number - Example: 01012345678"
     autocomplete="tel"
 >
+<button type="button" id="sendOtpBtn">
+    Send OTP
+</button>
+
+<input
+    type="text"
+    id="registerOtp"
+    placeholder="Enter OTP Code"
+    autocomplete="one-time-code"
+>
 
         <input
             type="password"
@@ -63,7 +73,7 @@
 
      
 
-<button type="button">
+<button type="button" id="createAccountBtn">
     Create Account
 </button>
 <div id="recaptcha-container"></div>
@@ -80,7 +90,7 @@ import "./firebase.js?v=3";
     const script = document.createElement("script");
 script.src = "auth.js?v=5";
     script.onload = function(){
-        const btn = document.querySelector("button");
+const btn = document.getElementById("createAccountBtn");
 
         if(btn){
             btn.addEventListener("click", function(){
@@ -91,6 +101,28 @@ script.src = "auth.js?v=5";
                 }
             });
         }
+        const otpBtn = document.getElementById("sendOtpBtn");
+
+if(otpBtn){
+    otpBtn.addEventListener("click", async function(){
+
+        const phone = document.getElementById("registerPhone").value.trim();
+
+        if(phone === ""){
+            alert("Please enter your phone number.");
+            return;
+        }
+
+        try{
+            await window.sendPhoneOtpFirebase(phone);
+            alert("OTP has been sent successfully.");
+        }catch(error){
+            console.error(error);
+            alert(error.message);
+        }
+
+    });
+}
     };
 
     document.body.appendChild(script);
