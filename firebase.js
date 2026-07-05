@@ -18,6 +18,13 @@ import {
     increment
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendEmailVerification,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const firebaseConfig = {
     apiKey: "AIzaSyBRpdJ72pV8t2KyVpSyaRc9WDihDa2d4HU",
     authDomain: "golden-trade-levels.firebaseapp.com",
@@ -28,7 +35,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
+const auth = getAuth(app);
 const db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
     useFetchStreams: false
@@ -39,6 +46,56 @@ function cleanEmail(email){
 }
 
 window.cleanEmail = cleanEmail;
+
+// =======================
+// FIREBASE AUTH
+// =======================
+
+window.createAuthUserFirebase = async function(email, password){
+
+    const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        cleanEmail(email),
+        String(password || "").trim()
+    );
+
+    await sendEmailVerification(userCredential.user);
+
+    return userCredential.user;
+};
+
+window.loginAuthUserFirebase = async function(email, password){
+
+    const userCredential = await signInWithEmailAndPassword(
+        auth,
+        cleanEmail(email),
+        String(password || "").trim()
+    );
+
+    return userCredential.user;
+};
+
+window.logoutAuthFirebase = async function(){
+
+    await signOut(auth);
+
+};
+
+window.isEmailVerifiedFirebase = function(){
+
+    if(!auth.currentUser) return false;
+
+    return auth.currentUser.emailVerified;
+
+};
+
+window.reloadCurrentUserFirebase = async function(){
+
+    if(auth.currentUser){
+        await auth.currentUser.reload();
+    }
+
+};
 
 // =======================
 // GET USER BY EMAIL
