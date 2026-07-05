@@ -35,12 +35,13 @@ function waitForFirebase(){
         let count = 0;
 
         const timer = setInterval(() => {
-            if(
+if(
     window.getUserFromFirebase &&
     window.saveUserToFirebase &&
     window.updateUserLoginFirebase &&
     window.createAuthUserFirebase &&
-    window.loginAuthUserFirebase
+    window.loginAuthUserFirebase &&
+    window.getUserByPhoneFirebase
 ){
                 clearInterval(timer);
                 resolve(true);
@@ -199,6 +200,24 @@ async function registerUser(){
         alert("This email already has an account. Please login.");
         window.location.href = "login.html";
         return;
+        let existingPhoneUser = null;
+
+try{
+    existingPhoneUser = await firebaseRetry(
+        () => window.getUserByPhoneFirebase(phone),
+        3
+    );
+}catch(error){
+    console.error("Register get phone error:", error);
+    showConnectionMessage();
+    return;
+}
+
+if(existingPhoneUser){
+    alert("تم استخدام هذا الرقم من قبل في فترة تجريبية. يرجى الاشتراك لتفعيل الحساب.");
+    window.location.href = "upgrade.html";
+    return;
+}
     }
 
     const now = new Date();
