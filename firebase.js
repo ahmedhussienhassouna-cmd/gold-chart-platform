@@ -23,7 +23,9 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     sendEmailVerification,
-    signOut
+    signOut,
+    RecaptchaVerifier,
+    signInWithPhoneNumber
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const firebaseConfig = {
     apiKey: "AIzaSyBRpdJ72pV8t2KyVpSyaRc9WDihDa2d4HU",
@@ -95,6 +97,45 @@ window.reloadCurrentUserFirebase = async function(){
         await auth.currentUser.reload();
     }
 
+};
+window.setupRecaptchaFirebase = function(){
+    if(window.recaptchaVerifier) return window.recaptchaVerifier;
+
+    window.recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        {
+            size: "invisible"
+        }
+    );
+
+    return window.recaptchaVerifier;
+};
+
+window.sendPhoneOtpFirebase = async function(phone){
+    const appVerifier = window.setupRecaptchaFirebase();
+
+    const egyptPhone = phone.startsWith("+")
+        ? phone
+        : "+2" + phone;
+
+    window.confirmationResult = await signInWithPhoneNumber(
+        auth,
+        egyptPhone,
+        appVerifier
+    );
+
+    return true;
+};
+
+window.verifyPhoneOtpFirebase = async function(code){
+    if(!window.confirmationResult){
+        throw new Error("OTP was not sent yet");
+    }
+
+    const result = await window.confirmationResult.confirm(code);
+
+    return result.user;
 };
 
 // =======================
