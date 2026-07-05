@@ -36,10 +36,12 @@ function waitForFirebase(){
 
         const timer = setInterval(() => {
             if(
-                window.getUserFromFirebase &&
-                window.saveUserToFirebase &&
-                window.updateUserLoginFirebase
-            ){
+    window.getUserFromFirebase &&
+    window.saveUserToFirebase &&
+    window.updateUserLoginFirebase &&
+    window.createAuthUserFirebase &&
+    window.loginAuthUserFirebase
+){
                 clearInterval(timer);
                 resolve(true);
             }
@@ -206,9 +208,12 @@ async function registerUser(){
         password: password,
         photo: "images/ahmed.jpg",
 
-        role: "Trial Member",
-        subscription: "trial",
-        status: "active",
+role: "Trial Member",
+subscription: "trial",
+status: "active",
+
+authCreated: true,
+emailVerified: false,
 
         trialDays: 14,
         trialStart: now.toISOString(),
@@ -220,15 +225,27 @@ async function registerUser(){
         lastLogin: ""
     };
 
-    let saved = false;
+let saved = false;
 
-    try{
-        saved = await firebaseRetry(() => window.saveUserToFirebase(user), 3);
-    }catch(error){
-        console.error("Register save error:", error);
-        showConnectionMessage();
-        return;
-    }
+try{
+
+    // إنشاء حساب Authentication
+    await window.createAuthUserFirebase(email, password);
+
+    // حفظ بيانات العميل في Firestore
+    saved = await firebaseRetry(
+        () => window.saveUserToFirebase(user),
+        3
+    );
+
+}catch(error){
+
+    console.error(error);
+
+    alert(error.message);
+
+    return;
+}
 
     if(!saved){
         alert("Account save failed. Please try again.");
@@ -238,8 +255,15 @@ async function registerUser(){
     localStorage.setItem("golden_user", JSON.stringify(user));
     localStorage.removeItem("golden_logged");
 
-    alert("Account Created Successfully - 14 Days Free Trial Started");
-    window.location.href = "login.html";
+alert(
+`✅ تم إنشاء الحساب.
+
+تم إرسال رسالة تأكيد إلى بريدك الإلكتروني.
+
+يرجى فتح البريد والضغط على Verify Email ثم تسجيل الدخول.`
+);
+
+window.location.href = "login.html";
 }
 
 // =======================
@@ -312,7 +336,19 @@ async function loginUser(){
         alert("Wrong Email or Password");
         return;
     }
+try{
+    const authUser = await window.loginAuthUserFirebase(email, password);
 
+    if(!authUser.emailVerified){
+        alert("يرجى تأكيد بريدك الإلكتروني أولاً، ثم حاول تسجيل الدخول مرة أخرى.");
+        return;
+    }
+
+}catch(error){
+    console.error("Auth login error:", error);
+    alert(error.message);
+    return;
+}
     user = await updateLocalUserStatus(user);
 
     localStorage.setItem("golden_user", JSON.stringify(user));
