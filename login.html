@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login - Golden Trade</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=13">
 </head>
 
 <body class="authBody">
@@ -64,10 +64,10 @@
 
 <!-- Auth + Firebase -->
 <script type="module">
-    import "./firebase.js";
+import "./firebase.js?v=2";
 
     const script = document.createElement("script");
-script.src = "auth.js?v=3";
+script.src = "auth.js?v=4";
     script.onload = function(){
         const loginBtn = document.getElementById("loginBtn");
 
