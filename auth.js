@@ -161,6 +161,7 @@ async function registerUser(){
     const nameInput = document.getElementById("registerName");
     const emailInput = document.getElementById("registerEmail");
     const passwordInput = document.getElementById("registerPassword");
+    const phoneInput = document.getElementById("registerPhone");
 
     if(!nameInput || !emailInput || !passwordInput){
         alert("Register form error");
@@ -170,11 +171,12 @@ async function registerUser(){
     const name = String(nameInput.value || "").trim();
     const email = normalizeEmail(emailInput.value);
     const password = String(passwordInput.value || "").trim();
+    const phone = String(phoneInput.value || "").trim();
 
-    if(name === "" || email === "" || password === ""){
-        alert("Please fill all fields");
-        return;
-    }
+    if(name === "" || email === "" || phone === "" || password === ""){
+    alert("Please fill all fields");
+    return;
+}
 
     const firebaseReady = await waitForFirebase();
 
@@ -205,6 +207,8 @@ async function registerUser(){
     const user = {
         name: name,
         email: email,
+        phone: phone,
+phoneVerified: false,
         password: password,
         photo: "images/ahmed.jpg",
 
