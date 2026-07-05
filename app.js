@@ -1171,79 +1171,86 @@ function addSMCBox(time1, time2, high, low, color, text){
     if(!smcSvg || !oandaChart || !candleSeries) return;
 
     const x1 = oandaChart.timeScale().timeToCoordinate(time1);
-    const x2 = oandaChart.timeScale().timeToCoordinate(time2);
+
+    const lastLogical = candlesData.length - 1;
+    const futureX = oandaChart.timeScale().logicalToCoordinate(lastLogical + 35);
+
     const yHigh = candleSeries.priceToCoordinate(high);
     const yLow = candleSeries.priceToCoordinate(low);
 
-    if(x1 == null || x2 == null || yHigh == null || yLow == null) return;
+    if(x1 == null || futureX == null || yHigh == null || yLow == null) return;
 
-    const left = Math.min(x1, x2);
-    const width = Math.max(12, Math.abs(x2 - x1));
+    const left = x1;
+    const width = Math.max(40, futureX - x1);
     const top = Math.min(yHigh, yLow);
-    const height = Math.abs(yLow - yHigh);
+    const height = Math.max(6, Math.abs(yLow - yHigh));
 
-    smcSvg.appendChild(svgEl("rect", {
+    const rect = svgEl("rect", {
         x: left,
         y: top,
         width,
         height,
         fill: color,
-        stroke: color.replace("0.13", "0.85"),
+        stroke: color.includes("255,45,45") || color.includes("255,77,77") ? "#ff3333" : "#00ff88",
         "stroke-width": 1.5,
-        rx: 4
-    }));
+        rx: 5,
+        opacity: 0.75
+    });
 
-    addSMCText(time1, high, text, color.replace("0.13", "1"));
+    smcSvg.appendChild(rect);
+
+    const label = svgEl("text", {
+        x: left + 8,
+        y: top + 16,
+        fill: color.includes("255,45,45") || color.includes("255,77,77") ? "#ff3333" : "#00ff88",
+        "font-size": "12",
+        "font-weight": "bold"
+    });
+
+    label.textContent = text;
+    smcSvg.appendChild(label);
 }
+
 
 function detectSMC(){
     if(!candlesData.length) return;
 
     smcObjects = [];
 
-    const candles = candlesData.slice(-250);
-    const swings = getSMCSwings(candles, 4);
+    const candles = candlesData.slice(-220);
+    const swings = getSMCSwings(candles, 5);
 
     let lastHigh = null;
     let lastLow = null;
     let trend = null;
 
-    let lastBosTime = null;
-    let lastFvgTime = null;
+    let lastStructure = null;
+    let lastBullishOB = null;
+    let lastBearishOB = null;
+    let lastBullishFVG = null;
+    let lastBearishFVG = null;
 
     candles.forEach((c, i) => {
-
         const swing = swings.find(s => s.index === i);
 
-        if(swing && swing.type === "HIGH"){
-            lastHigh = swing;
-        }
-
-        if(swing && swing.type === "LOW"){
-            lastLow = swing;
-        }
+        if(swing && swing.type === "HIGH") lastHigh = swing;
+        if(swing && swing.type === "LOW") lastLow = swing;
 
         if(lastHigh && c.close > lastHigh.price){
             const type = trend === "bearish" ? "CHOCH" : "BOS";
             trend = "bullish";
 
-            if(lastBosTime !== lastHigh.time){
-                smcObjects.push({
-                    kind: "line",
-                    time1: lastHigh.time,
-                    time2: c.time,
-                    price: lastHigh.price,
-                    color: "#00ff88",
-                    text: type === "CHOCH" ? "CHANGE TO BUY" : "BUY BREAK"
-                });
+            lastStructure = {
+                kind: "line",
+                time1: lastHigh.time,
+                time2: c.time,
+                price: lastHigh.price,
+                color: "#00ff88",
+                text: type === "CHOCH" ? "BUY CHANGE" : "BUY BREAK"
+            };
 
-                const ob = findOrderBlock(candles, i, "BUY");
-                if(ob){
-                    smcObjects.push(ob);
-                }
-
-                lastBosTime = lastHigh.time;
-            }
+            const ob = findCleanOrderBlock(candles, i, "BUY");
+            if(ob) lastBullishOB = ob;
 
             lastHigh = null;
         }
@@ -1252,23 +1259,17 @@ function detectSMC(){
             const type = trend === "bullish" ? "CHOCH" : "BOS";
             trend = "bearish";
 
-            if(lastBosTime !== lastLow.time){
-                smcObjects.push({
-                    kind: "line",
-                    time1: lastLow.time,
-                    time2: c.time,
-                    price: lastLow.price,
-                    color: "#ff4d4d",
-                    text: type === "CHOCH" ? "CHANGE TO SELL" : "SELL BREAK"
-                });
+            lastStructure = {
+                kind: "line",
+                time1: lastLow.time,
+                time2: c.time,
+                price: lastLow.price,
+                color: "#ff4d4d",
+                text: type === "CHOCH" ? "SELL CHANGE" : "SELL BREAK"
+            };
 
-                const ob = findOrderBlock(candles, i, "SELL");
-                if(ob){
-                    smcObjects.push(ob);
-                }
-
-                lastBosTime = lastLow.time;
-            }
+            const ob = findCleanOrderBlock(candles, i, "SELL");
+            if(ob) lastBearishOB = ob;
 
             lastLow = null;
         }
@@ -1277,8 +1278,8 @@ function detectSMC(){
             const c1 = candles[i - 2];
             const c3 = candles[i];
 
-            if(c3.low > c1.high && lastFvgTime !== c3.time){
-                smcObjects.push({
+            if(c3.low > c1.high){
+                const fvg = {
                     kind: "box",
                     time1: c1.time,
                     time2: candles[candles.length - 1].time,
@@ -1286,13 +1287,15 @@ function detectSMC(){
                     low: c1.high,
                     color: "rgba(0,255,136,0.10)",
                     text: "BUY ZONE"
-                });
+                };
 
-                lastFvgTime = c3.time;
+                if(!isZoneFilled(candles.slice(i), fvg, "BUY")){
+                    lastBullishFVG = fvg;
+                }
             }
 
-            if(c3.high < c1.low && lastFvgTime !== c3.time){
-                smcObjects.push({
+            if(c3.high < c1.low){
+                const fvg = {
                     kind: "box",
                     time1: c1.time,
                     time2: candles[candles.length - 1].time,
@@ -1300,38 +1303,51 @@ function detectSMC(){
                     low: c3.high,
                     color: "rgba(255,77,77,0.10)",
                     text: "SELL ZONE"
-                });
+                };
 
-                lastFvgTime = c3.time;
+                if(!isZoneFilled(candles.slice(i), fvg, "SELL")){
+                    lastBearishFVG = fvg;
+                }
             }
         }
     });
 
-    const importantHighs = swings.filter(s => s.type === "HIGH").slice(-3);
-    const importantLows = swings.filter(s => s.type === "LOW").slice(-3);
+    const strongHigh = swings.filter(s => s.type === "HIGH").slice(-1)[0];
+    const strongLow = swings.filter(s => s.type === "LOW").slice(-1)[0];
 
-    importantHighs.forEach(s => {
+    [
+        lastBullishOB,
+        lastBearishOB,
+        lastBullishFVG,
+        lastBearishFVG,
+        lastStructure
+    ].forEach(obj => {
+        if(obj) smcObjects.push(obj);
+    });
+
+    if(strongHigh){
         smcObjects.push({
             kind: "liquidity",
-            time: s.time,
-            price: s.price,
-            text: "Buy Side Liquidity",
+            time: strongHigh.time,
+            price: strongHigh.price,
+            text: "Buy Liquidity",
             color: "#00aaff"
         });
-    });
+    }
 
-    importantLows.forEach(s => {
+    if(strongLow){
         smcObjects.push({
             kind: "liquidity",
-            time: s.time,
-            price: s.price,
-            text: "Sell Side Liquidity",
+            time: strongLow.time,
+            price: strongLow.price,
+            text: "Sell Liquidity",
             color: "#ff3333"
         });
-    });
+    }
 }
-function findOrderBlock(candles, breakIndex, direction){
-    const lookback = 12;
+
+function findCleanOrderBlock(candles, breakIndex, direction){
+    const lookback = 15;
 
     for(let i = breakIndex - 1; i >= Math.max(0, breakIndex - lookback); i--){
         const c = candles[i];
@@ -1344,7 +1360,7 @@ function findOrderBlock(candles, breakIndex, direction){
                 high: c.high,
                 low: c.low,
                 color: "rgba(0,140,255,0.12)",
-                text: "BUY ORDER BLOCK"
+                text: "BUY BLOCK"
             };
         }
 
@@ -1356,7 +1372,7 @@ function findOrderBlock(candles, breakIndex, direction){
                 high: c.high,
                 low: c.low,
                 color: "rgba(255,45,45,0.12)",
-                text: "SELL ORDER BLOCK"
+                text: "SELL BLOCK"
             };
         }
     }
@@ -1364,26 +1380,43 @@ function findOrderBlock(candles, breakIndex, direction){
     return null;
 }
 
+function isZoneFilled(candles, zone, direction){
+    return candles.some(c => {
+        if(direction === "BUY"){
+            return c.low <= zone.low;
+        }
+
+        if(direction === "SELL"){
+            return c.high >= zone.high;
+        }
+
+        return false;
+    });
+}
 
 function renderSMC(){
     if(!smcSvg || !smcOn) return;
 
     smcSvg.innerHTML = "";
 
-    smcObjects.forEach(obj => {
-        if(obj.kind === "line"){
-            addSMCLine(obj.time1, obj.time2, obj.price, obj.color, obj.text);
-        }
+    const boxes = smcObjects.filter(o => o.kind === "box");
+    const lines = smcObjects.filter(o => o.kind === "line");
+    const liquidity = smcObjects.filter(o => o.kind === "liquidity");
 
-        if(obj.kind === "box"){
-            addSMCBox(obj.time1, obj.time2, obj.high, obj.low, obj.color, obj.text);
-        }
+    boxes.forEach(obj => {
+        addSMCBox(obj.time1, obj.time2, obj.high, obj.low, obj.color, obj.text);
+    });
 
-        if(obj.kind === "liquidity"){
-            addSMCText(obj.time, obj.price, obj.text, obj.color);
-        }
+    const lastLine = lines[lines.length - 1];
+    if(lastLine){
+        addSMCLine(lastLine.time1, lastLine.time2, lastLine.price, lastLine.color, lastLine.text);
+    }
+
+    liquidity.slice(-2).forEach(obj => {
+        addSMCText(obj.time, obj.price, obj.text, obj.color);
     });
 }
+
 
 window.toggleSMC = function(){
     smcOn = !smcOn;
