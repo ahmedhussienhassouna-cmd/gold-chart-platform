@@ -11,7 +11,9 @@ let europeSessionOn = false;
 let americaSessionOn = false;
 let vwapOn = false;
 let sessionProfileOn = false;
-
+let smcOn = false;
+let smcSvg = null;
+let smcObjects = [];
 let lastPrice = null;
 let currentLiveCandle = null;
 
@@ -46,6 +48,12 @@ function updatePanel(){
     setText("panelStrategy", strategyOn ? "ON" : "OFF");
     setText("panelLiquidity", liquidityOn ? "ON" : "OFF");
     setText("panelIB", ibOn ? "ON" : "OFF");
+    setText("panelSMC", smcOn ? "ON" : "OFF");
+
+const smcBtn = document.getElementById("smcBtn");
+if(smcBtn){
+    smcBtn.innerHTML = smcOn ? "✅ Smart Money ON" : "🧠 Smart Money";
+}
     const asiaBtn = document.getElementById("asiaSessionBtn");
 if(asiaBtn){
     asiaBtn.innerHTML = asiaSessionOn ? "✅ Session Asia ON" : "🟢 Session Asia";
@@ -587,6 +595,7 @@ fixRightEdge: false
 
     createSessionProfileLayer();
     createDrawingLayer();
+    createSMCLayer();
 
     const candles = await loadOandaCandles();
 
@@ -636,6 +645,7 @@ oandaChart.timeScale().subscribeVisibleTimeRangeChange(() => {
     renderSessionProfile();
     redrawSessionIBFill();
     renderDrawings();
+    renderSMC();
     refreshStrategyAreasLive();
 });
 }
@@ -1041,6 +1051,293 @@ function renderDrawings(){
 
     redrawStrategyAreas();
 }
+// =======================
+// SMART MONEY CONCEPT
+// BOS / CHOCH / FVG / ORDER BLOCK / LIQUIDITY
+// =======================
+
+function createSMCLayer(){
+    const chartBox = document.getElementById("oandaChart");
+    if(!chartBox) return;
+
+    if(smcSvg){
+        smcSvg.remove();
+    }
+
+    smcSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    smcSvg.setAttribute("id", "smcSvg");
+    smcSvg.style.position = "absolute";
+    smcSvg.style.left = "0";
+    smcSvg.style.top = "0";
+    smcSvg.style.width = "100%";
+    smcSvg.style.height = "100%";
+    smcSvg.style.zIndex = "25";
+    smcSvg.style.pointerEvents = "none";
+
+    chartBox.appendChild(smcSvg);
+}
+
+function clearSMC(){
+    smcObjects = [];
+
+    if(smcSvg){
+        smcSvg.innerHTML = "";
+    }
+}
+
+function getSMCSwings(candles, strength = 3){
+    const swings = [];
+
+    for(let i = strength; i < candles.length - strength; i++){
+        let isHigh = true;
+        let isLow = true;
+
+        for(let x = 1; x <= strength; x++){
+            if(candles[i].high <= candles[i - x].high || candles[i].high <= candles[i + x].high){
+                isHigh = false;
+            }
+
+            if(candles[i].low >= candles[i - x].low || candles[i].low >= candles[i + x].low){
+                isLow = false;
+            }
+        }
+
+        if(isHigh){
+            swings.push({
+                type: "HIGH",
+                time: candles[i].time,
+                price: candles[i].high,
+                index: i
+            });
+        }
+
+        if(isLow){
+            swings.push({
+                type: "LOW",
+                time: candles[i].time,
+                price: candles[i].low,
+                index: i
+            });
+        }
+    }
+
+    return swings;
+}
+
+function addSMCText(time, price, text, color){
+    if(!smcSvg || !oandaChart || !candleSeries) return;
+
+    const x = oandaChart.timeScale().timeToCoordinate(time);
+    const y = candleSeries.priceToCoordinate(price);
+
+    if(x == null || y == null) return;
+
+    const label = svgEl("text", {
+        x: x,
+        y: y,
+        fill: color,
+        "font-size": "13",
+        "font-weight": "bold",
+        "text-anchor": "middle"
+    });
+
+    label.textContent = text;
+    smcSvg.appendChild(label);
+}
+
+function addSMCLine(time1, time2, price, color, text){
+    if(!smcSvg || !oandaChart || !candleSeries) return;
+
+    const x1 = oandaChart.timeScale().timeToCoordinate(time1);
+    const x2 = oandaChart.timeScale().timeToCoordinate(time2);
+    const y = candleSeries.priceToCoordinate(price);
+
+    if(x1 == null || x2 == null || y == null) return;
+
+    smcSvg.appendChild(svgEl("line", {
+        x1,
+        y1: y,
+        x2,
+        y2: y,
+        stroke: color,
+        "stroke-width": 2,
+        "stroke-dasharray": "6 4"
+    }));
+
+    addSMCText(time2, price, text, color);
+}
+
+function addSMCBox(time1, time2, high, low, color, text){
+    if(!smcSvg || !oandaChart || !candleSeries) return;
+
+    const x1 = oandaChart.timeScale().timeToCoordinate(time1);
+    const x2 = oandaChart.timeScale().timeToCoordinate(time2);
+    const yHigh = candleSeries.priceToCoordinate(high);
+    const yLow = candleSeries.priceToCoordinate(low);
+
+    if(x1 == null || x2 == null || yHigh == null || yLow == null) return;
+
+    const left = Math.min(x1, x2);
+    const width = Math.max(12, Math.abs(x2 - x1));
+    const top = Math.min(yHigh, yLow);
+    const height = Math.abs(yLow - yHigh);
+
+    smcSvg.appendChild(svgEl("rect", {
+        x: left,
+        y: top,
+        width,
+        height,
+        fill: color,
+        stroke: color.replace("0.13", "0.85"),
+        "stroke-width": 1.5,
+        rx: 4
+    }));
+
+    addSMCText(time1, high, text, color.replace("0.13", "1"));
+}
+
+function detectSMC(){
+    if(!candlesData.length) return;
+
+    smcObjects = [];
+
+    const candles = candlesData.slice(-350);
+    const swings = getSMCSwings(candles, 3);
+
+    let lastHigh = null;
+    let lastLow = null;
+    let trend = null;
+
+    candles.forEach((c, i) => {
+        const swing = swings.find(s => s.index === i);
+
+        if(swing && swing.type === "HIGH"){
+            lastHigh = swing;
+        }
+
+        if(swing && swing.type === "LOW"){
+            lastLow = swing;
+        }
+
+        if(lastHigh && c.close > lastHigh.price){
+            const type = trend === "bearish" ? "CHOCH" : "BOS";
+            trend = "bullish";
+
+            smcObjects.push({
+                kind: "line",
+                time1: lastHigh.time,
+                time2: c.time,
+                price: lastHigh.price,
+                color: "#00ff88",
+                text: type + " BUY"
+            });
+
+            lastHigh = null;
+        }
+
+        if(lastLow && c.close < lastLow.price){
+            const type = trend === "bullish" ? "CHOCH" : "BOS";
+            trend = "bearish";
+
+            smcObjects.push({
+                kind: "line",
+                time1: lastLow.time,
+                time2: c.time,
+                price: lastLow.price,
+                color: "#ff4d4d",
+                text: type + " SELL"
+            });
+
+            lastLow = null;
+        }
+
+        if(i >= 2){
+            const c1 = candles[i - 2];
+            const c3 = candles[i];
+
+            if(c3.low > c1.high){
+                smcObjects.push({
+                    kind: "box",
+                    time1: c1.time,
+                    time2: c3.time,
+                    high: c3.low,
+                    low: c1.high,
+                    color: "rgba(0,255,136,0.13)",
+                    text: "FVG BUY"
+                });
+            }
+
+            if(c3.high < c1.low){
+                smcObjects.push({
+                    kind: "box",
+                    time1: c1.time,
+                    time2: c3.time,
+                    high: c1.low,
+                    low: c3.high,
+                    color: "rgba(255,77,77,0.13)",
+                    text: "FVG SELL"
+                });
+            }
+        }
+    });
+
+    swings.slice(-12).forEach(s => {
+        smcObjects.push({
+            kind: "liquidity",
+            time: s.time,
+            price: s.price,
+            text: s.type === "HIGH" ? "Liquidity High" : "Liquidity Low",
+            color: s.type === "HIGH" ? "#00aaff" : "#ff3333"
+        });
+    });
+}
+
+function renderSMC(){
+    if(!smcSvg || !smcOn) return;
+
+    smcSvg.innerHTML = "";
+
+    smcObjects.forEach(obj => {
+        if(obj.kind === "line"){
+            addSMCLine(obj.time1, obj.time2, obj.price, obj.color, obj.text);
+        }
+
+        if(obj.kind === "box"){
+            addSMCBox(obj.time1, obj.time2, obj.high, obj.low, obj.color, obj.text);
+        }
+
+        if(obj.kind === "liquidity"){
+            addSMCText(obj.time, obj.price, obj.text, obj.color);
+        }
+    });
+}
+
+window.toggleSMC = function(){
+    smcOn = !smcOn;
+
+    if(!smcOn){
+        clearSMC();
+        updatePanel();
+        setText("signal", "🧠 Smart Money OFF");
+        return;
+    }
+
+    if(!smcSvg){
+        createSMCLayer();
+    }
+
+    detectSMC();
+    renderSMC();
+
+    updatePanel();
+
+    setText(
+        "signal",
+        `🧠 Smart Money ON<br>
+        BOS / CHOCH / FVG / Liquidity detected`
+    );
+};
+
 
 // =======================
 // TOOLS
@@ -2441,6 +2738,7 @@ function forceChartResize(){
         if(typeof renderSessionProfile === "function") renderSessionProfile();
 if(typeof redrawSessionIBFill === "function") redrawSessionIBFill();
         if(typeof renderDrawings === "function") renderDrawings();
+        if(typeof renderSMC === "function") renderSMC();
 
     }, 250);
 }
