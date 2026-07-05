@@ -173,12 +173,17 @@ async function registerUser(){
     const email = normalizeEmail(emailInput.value);
     const password = String(passwordInput.value || "").trim();
     const phone = String(phoneInput.value || "").trim();
+    const otpInput = document.getElementById("registerOtp");
+const otpCode = String(otpInput?.value || "").trim();
 
     if(name === "" || email === "" || phone === "" || password === ""){
     alert("Please fill all fields");
     return;
 }
-
+if(otpCode === ""){
+    alert("Please enter OTP code.");
+    return;
+}
     const firebaseReady = await waitForFirebase();
 
     if(!firebaseReady){
@@ -200,7 +205,9 @@ async function registerUser(){
         alert("This email already has an account. Please login.");
         window.location.href = "login.html";
         return;
-        let existingPhoneUser = null;
+        
+    }
+    let existingPhoneUser = null;
 
 try{
     existingPhoneUser = await firebaseRetry(
@@ -218,7 +225,13 @@ if(existingPhoneUser){
     window.location.href = "upgrade.html";
     return;
 }
-    }
+try{
+    await window.verifyPhoneOtpFirebase(otpCode);
+}catch(error){
+    console.error("OTP verify error:", error);
+    alert("OTP code is wrong or expired.");
+    return;
+}
 
     const now = new Date();
     const trialEnd = addDays(now, 14);
@@ -227,7 +240,7 @@ if(existingPhoneUser){
         name: name,
         email: email,
         phone: phone,
-phoneVerified: false,
+phoneVerified: true,
         password: password,
         photo: "images/ahmed.jpg",
 
