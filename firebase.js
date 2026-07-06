@@ -98,34 +98,64 @@ window.reloadCurrentUserFirebase = async function(){
     }
 
 };
-window.setupRecaptchaFirebase = function(){
-    if(window.recaptchaVerifier) return window.recaptchaVerifier;
+function formatEgyptPhone(phone){
+    let p = String(phone || "").trim().replace(/\s+/g, "");
+
+    if(p.startsWith("+")) return p;
+    if(p.startsWith("20")) return "+" + p;
+    if(p.startsWith("0")) return "+20" + p.slice(1);
+
+    return "+20" + p;
+}
+
+window.setupRecaptchaFirebase = async function(){
+    if(window.recaptchaVerifier){
+        try{
+            window.recaptchaVerifier.clear();
+        }catch(error){}
+        window.recaptchaVerifier = null;
+    }
+
+    const recaptchaBox = document.getElementById("recaptcha-container");
+
+    if(!recaptchaBox){
+        throw new Error("recaptcha-container is missing in register.html");
+    }
+
+    recaptchaBox.innerHTML = "";
 
     window.recaptchaVerifier = new RecaptchaVerifier(
         auth,
         "recaptcha-container",
         {
-            size: "invisible"
+            size: "normal"
         }
     );
+
+    await window.recaptchaVerifier.render();
 
     return window.recaptchaVerifier;
 };
 
 window.sendPhoneOtpFirebase = async function(phone){
-    const appVerifier = window.setupRecaptchaFirebase();
+    try{
+        const appVerifier = await window.setupRecaptchaFirebase();
+        const egyptPhone = formatEgyptPhone(phone);
 
-    const egyptPhone = phone.startsWith("+")
-        ? phone
-        : "+2" + phone;
+        console.log("Sending OTP to:", egyptPhone);
 
-    window.confirmationResult = await signInWithPhoneNumber(
-        auth,
-        egyptPhone,
-        appVerifier
-    );
+        window.confirmationResult = await signInWithPhoneNumber(
+            auth,
+            egyptPhone,
+            appVerifier
+        );
 
-    return true;
+        return true;
+
+    }catch(error){
+        console.error("OTP send error:", error);
+        throw error;
+    }
 };
 
 window.verifyPhoneOtpFirebase = async function(code){
