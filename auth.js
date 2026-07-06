@@ -41,7 +41,9 @@ if(
     window.updateUserLoginFirebase &&
     window.createAuthUserFirebase &&
     window.loginAuthUserFirebase &&
-    window.getUserByPhoneFirebase
+window.getUserByPhoneFirebase &&
+window.sendPhoneOtpFirebase &&
+window.verifyPhoneOtpFirebase
 ){
                 clearInterval(timer);
                 resolve(true);
@@ -157,6 +159,36 @@ function goToUpgrade(){
 // =======================
 // REGISTER
 // =======================
+async function sendRegisterOtp(){
+    const phoneInput = document.getElementById("registerPhone");
+
+    if(!phoneInput){
+        alert("Phone input not found");
+        return;
+    }
+
+    const phone = String(phoneInput.value || "").trim();
+
+    if(phone === ""){
+        alert("Please enter phone number");
+        return;
+    }
+
+    const firebaseReady = await waitForFirebase();
+
+    if(!firebaseReady){
+        showConnectionMessage();
+        return;
+    }
+
+    try{
+        await window.sendPhoneOtpFirebase(phone);
+        alert("OTP sent successfully");
+    }catch(error){
+        console.error("Send OTP error:", error);
+        alert("OTP Error: " + (error.code || "") + " - " + error.message);
+    }
+}
 async function registerUser(){
 
     const nameInput = document.getElementById("registerName");
