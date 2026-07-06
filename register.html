@@ -118,7 +118,14 @@ if(otpBtn){
             alert("OTP has been sent successfully.");
         }catch(error){
             console.error(error);
-            alert(error.message);
+alert(
+    "Code: " + (error.code || "No Code") +
+    "\nMessage: " + error.message
+);
+
+console.log(error);
+console.log(error.code);
+console.log(error.message);
         }
 
     });
