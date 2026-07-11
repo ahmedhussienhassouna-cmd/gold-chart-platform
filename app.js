@@ -513,10 +513,7 @@ async function createChart(){
 
     const chartBox = document.getElementById("oandaChart");
     if(!chartBox) return;
-if (oandaChart) {
-    oandaChart.remove();
-    oandaChart = null;
-}
+
     chartBox.innerHTML = "";
     chartBox.style.width = "100%";
     chartBox.style.height = "100%";
