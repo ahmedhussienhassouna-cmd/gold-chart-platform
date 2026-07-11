@@ -1830,7 +1830,7 @@ activeStrategySetup = {
 };
 setTimeout(() => {
     scanPastBreakRetest();
-}, 10);();
+}, 10);
 
 setText(
     "signal",
