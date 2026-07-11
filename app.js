@@ -26,6 +26,7 @@ let drawingMode = "cursor";
 let drawings = [];
 let priceLineDrawings = [];
 let strategyLines = [];
+let cachedStrategyLevels = null;
 let candlesData = [];
 
 let pendingPoint = null;
@@ -1797,7 +1798,10 @@ strategySignalDrawings = [];
     }
 
     try{
-        const levels = await window.loadStrategyLevels(currentAsset);
+const levels = cachedStrategyLevels ||
+    await window.loadStrategyLevels(currentAsset);
+
+cachedStrategyLevels = levels;
 
         if(!levels){
             setText("signal", "No strategy levels found");
@@ -2340,6 +2344,16 @@ window.addEventListener("load", () => {
     }, 300);
 
     updatePanel();
+    setTimeout(async () => {
+    if(typeof window.loadStrategyLevels === "function"){
+        try{
+            cachedStrategyLevels =
+                await window.loadStrategyLevels(currentAsset);
+        }catch(error){
+            console.error("Strategy preload error:", error);
+        }
+    }
+}, 1500);
     updateSession();
     setActiveTimeframeButton();
     setActiveToolButton();
