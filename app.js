@@ -2898,13 +2898,6 @@ document.addEventListener("fullscreenchange", () => {
     forceChartResize();
 });
 
-setInterval(() => {
-    forceChartResize();
-}, 3000);
-
-setInterval(() => {
-    refreshStrategyAreasLive();
-}, 100);
 // =======================
 // FORCE CLIENTS CHAT OPEN
 // =======================
